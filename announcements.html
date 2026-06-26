@@ -244,6 +244,10 @@
       color: var(--success);
     }
 
+    .danger-text {
+      color: var(--danger);
+    }
+
     .dashboard {
       animation: appear 0.25s ease;
     }
@@ -293,6 +297,159 @@
       grid-template-columns: 420px minmax(0, 1fr);
       gap: 20px;
       align-items: start;
+    }
+
+    .rich-editor-shell {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .editor-tool {
+      min-width: 38px;
+      min-height: 36px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--panel);
+      font-weight: 750;
+    }
+
+    .editor-tool:hover,
+    .editor-tool.active {
+      color: var(--accent-text);
+      border-color: transparent;
+      background: var(--accent);
+    }
+
+    .rich-editor {
+      min-height: 190px;
+      max-height: 440px;
+      overflow-y: auto;
+      padding: 15px;
+      outline: none;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .rich-editor:empty::before {
+      content: attr(data-placeholder);
+      color: #7f8aa4;
+      pointer-events: none;
+    }
+
+    .rich-editor h2,
+    .rich-editor h3,
+    .announcement-message h2,
+    .announcement-message h3 {
+      margin: 0.8em 0 0.35em;
+      line-height: 1.25;
+    }
+
+    .rich-editor p,
+    .announcement-message p {
+      margin: 0.45em 0;
+    }
+
+    .rich-editor ul,
+    .rich-editor ol,
+    .announcement-message ul,
+    .announcement-message ol {
+      margin: 0.7em 0 0.7em 1.6em;
+    }
+
+    .rich-editor blockquote,
+    .announcement-message blockquote {
+      margin: 0.8em 0;
+      padding: 10px 14px;
+      border-left: 4px solid var(--accent);
+      color: #dce4f7;
+      background: rgba(255, 183, 77, 0.07);
+    }
+
+    .rich-editor a,
+    .announcement-message a {
+      color: #a9bcff;
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+    }
+
+    .editor-help {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .image-picker-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .image-picker-row input[type="file"] {
+      flex: 1 1 230px;
+      padding: 10px;
+    }
+
+    .image-preview-grid,
+    .announcement-image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .image-preview-item {
+      position: relative;
+      overflow: hidden;
+      min-height: 130px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .image-preview-item img,
+    .announcement-image-grid img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 11px;
+    }
+
+    .image-remove-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.72);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .upload-status {
+      min-height: 22px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
     }
 
     .selection-block {
@@ -398,8 +555,15 @@
       margin: 16px 0;
       color: #e9edfa;
       line-height: 1.72;
-      white-space: pre-wrap;
       overflow-wrap: anywhere;
+    }
+
+    .announcement-message > :first-child {
+      margin-top: 0;
+    }
+
+    .announcement-message > :last-child {
+      margin-bottom: 0;
     }
 
     .empty-box,
@@ -482,6 +646,11 @@
       .header-buttons,
       .header-buttons .button {
         width: 100%;
+      }
+
+      .image-preview-grid,
+      .announcement-image-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -602,8 +771,51 @@
             </div>
 
             <div class="field">
-              <label for="announcementMessage">Message</label>
-              <textarea id="announcementMessage" maxlength="4000" placeholder="Write the announcement here…" required></textarea>
+              <label for="announcementEditor">Message</label>
+
+              <div class="rich-editor-shell">
+                <div class="editor-toolbar" id="editorToolbar" aria-label="Announcement formatting tools">
+                  <button class="editor-tool" type="button" data-editor-command="bold" title="Bold"><strong>B</strong></button>
+                  <button class="editor-tool" type="button" data-editor-command="italic" title="Italic"><em>I</em></button>
+                  <button class="editor-tool" type="button" data-editor-command="underline" title="Underline"><u>U</u></button>
+                  <button class="editor-tool" type="button" data-editor-block="h2" title="Large heading">H2</button>
+                  <button class="editor-tool" type="button" data-editor-block="h3" title="Small heading">H3</button>
+                  <button class="editor-tool" type="button" data-editor-command="insertUnorderedList" title="Bullet list">• List</button>
+                  <button class="editor-tool" type="button" data-editor-command="insertOrderedList" title="Numbered list">1. List</button>
+                  <button class="editor-tool" type="button" data-editor-command="formatBlock" data-editor-value="blockquote" title="Quote">❝</button>
+                  <button class="editor-tool" type="button" data-editor-link="true" title="Insert link">🔗</button>
+                  <button class="editor-tool" type="button" data-editor-command="removeFormat" title="Clear formatting">Clear</button>
+                </div>
+
+                <div
+                  class="rich-editor"
+                  id="announcementEditor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  data-placeholder="Write the announcement here…"
+                ></div>
+              </div>
+
+              <div class="editor-help">
+                Select text, then choose Bold, Italic, Underline, headings, lists, quotes, or links.
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="announcementImages">Pictures (optional)</label>
+
+              <div class="image-picker-row">
+                <input id="announcementImages" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+                <button class="button secondary-button" id="addImagesButton" type="button">Add pictures</button>
+              </div>
+
+              <div class="editor-help">
+                Up to 3 pictures. The browser compresses them before saving so no Firebase Storage setup is needed.
+              </div>
+
+              <div class="upload-status" id="imageStatus" aria-live="polite"></div>
+              <div class="image-preview-grid" id="imagePreviewGrid"></div>
             </div>
 
             <div class="selection-block">
@@ -717,6 +929,11 @@
       announcements: []
     };
 
+    let pendingImages = [];
+    const MAX_ANNOUNCEMENT_IMAGES = 3;
+    const MAX_IMAGE_DATA_CHARACTERS = 240000;
+    const MAX_TOTAL_IMAGE_CHARACTERS = 720000;
+
     const elements = {
       loadingView: document.getElementById("loadingView"),
       loginView: document.getElementById("loginView"),
@@ -741,7 +958,12 @@
       studentCount: document.getElementById("studentCount"),
       announcementForm: document.getElementById("announcementForm"),
       announcementTitle: document.getElementById("announcementTitle"),
-      announcementMessage: document.getElementById("announcementMessage"),
+      announcementEditor: document.getElementById("announcementEditor"),
+      editorToolbar: document.getElementById("editorToolbar"),
+      announcementImages: document.getElementById("announcementImages"),
+      addImagesButton: document.getElementById("addImagesButton"),
+      imageStatus: document.getElementById("imageStatus"),
+      imagePreviewGrid: document.getElementById("imagePreviewGrid"),
       classList: document.getElementById("classList"),
       studentList: document.getElementById("studentList"),
       publishButton: document.getElementById("publishButton"),
@@ -770,6 +992,205 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function safeLink(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+
+      try {
+        const url = new URL(raw, window.location.href);
+        if (["http:", "https:", "mailto:"].includes(url.protocol)) {
+          return url.href;
+        }
+      } catch {
+        return "";
+      }
+
+      return "";
+    }
+
+    function sanitizeRichHtml(value) {
+      const parser = new DOMParser();
+      const documentValue = parser.parseFromString(`<div>${String(value || "")}</div>`, "text/html");
+      const container = documentValue.body.firstElementChild;
+      const allowedTags = new Set([
+        "DIV", "P", "BR", "STRONG", "B", "EM", "I", "U",
+        "UL", "OL", "LI", "H2", "H3", "BLOCKQUOTE", "A"
+      ]);
+
+      function cleanNode(node) {
+        [...node.childNodes].forEach((child) => {
+          if (child.nodeType === Node.COMMENT_NODE) {
+            child.remove();
+            return;
+          }
+
+          if (child.nodeType !== Node.ELEMENT_NODE) return;
+
+          const tagName = child.tagName.toUpperCase();
+          if (!allowedTags.has(tagName)) {
+            const replacement = documentValue.createTextNode(child.textContent || "");
+            child.replaceWith(replacement);
+            return;
+          }
+
+          const originalHref = tagName === "A" ? child.getAttribute("href") : "";
+          [...child.attributes].forEach((attribute) => child.removeAttribute(attribute.name));
+
+          if (tagName === "A") {
+            const href = safeLink(originalHref || "");
+            if (href) {
+              child.setAttribute("href", href);
+              child.setAttribute("target", "_blank");
+              child.setAttribute("rel", "noopener noreferrer");
+            } else {
+              child.replaceWith(...child.childNodes);
+              return;
+            }
+          }
+
+          cleanNode(child);
+        });
+      }
+
+      cleanNode(container);
+      return container.innerHTML.trim();
+    }
+
+    function plainTextFromHtml(value) {
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = sanitizeRichHtml(value);
+      return (wrapper.innerText || wrapper.textContent || "").trim();
+    }
+
+    function renderAnnouncementBody(announcement) {
+      if (announcement.messageHtml) {
+        return sanitizeRichHtml(announcement.messageHtml);
+      }
+
+      const legacyMessage = escapeHtml(announcement.message || "").replaceAll("\n", "<br>");
+      return legacyMessage || "<p>No written message.</p>";
+    }
+
+    function renderAnnouncementImages(announcement) {
+      const images = Array.isArray(announcement.images)
+        ? announcement.images.filter((value) => typeof value === "string" && value.startsWith("data:image/"))
+        : [];
+
+      if (!images.length) return "";
+
+      return `
+        <div class="announcement-image-grid">
+          ${images.map((source, index) => `
+            <img
+              src="${escapeHtml(source)}"
+              alt="Announcement picture ${index + 1}"
+              loading="lazy"
+            >
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("The selected picture could not be opened."));
+        };
+
+        image.src = objectUrl;
+      });
+    }
+
+    function canvasToDataUrl(canvas, quality) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("The picture could not be compressed."));
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error("The picture could not be read."));
+          reader.readAsDataURL(blob);
+        }, "image/jpeg", quality);
+      });
+    }
+
+    async function compressImage(file) {
+      if (!file.type.startsWith("image/")) {
+        throw new Error(`${file.name} is not a picture.`);
+      }
+
+      if (file.size > 12 * 1024 * 1024) {
+        throw new Error(`${file.name} is larger than 12 MB.`);
+      }
+
+      const image = await fileToImage(file);
+      let width = image.naturalWidth;
+      let height = image.naturalHeight;
+      const initialScale = Math.min(1, 1200 / width, 1200 / height);
+      width = Math.max(1, Math.round(width * initialScale));
+      height = Math.max(1, Math.round(height * initialScale));
+
+      let quality = 0.82;
+      let dataUrl = "";
+
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+
+        dataUrl = await canvasToDataUrl(canvas, quality);
+        if (dataUrl.length <= MAX_IMAGE_DATA_CHARACTERS) return dataUrl;
+
+        quality = Math.max(0.48, quality - 0.08);
+        width = Math.max(320, Math.round(width * 0.86));
+        height = Math.max(320, Math.round(height * 0.86));
+      }
+
+      if (dataUrl.length > MAX_IMAGE_DATA_CHARACTERS) {
+        throw new Error(`${file.name} could not be compressed enough. Try a smaller picture.`);
+      }
+
+      return dataUrl;
+    }
+
+    function renderPendingImages() {
+      elements.imagePreviewGrid.innerHTML = pendingImages.map((image, index) => `
+        <div class="image-preview-item">
+          <img src="${escapeHtml(image.dataUrl)}" alt="Selected picture ${index + 1}">
+          <button
+            class="image-remove-button"
+            type="button"
+            data-remove-image="${escapeHtml(image.id)}"
+            aria-label="Remove picture ${index + 1}"
+          >
+            ✕
+          </button>
+        </div>
+      `).join("");
+    }
+
+    function placeEditorCommand(command, value = null) {
+      elements.announcementEditor.focus();
+      document.execCommand(command, false, value);
     }
 
     function showOnly(view) {
@@ -922,7 +1343,8 @@
                 </button>
               </div>
 
-              <div class="announcement-message">${escapeHtml(announcement.message || "")}</div>
+              <div class="announcement-message">${renderAnnouncementBody(announcement)}</div>
+              ${renderAnnouncementImages(announcement)}
               <div class="announcement-targets">${escapeHtml(targetText(announcement))}</div>
             </article>
           `).join("")
@@ -974,7 +1396,8 @@
                   </div>
                 </div>
 
-                <div class="announcement-message">${escapeHtml(announcement.message || "")}</div>
+                <div class="announcement-message">${renderAnnouncementBody(announcement)}</div>
+                ${renderAnnouncementImages(announcement)}
                 <div class="announcement-targets">
                   Posted by ${escapeHtml(announcement.createdByName || "Administrator")}
                 </div>
@@ -1028,7 +1451,8 @@
       elements.announcementMessageBox.textContent = "Publishing…";
 
       const title = elements.announcementTitle.value.trim();
-      const message = elements.announcementMessage.value.trim();
+      const messageHtml = sanitizeRichHtml(elements.announcementEditor.innerHTML);
+      const message = plainTextFromHtml(messageHtml);
       const classIds = checkedValues(elements.classList);
       const studentIds = checkedValues(elements.studentList);
       const classStudentIds = adminData.students
@@ -1036,8 +1460,8 @@
         .map((student) => student.id);
       const recipientIds = [...new Set([...classStudentIds, ...studentIds])];
 
-      if (!title || !message) {
-        elements.announcementMessageBox.textContent = "Enter a title and message.";
+      if (!title || (!message && !pendingImages.length)) {
+        elements.announcementMessageBox.textContent = "Enter a title and add a message or picture.";
         elements.publishButton.disabled = false;
         return;
       }
@@ -1060,6 +1484,8 @@
         await addDoc(collection(db, "announcements"), {
           title,
           message,
+          messageHtml,
+          images: pendingImages.map((image) => image.dataUrl),
           classIds,
           classNames: classIds.map((id) => className(id)),
           studentIds,
@@ -1073,6 +1499,10 @@
         });
 
         elements.announcementForm.reset();
+        elements.announcementEditor.innerHTML = "";
+        pendingImages = [];
+        renderPendingImages();
+        elements.imageStatus.textContent = "";
         elements.announcementMessageBox.className = "form-message success-text";
         elements.announcementMessageBox.textContent =
           `Announcement published to ${recipientIds.length} student${recipientIds.length === 1 ? "" : "s"}.`;
@@ -1082,6 +1512,95 @@
       } finally {
         elements.publishButton.disabled = false;
       }
+    });
+
+    elements.editorToolbar.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+    });
+
+    elements.editorToolbar.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+
+      if (button.dataset.editorLink === "true") {
+        const value = prompt("Enter a link beginning with https:// or http://");
+        const href = safeLink(value);
+        if (!href) {
+          if (value !== null) alert("Enter a valid http, https, or mailto link.");
+          return;
+        }
+        placeEditorCommand("createLink", href);
+        return;
+      }
+
+      if (button.dataset.editorBlock) {
+        placeEditorCommand("formatBlock", button.dataset.editorBlock);
+        return;
+      }
+
+      const command = button.dataset.editorCommand;
+      if (command) {
+        placeEditorCommand(command, button.dataset.editorValue || null);
+      }
+    });
+
+    elements.addImagesButton.addEventListener("click", async () => {
+      const files = [...elements.announcementImages.files];
+      elements.imageStatus.className = "upload-status";
+
+      if (!files.length) {
+        elements.imageStatus.textContent = "Choose one or more pictures first.";
+        return;
+      }
+
+      const remainingSlots = MAX_ANNOUNCEMENT_IMAGES - pendingImages.length;
+      if (remainingSlots <= 0) {
+        elements.imageStatus.textContent = `You can add up to ${MAX_ANNOUNCEMENT_IMAGES} pictures.`;
+        return;
+      }
+
+      const selectedFiles = files.slice(0, remainingSlots);
+      elements.addImagesButton.disabled = true;
+      elements.imageStatus.textContent = "Compressing pictures…";
+
+      try {
+        for (const file of selectedFiles) {
+          const dataUrl = await compressImage(file);
+          const proposedTotal = pendingImages.reduce((sum, image) => sum + image.dataUrl.length, 0) + dataUrl.length;
+
+          if (proposedTotal > MAX_TOTAL_IMAGE_CHARACTERS) {
+            throw new Error("The pictures together are too large. Remove one or choose smaller pictures.");
+          }
+
+          pendingImages.push({
+            id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+            name: file.name,
+            dataUrl
+          });
+        }
+
+        renderPendingImages();
+        elements.imageStatus.className = "upload-status success-text";
+        elements.imageStatus.textContent = `${pendingImages.length} picture${pendingImages.length === 1 ? "" : "s"} ready.`;
+        elements.announcementImages.value = "";
+      } catch (error) {
+        elements.imageStatus.className = "upload-status danger-text";
+        elements.imageStatus.textContent = errorMessage(error);
+      } finally {
+        elements.addImagesButton.disabled = false;
+      }
+    });
+
+    elements.imagePreviewGrid.addEventListener("click", (event) => {
+      const id = event.target.dataset.removeImage;
+      if (!id) return;
+
+      pendingImages = pendingImages.filter((image) => image.id !== id);
+      renderPendingImages();
+      elements.imageStatus.className = "upload-status";
+      elements.imageStatus.textContent = pendingImages.length
+        ? `${pendingImages.length} picture${pendingImages.length === 1 ? "" : "s"} ready.`
+        : "";
     });
 
     elements.announcementForm.addEventListener("click", (event) => {
