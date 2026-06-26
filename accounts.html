@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Donut administrator account directory"
+    >
+
+    <title>Donut Account Directory</title>
+
+    <style>
+        :root {
+            --background: #070a14;
+            --background-light: #263b73;
+            --panel: rgba(255, 255, 255, 0.075);
+            --panel-solid: #11182c;
+            --border: rgba(255, 255, 255, 0.16);
+            --text: #ffffff;
+            --muted: #aeb9d2;
+            --accent: #ffb74d;
+            --accent-text: #261600;
+            --success: #79e8ad;
+            --danger: #ff8e8e;
+            --blue: #91aaff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    var(--background-light),
+                    transparent 38rem
+                ),
+                var(--background);
+            font-family:
+                Inter,
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            padding: 22px 24px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 850;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 17px;
+            border: 0;
+            border-radius: 10px;
+            font-weight: 750;
+            text-decoration: none;
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .primary-button {
+            color: #091021;
+            background: #ffffff;
+        }
+
+        .secondary-button {
+            color: var(--text);
+            border: 1px solid var(--border);
+            background: var(--panel);
+        }
+
+        .secondary-button:hover {
+            background: rgba(255, 255, 255, 0.13);
+        }
+
+        .admin-button {
+            color: var(--accent-text);
+            background: var(--accent);
+        }
+
+        .admin-button:hover {
+            box-shadow:
+                0 10px 28px rgba(255, 183, 77, 0.25);
+        }
+
+        .danger-button {
+            color: var(--danger);
+            border: 1px solid rgba(255, 142, 142, 0.35);
+            background: rgba(255, 142, 142, 0.09);
+        }
+
+        main {
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            padding: 55px 24px 100px;
+        }
+
+        .login-container {
+            width: min(440px, 100%);
+            margin: 70px auto 0;
+        }
+
+        .panel {
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(17, 24, 44, 0.95);
+            box-shadow:
+                0 24px 70px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(12px);
+        }
+
+        .panel h1,
+        .panel h2 {
+            margin-bottom: 9px;
+        }
+
+        .panel-description {
+            margin-bottom: 22px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .field {
+            margin-bottom: 17px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #dce4f7;
+            font-weight: 700;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.065);
+        }
+
+        .field input:focus {
+            border-color: var(--blue);
+            box-shadow:
+                0 0 0 3px rgba(145, 170, 255, 0.13);
+        }
+
+        .full-button {
+            width: 100%;
+        }
+
+        .message {
+            min-height: 25px;
+            margin-top: 13px;
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .dashboard {
+            animation: appear 0.25s ease;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-header h1 {
+            margin-bottom: 7px;
+            font-size: clamp(2rem, 6vw, 3.3rem);
+        }
+
+        .dashboard-header p {
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            padding: 21px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--panel);
+        }
+
+        .summary-label {
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 850;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .search-input {
+            width: min(420px, 100%);
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.065);
+        }
+
+        .search-input:focus {
+            border-color: var(--blue);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 15px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            color: #dce4f7;
+            background: rgba(255, 255, 255, 0.055);
+            font-size: 0.88rem;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .username {
+            color: var(--success);
+            font-family:
+                "Courier New",
+                monospace;
+            font-weight: 700;
+        }
+
+        .password-container {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .password-text {
+            min-width: 110px;
+            color: var(--accent);
+            font-family:
+                "Courier New",
+                monospace;
+            font-weight: 700;
+        }
+
+        .small-button {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            background: var(--panel);
+        }
+
+        .small-button:hover {
+            background: rgba(255, 255, 255, 0.13);
+        }
+
+        .copy-button {
+            color: var(--success);
+        }
+
+        .empty-state {
+            padding: 45px 20px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .security-warning {
+            margin-top: 20px;
+            padding: 17px;
+            border: 1px solid rgba(255, 183, 77, 0.35);
+            border-radius: 13px;
+            color: #ffd59b;
+            background: rgba(255, 183, 77, 0.08);
+            line-height: 1.6;
+        }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+            display: none;
+            padding: 13px 18px;
+            border-radius: 10px;
+            color: #07140d;
+            background: var(--success);
+            font-weight: 750;
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.visible {
+            display: block;
+            animation: appear 0.2s ease;
+        }
+
+        footer {
+            padding: 28px;
+            color: #78829a;
+            text-align: center;
+        }
+
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header,
+            .toolbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .header-buttons,
+            .header-buttons .button,
+            .toolbar .button,
+            .search-input {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 17px;
+            }
+
+            nav .secondary-button {
+                display: none;
+            }
+
+            main {
+                padding: 35px 17px 80px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">
+            Donut Accounts
+        </div>
+
+        <div class="nav-actions">
+            <a
+                class="button secondary-button"
+                href="./index.html"
+            >
+                Grade Portal
+            </a>
+
+            <button
+                class="button admin-button"
+                id="navAdminButton"
+                type="button"
+            >
+                Admin
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <section
+            class="login-container"
+            id="loginView"
+        >
+            <div class="panel">
+                <h1>Admin Access</h1>
+
+                <p class="panel-description">
+                    Enter the administrator password to view
+                    student usernames and passwords.
+                </p>
+
+                <form id="loginForm">
+                    <div class="field">
+                        <label for="adminPassword">
+                            Admin password
+                        </label>
+
+                        <input
+                            id="adminPassword"
+                            type="password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        class="button admin-button full-button"
+                        type="submit"
+                    >
+                        Open Account Directory
+                    </button>
+
+                    <div
+                        class="message"
+                        id="loginMessage"
+                        aria-live="polite"
+                    ></div>
+                </form>
+            </div>
+        </section>
+
+        <section
+            class="dashboard hidden"
+            id="dashboardView"
+        >
+            <div class="dashboard-header">
+                <div>
+                    <h1>Student Accounts</h1>
+
+                    <p>
+                        View the usernames and temporary passwords
+                        created from the Donut grade portal.
+                    </p>
+                </div>
+
+                <div class="header-buttons">
+                    <a
+                        class="button secondary-button"
+                        href="./index.html"
+                    >
+                        Back to Grades
+                    </a>
+
+                    <button
+                        class="button danger-button"
+                        id="logoutButton"
+                        type="button"
+                    >
+                        Log Out
+                    </button>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <article class="summary-card">
+                    <div class="summary-label">
+                        Student accounts
+                    </div>
+
+                    <div
+                        class="summary-value"
+                        id="accountCount"
+                    >
+                        0
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-label">
+                        Classes
+                    </div>
+
+                    <div
+                        class="summary-value"
+                        id="classCount"
+                    >
+                        0
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-label">
+                        Last refreshed
+                    </div>
+
+                    <div
+                        class="summary-value"
+                        id="refreshTime"
+                    >
+                        —
+                    </div>
+                </article>
+            </div>
+
+            <section class="panel">
+                <div class="toolbar">
+                    <input
+                        class="search-input"
+                        id="searchInput"
+                        type="search"
+                        placeholder="Search student, class, or username"
+                    >
+
+                    <button
+                        class="button secondary-button"
+                        id="refreshButton"
+                        type="button"
+                    >
+                        Refresh Accounts
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student name</th>
+                                <th>Class</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="accountTableBody"></tbody>
+                    </table>
+
+                    <div
+                        class="empty-state hidden"
+                        id="emptyState"
+                    >
+                        No student accounts have been created yet.
+                    </div>
+                </div>
+
+                <div class="security-warning">
+                    This GitHub Pages version is not a secure
+                    password vault. Passwords are stored in the
+                    browser and the admin password exists inside
+                    the website code. Use only temporary student
+                    passwords, not personal or important passwords.
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div
+        class="toast"
+        id="toast"
+        aria-live="polite"
+    >
+        Copied
+    </div>
+
+    <footer>
+        <span id="year"></span> Donut
+    </footer>
+
+    <script>
+        const ADMIN_PASSWORD = "donut";
+
+        const STORAGE_KEY =
+            "donutGradePortalDataV1";
+
+        const ADMIN_SESSION_KEY =
+            "donutAdminSession";
+
+        const loginView =
+            document.getElementById("loginView");
+
+        const dashboardView =
+            document.getElementById("dashboardView");
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const adminPassword =
+            document.getElementById("adminPassword");
+
+        const loginMessage =
+            document.getElementById("loginMessage");
+
+        const logoutButton =
+            document.getElementById("logoutButton");
+
+        const navAdminButton =
+            document.getElementById("navAdminButton");
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const refreshButton =
+            document.getElementById("refreshButton");
+
+        const accountTableBody =
+            document.getElementById("accountTableBody");
+
+        const emptyState =
+            document.getElementById("emptyState");
+
+        const accountCount =
+            document.getElementById("accountCount");
+
+        const classCount =
+            document.getElementById("classCount");
+
+        const refreshTime =
+            document.getElementById("refreshTime");
+
+        const toast =
+            document.getElementById("toast");
+
+        let portalData = {
+            classes: [],
+            students: []
+        };
+
+        document.getElementById(
+            "year"
+        ).textContent =
+            `© ${new Date().getFullYear()}`;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function loadPortalData() {
+            try {
+                const saved =
+                    localStorage.getItem(STORAGE_KEY);
+
+                if (!saved) {
+                    portalData = {
+                        classes: [],
+                        students: []
+                    };
+
+                    return;
+                }
+
+                const parsed = JSON.parse(saved);
+
+                portalData = {
+                    classes:
+                        Array.isArray(parsed.classes)
+                            ? parsed.classes
+                            : [],
+
+                    students:
+                        Array.isArray(parsed.students)
+                            ? parsed.students
+                            : []
+                };
+            } catch (error) {
+                console.error(
+                    "Could not load account data:",
+                    error
+                );
+
+                portalData = {
+                    classes: [],
+                    students: []
+                };
+            }
+        }
+
+        function getClassName(classId) {
+            return (
+                portalData.classes.find(
+                    (item) => item.id === classId
+                )?.name || "No class"
+            );
+        }
+
+        function isAdminLoggedIn() {
+            return sessionStorage.getItem(
+                ADMIN_SESSION_KEY
+            ) === "true";
+        }
+
+        function showLogin() {
+            loginView.classList.remove("hidden");
+            dashboardView.classList.add("hidden");
+
+            navAdminButton.textContent = "Admin";
+        }
+
+        function showDashboard() {
+            loginView.classList.add("hidden");
+            dashboardView.classList.remove("hidden");
+
+            navAdminButton.textContent = "✓ Admin";
+
+            refreshAccounts();
+        }
+
+        function refreshAccounts() {
+            loadPortalData();
+            renderAccounts();
+
+            accountCount.textContent =
+                String(portalData.students.length);
+
+            classCount.textContent =
+                String(portalData.classes.length);
+
+            refreshTime.textContent =
+                new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+        }
+
+        function renderAccounts() {
+            const query =
+                searchInput.value
+                    .trim()
+                    .toLowerCase();
+
+            const students =
+                portalData.students.filter(
+                    (student) => {
+                        const searchableText = [
+                            student.name,
+                            student.username,
+                            getClassName(student.classId)
+                        ]
+                            .join(" ")
+                            .toLowerCase();
+
+                        return searchableText.includes(query);
+                    }
+                );
+
+            accountTableBody.innerHTML = "";
+
+            emptyState.classList.toggle(
+                "hidden",
+                students.length !== 0
+            );
+
+            students.forEach((student) => {
+                const row =
+                    document.createElement("tr");
+
+                const passwordId =
+                    `password-${student.id}`;
+
+                row.innerHTML = `
+                    <td>
+                        ${escapeHtml(student.name)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            getClassName(student.classId)
+                        )}
+                    </td>
+
+                    <td>
+                        <span class="username">
+                            ${escapeHtml(student.username)}
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="password-container">
+                            <span
+                                class="password-text"
+                                id="${escapeHtml(passwordId)}"
+                                data-password="${escapeHtml(
+                                    student.password
+                                )}"
+                                data-visible="false"
+                            >
+                                ••••••••
+                            </span>
+
+                            <button
+                                class="small-button"
+                                type="button"
+                                data-toggle-password="${escapeHtml(
+                                    passwordId
+                                )}"
+                            >
+                                Show
+                            </button>
+                        </div>
+                    </td>
+
+                    <td>
+                        <button
+                            class="small-button copy-button"
+                            type="button"
+                            data-copy-username="${escapeHtml(
+                                student.username
+                            )}"
+                        >
+                            Copy username
+                        </button>
+
+                        <button
+                            class="small-button copy-button"
+                            type="button"
+                            data-copy-password="${escapeHtml(
+                                student.password
+                            )}"
+                        >
+                            Copy password
+                        </button>
+                    </td>
+                `;
+
+                accountTableBody.appendChild(row);
+            });
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add("visible");
+
+            window.clearTimeout(
+                showToast.timeoutId
+            );
+
+            showToast.timeoutId =
+                window.setTimeout(() => {
+                    toast.classList.remove("visible");
+                }, 1800);
+        }
+
+        async function copyText(value, label) {
+            try {
+                await navigator.clipboard.writeText(
+                    value
+                );
+
+                showToast(`${label} copied`);
+            } catch {
+                const textArea =
+                    document.createElement("textarea");
+
+                textArea.value = value;
+                document.body.appendChild(textArea);
+                textArea.select();
+
+                document.execCommand("copy");
+
+                textArea.remove();
+
+                showToast(`${label} copied`);
+            }
+        }
+
+        loginForm.addEventListener(
+            "submit",
+            (event) => {
+                event.preventDefault();
+
+                loginMessage.textContent = "";
+
+                if (
+                    adminPassword.value !==
+                    ADMIN_PASSWORD
+                ) {
+                    loginMessage.textContent =
+                        "Incorrect admin password.";
+
+                    adminPassword.select();
+                    return;
+                }
+
+                sessionStorage.setItem(
+                    ADMIN_SESSION_KEY,
+                    "true"
+                );
+
+                adminPassword.value = "";
+
+                showDashboard();
+            }
+        );
+
+        logoutButton.addEventListener(
+            "click",
+            () => {
+                sessionStorage.removeItem(
+                    ADMIN_SESSION_KEY
+                );
+
+                showLogin();
+            }
+        );
+
+        navAdminButton.addEventListener(
+            "click",
+            () => {
+                if (isAdminLoggedIn()) {
+                    showDashboard();
+                } else {
+                    showLogin();
+                    adminPassword.focus();
+                }
+            }
+        );
+
+        searchInput.addEventListener(
+            "input",
+            renderAccounts
+        );
+
+        refreshButton.addEventListener(
+            "click",
+            refreshAccounts
+        );
+
+        accountTableBody.addEventListener(
+            "click",
+            (event) => {
+                const toggleId =
+                    event.target.dataset
+                        .togglePassword;
+
+                const copyUsername =
+                    event.target.dataset
+                        .copyUsername;
+
+                const copyPassword =
+                    event.target.dataset
+                        .copyPassword;
+
+                if (toggleId) {
+                    const passwordElement =
+                        document.getElementById(
+                            toggleId
+                        );
+
+                    if (!passwordElement) {
+                        return;
+                    }
+
+                    const visible =
+                        passwordElement.dataset
+                            .visible === "true";
+
+                    passwordElement.textContent =
+                        visible
+                            ? "••••••••"
+                            : passwordElement.dataset
+                                .password;
+
+                    passwordElement.dataset.visible =
+                        visible
+                            ? "false"
+                            : "true";
+
+                    event.target.textContent =
+                        visible
+                            ? "Show"
+                            : "Hide";
+                }
+
+                if (copyUsername !== undefined) {
+                    copyText(
+                        copyUsername,
+                        "Username"
+                    );
+                }
+
+                if (copyPassword !== undefined) {
+                    copyText(
+                        copyPassword,
+                        "Password"
+                    );
+                }
+            }
+        );
+
+        if (isAdminLoggedIn()) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
+    </script>
+</body>
+</html>
