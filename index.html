@@ -1074,7 +1074,7 @@ function errorMessage(error) {
   return messages[code] || error?.message || "Something went wrong.";
 }
 
-function askForStudentPassword(student) {
+function askForStudentDeletionChoice(student) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     Object.assign(overlay.style, {
@@ -1092,7 +1092,7 @@ function askForStudentPassword(student) {
 
     const form = document.createElement("form");
     Object.assign(form.style, {
-      width: "min(430px, 100%)",
+      width: "min(470px, 100%)",
       padding: "26px",
       border: "1px solid rgba(255,255,255,0.18)",
       borderRadius: "18px",
@@ -1102,13 +1102,13 @@ function askForStudentPassword(student) {
     });
 
     const title = document.createElement("h2");
-    title.textContent = "Confirm student deletion";
+    title.textContent = "Delete student";
     title.style.marginBottom = "10px";
 
     const description = document.createElement("p");
     description.textContent =
-      `Enter the current password for ${student.name}. ` +
-      "This deletes the Firebase Authentication account, profile, and grades.";
+      `To delete the Firebase login for ${student.name}, enter the student's current password. ` +
+      "If you already deleted the login account in the Firebase console, use Remove website data only.";
     Object.assign(description.style, {
       marginBottom: "18px",
       color: "#aeb9d2",
@@ -1131,7 +1131,6 @@ function askForStudentPassword(student) {
     const input = document.createElement("input");
     input.type = "password";
     input.autocomplete = "current-password";
-    input.required = true;
     Object.assign(input.style, {
       width: "100%",
       padding: "13px 76px 13px 14px",
@@ -1169,7 +1168,7 @@ function askForStudentPassword(student) {
 
     const warning = document.createElement("p");
     warning.textContent =
-      "The existing password cannot be retrieved from Firebase. You must enter the password you already know.";
+      "Remove website data only deletes the Firestore profile and grades. Use it only after the Authentication user has already been deleted; otherwise that login and username will still exist in Firebase Authentication.";
     Object.assign(warning.style, {
       marginTop: "12px",
       color: "#ffcf8a",
@@ -1179,10 +1178,36 @@ function askForStudentPassword(student) {
 
     const buttons = document.createElement("div");
     Object.assign(buttons.style, {
-      display: "flex",
-      justifyContent: "flex-end",
+      display: "grid",
+      gridTemplateColumns: "1fr",
       gap: "10px",
       marginTop: "20px"
+    });
+
+    const deleteWithPasswordButton = document.createElement("button");
+    deleteWithPasswordButton.type = "submit";
+    deleteWithPasswordButton.textContent = "Delete login, profile, and grades";
+    Object.assign(deleteWithPasswordButton.style, {
+      padding: "11px 16px",
+      border: "0",
+      borderRadius: "10px",
+      color: "#ffffff",
+      background: "#b83232",
+      fontWeight: "800",
+      cursor: "pointer"
+    });
+
+    const firestoreOnlyButton = document.createElement("button");
+    firestoreOnlyButton.type = "button";
+    firestoreOnlyButton.textContent = "Remove website data only";
+    Object.assign(firestoreOnlyButton.style, {
+      padding: "11px 16px",
+      border: "1px solid rgba(255,183,77,0.55)",
+      borderRadius: "10px",
+      color: "#ffcf8a",
+      background: "rgba(255,183,77,0.10)",
+      fontWeight: "800",
+      cursor: "pointer"
     });
 
     const cancelButton = document.createElement("button");
@@ -1197,20 +1222,7 @@ function askForStudentPassword(student) {
       cursor: "pointer"
     });
 
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "submit";
-    deleteButton.textContent = "Delete student";
-    Object.assign(deleteButton.style, {
-      padding: "11px 16px",
-      border: "0",
-      borderRadius: "10px",
-      color: "#ffffff",
-      background: "#b83232",
-      fontWeight: "800",
-      cursor: "pointer"
-    });
-
-    buttons.append(cancelButton, deleteButton);
+    buttons.append(deleteWithPasswordButton, firestoreOnlyButton, cancelButton);
     form.append(title, description, label, inputWrapper, warning, buttons);
     overlay.appendChild(form);
     document.body.appendChild(overlay);
@@ -1231,7 +1243,11 @@ function askForStudentPassword(student) {
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      finish(input.value);
+      finish({ mode: "password", password: input.value });
+    });
+
+    firestoreOnlyButton.addEventListener("click", () => {
+      finish({ mode: "firestore-only" });
     });
 
     cancelButton.addEventListener("click", () => finish(null));
@@ -1244,6 +1260,15 @@ function askForStudentPassword(student) {
   });
 }
 
+async function deleteStudentFirestoreData(studentId) {
+  const refs = data.records
+    .filter((item) => item.studentId === studentId)
+    .map((item) => doc(db, "grades", item.id));
+
+  refs.push(doc(db, "users", studentId));
+  await deleteDocumentsInChunks(refs);
+}
+
 async function deleteStudentAccount(studentId) {
   const student = getStudent(studentId);
   if (!student) {
@@ -1251,11 +1276,36 @@ async function deleteStudentAccount(studentId) {
     return false;
   }
 
-  const password = await askForStudentPassword(student);
-  if (password === null) return false;
+  const choice = await askForStudentDeletionChoice(student);
+  if (!choice) return false;
+
+  if (choice.mode === "firestore-only") {
+    const confirmed = confirm(
+      `Remove ${student.name} from the Donut website? This deletes the Firestore profile and all grades only. ` +
+        "Continue only if the student's Firebase Authentication account has already been deleted."
+    );
+
+    if (!confirmed) return false;
+
+    try {
+      await deleteStudentFirestoreData(studentId);
+      alert(
+        `Website data for ${student.name} was removed. ` +
+          `If the Authentication account was already deleted, the username “${student.username}” can now be created again.`
+      );
+      return true;
+    } catch (error) {
+      alert(errorMessage(error));
+      return false;
+    }
+  }
+
+  const password = choice.password;
 
   if (!password) {
-    alert("The current student password is required.");
+    alert(
+      "Enter the student's current password, or choose Remove website data only if you already deleted the Authentication account."
+    );
     return false;
   }
 
@@ -1292,11 +1342,7 @@ async function deleteStudentAccount(studentId) {
     await deleteApp(deletionApp);
     deletionApp = null;
 
-    const refs = data.records
-      .filter((item) => item.studentId === studentId)
-      .map((item) => doc(db, "grades", item.id));
-    refs.push(doc(db, "users", studentId));
-    await deleteDocumentsInChunks(refs);
+    await deleteStudentFirestoreData(studentId);
 
     alert(`Student deleted. The username “${student.username}” can now be reused.`);
     return true;
@@ -1308,20 +1354,48 @@ async function deleteStudentAccount(studentId) {
     }
 
     if (authenticationDeleted) {
-      alert(
-        "The Firebase login account was deleted, but the profile or grades could not be fully cleaned up. " +
-          "Check your internet connection and Firestore rules before trying to create the username again."
+      try {
+        await deleteStudentFirestoreData(studentId);
+        alert(
+          `The login account and remaining website data were deleted. The username “${student.username}” can now be reused.`
+        );
+        return true;
+      } catch (cleanupError) {
+        alert(
+          "The Firebase login account was deleted, but the Firestore profile or grades could not be fully cleaned up. " +
+            "Check your internet connection and Firestore rules, then use Remove website data only."
+        );
+        console.error(cleanupError);
+        return false;
+      }
+    }
+
+    if (error?.code === "auth/user-not-found") {
+      const cleanUp = confirm(
+        "This Firebase Authentication account no longer exists. Remove the remaining website profile and grades now?"
       );
-      console.error(error);
-      return false;
+
+      if (!cleanUp) return false;
+
+      try {
+        await deleteStudentFirestoreData(studentId);
+        alert(
+          `Remaining website data was removed. The username “${student.username}” can now be reused.`
+        );
+        return true;
+      } catch (cleanupError) {
+        alert(errorMessage(cleanupError));
+        return false;
+      }
     }
 
     if (
       error?.code === "auth/invalid-credential" ||
-      error?.code === "auth/wrong-password" ||
-      error?.code === "auth/user-not-found"
+      error?.code === "auth/wrong-password"
     ) {
-      alert("The student password is incorrect. Nothing was deleted.");
+      alert(
+        "The student password is incorrect. If you already deleted the student in Firebase Authentication, choose Remove website data only instead."
+      );
       return false;
     }
 
