@@ -592,9 +592,14 @@
 
         <section class="panel">
           <h2>Administrator Login</h2>
-          <p class="panel-note">The current admin password is <strong>donut</strong>.</p>
+          <p class="panel-note">Sign in with the administrator account created in Firebase Authentication.</p>
 
           <form id="adminLoginForm">
+            <div class="field">
+              <label for="adminEmail">Admin email</label>
+              <input id="adminEmail" type="email" autocomplete="username" required>
+            </div>
+
             <div class="field">
               <label for="adminPassword">Admin password</label>
               <input id="adminPassword" type="password" autocomplete="current-password" required>
@@ -710,15 +715,31 @@
 
                 <div class="field">
                   <label for="newStudentUsername">Username</label>
-                  <input id="newStudentUsername" type="text" maxlength="40" autocomplete="off" required>
+                  <input
+                    id="newStudentUsername"
+                    type="text"
+                    minlength="3"
+                    maxlength="30"
+                    pattern="[A-Za-z0-9._-]+"
+                    autocomplete="off"
+                    required
+                  >
                 </div>
 
                 <div class="field">
                   <label for="newStudentPassword">Password</label>
-                  <input id="newStudentPassword" type="text" maxlength="60" autocomplete="off" required>
+                  <input
+                    id="newStudentPassword"
+                    type="text"
+                    minlength="6"
+                    maxlength="60"
+                    autocomplete="off"
+                    required
+                  >
                 </div>
 
                 <button class="button admin-button full-button" type="submit">Add Student</button>
+                <div class="form-message" id="studentFormMessage" aria-live="polite"></div>
               </form>
 
               <div class="list" id="studentList"></div>
@@ -834,7 +855,7 @@
               <p class="panel-note">Saved grades and Not done items appear here.</p>
             </div>
 
-            <button class="button danger-button" id="clearAllButton" type="button">Clear All Data</button>
+            <button class="button danger-button" id="clearAllButton" type="button">Clear Academic Data</button>
           </div>
 
           <div class="table-wrap">
@@ -903,668 +924,1000 @@
 
   <footer><span id="year"></span> Donut</footer>
 
-  <script>
-    const ADMIN_PASSWORD = "donut";
-    const STORAGE_KEY = "donutGradePortalDataV1";
-    const ADMIN_SESSION_KEY = "donutAdminSession";
-    const STUDENT_SESSION_KEY = "donutStudentSession";
+  <script type="module">
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  deleteUser,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  setDoc,
+  deleteDoc,
+  query,
+  where,
+  serverTimestamp,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-    const defaultData = {
-      classes: [],
-      students: [],
-      subjects: [],
-      categories: [],
-      records: []
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+  authDomain: "donut-grade-portal.firebaseapp.com",
+  projectId: "donut-grade-portal",
+  storageBucket: "donut-grade-portal.firebasestorage.app",
+  messagingSenderId: "154823535840",
+  appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+};
 
-    let data = loadData();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    const elements = {
-      homeView: document.getElementById("homeView"),
-      adminView: document.getElementById("adminView"),
-      studentView: document.getElementById("studentView"),
-      homeButton: document.getElementById("homeButton"),
-      adminQuickButton: document.getElementById("adminQuickButton"),
-      adminLoginForm: document.getElementById("adminLoginForm"),
-      adminPassword: document.getElementById("adminPassword"),
-      adminLoginMessage: document.getElementById("adminLoginMessage"),
-      studentLoginForm: document.getElementById("studentLoginForm"),
-      studentUsername: document.getElementById("studentUsername"),
-      studentPassword: document.getElementById("studentPassword"),
-      studentLoginMessage: document.getElementById("studentLoginMessage"),
-      adminLogoutButton: document.getElementById("adminLogoutButton"),
-      studentLogoutButton: document.getElementById("studentLogoutButton"),
-      classCount: document.getElementById("classCount"),
-      studentCount: document.getElementById("studentCount"),
-      subjectCount: document.getElementById("subjectCount"),
-      categoryCount: document.getElementById("categoryCount"),
-      classForm: document.getElementById("classForm"),
-      className: document.getElementById("className"),
-      classList: document.getElementById("classList"),
-      subjectForm: document.getElementById("subjectForm"),
-      subjectName: document.getElementById("subjectName"),
-      subjectList: document.getElementById("subjectList"),
-      studentForm: document.getElementById("studentForm"),
-      studentName: document.getElementById("studentName"),
-      studentClass: document.getElementById("studentClass"),
-      newStudentUsername: document.getElementById("newStudentUsername"),
-      newStudentPassword: document.getElementById("newStudentPassword"),
-      studentList: document.getElementById("studentList"),
-      categoryForm: document.getElementById("categoryForm"),
-      categorySubject: document.getElementById("categorySubject"),
-      categoryName: document.getElementById("categoryName"),
-      categoryMaxScore: document.getElementById("categoryMaxScore"),
-      categoryList: document.getElementById("categoryList"),
-      recordForm: document.getElementById("recordForm"),
-      recordStudent: document.getElementById("recordStudent"),
-      recordSubject: document.getElementById("recordSubject"),
-      recordCategory: document.getElementById("recordCategory"),
-      recordStatus: document.getElementById("recordStatus"),
-      recordScore: document.getElementById("recordScore"),
-      scoreField: document.getElementById("scoreField"),
-      recordMessage: document.getElementById("recordMessage"),
-      recordTableBody: document.getElementById("recordTableBody"),
-      recordEmpty: document.getElementById("recordEmpty"),
-      clearAllButton: document.getElementById("clearAllButton"),
-      studentWelcomeName: document.getElementById("studentWelcomeName"),
-      studentWelcomeClass: document.getElementById("studentWelcomeClass"),
-      studentGpa: document.getElementById("studentGpa"),
-      studentSubjectCount: document.getElementById("studentSubjectCount"),
-      studentDoneCount: document.getElementById("studentDoneCount"),
-      studentNotDoneCount: document.getElementById("studentNotDoneCount"),
-      studentGradeContent: document.getElementById("studentGradeContent")
-    };
+const STUDENT_EMAIL_DOMAIN = "donut-students.example.com";
 
-    document.getElementById("year").textContent = `© ${new Date().getFullYear()}`;
+let currentProfile = null;
+let authReady = false;
+let data = emptyData();
 
-    function uid() {
-      if (window.crypto && typeof window.crypto.randomUUID === "function") {
-        return window.crypto.randomUUID();
-      }
+const elements = {
+  homeView: document.getElementById("homeView"),
+  adminView: document.getElementById("adminView"),
+  studentView: document.getElementById("studentView"),
+  homeButton: document.getElementById("homeButton"),
+  adminQuickButton: document.getElementById("adminQuickButton"),
+  adminLoginForm: document.getElementById("adminLoginForm"),
+  adminEmail: document.getElementById("adminEmail"),
+  adminPassword: document.getElementById("adminPassword"),
+  adminLoginMessage: document.getElementById("adminLoginMessage"),
+  studentLoginForm: document.getElementById("studentLoginForm"),
+  studentUsername: document.getElementById("studentUsername"),
+  studentPassword: document.getElementById("studentPassword"),
+  studentLoginMessage: document.getElementById("studentLoginMessage"),
+  adminLogoutButton: document.getElementById("adminLogoutButton"),
+  studentLogoutButton: document.getElementById("studentLogoutButton"),
+  classCount: document.getElementById("classCount"),
+  studentCount: document.getElementById("studentCount"),
+  subjectCount: document.getElementById("subjectCount"),
+  categoryCount: document.getElementById("categoryCount"),
+  classForm: document.getElementById("classForm"),
+  className: document.getElementById("className"),
+  classList: document.getElementById("classList"),
+  subjectForm: document.getElementById("subjectForm"),
+  subjectName: document.getElementById("subjectName"),
+  subjectList: document.getElementById("subjectList"),
+  studentForm: document.getElementById("studentForm"),
+  studentName: document.getElementById("studentName"),
+  studentClass: document.getElementById("studentClass"),
+  newStudentUsername: document.getElementById("newStudentUsername"),
+  newStudentPassword: document.getElementById("newStudentPassword"),
+  studentFormMessage: document.getElementById("studentFormMessage"),
+  studentList: document.getElementById("studentList"),
+  categoryForm: document.getElementById("categoryForm"),
+  categorySubject: document.getElementById("categorySubject"),
+  categoryName: document.getElementById("categoryName"),
+  categoryMaxScore: document.getElementById("categoryMaxScore"),
+  categoryList: document.getElementById("categoryList"),
+  recordForm: document.getElementById("recordForm"),
+  recordStudent: document.getElementById("recordStudent"),
+  recordSubject: document.getElementById("recordSubject"),
+  recordCategory: document.getElementById("recordCategory"),
+  recordStatus: document.getElementById("recordStatus"),
+  recordScore: document.getElementById("recordScore"),
+  scoreField: document.getElementById("scoreField"),
+  recordMessage: document.getElementById("recordMessage"),
+  recordTableBody: document.getElementById("recordTableBody"),
+  recordEmpty: document.getElementById("recordEmpty"),
+  clearAllButton: document.getElementById("clearAllButton"),
+  studentWelcomeName: document.getElementById("studentWelcomeName"),
+  studentWelcomeClass: document.getElementById("studentWelcomeClass"),
+  studentGpa: document.getElementById("studentGpa"),
+  studentSubjectCount: document.getElementById("studentSubjectCount"),
+  studentDoneCount: document.getElementById("studentDoneCount"),
+  studentNotDoneCount: document.getElementById("studentNotDoneCount"),
+  studentGradeContent: document.getElementById("studentGradeContent")
+};
 
-      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
+document.getElementById("year").textContent = `© ${new Date().getFullYear()}`;
 
-    function loadData() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return structuredCloneSafe(defaultData);
+function emptyData() {
+  return {
+    classes: [],
+    students: [],
+    subjects: [],
+    categories: [],
+    records: []
+  };
+}
 
-        const parsed = JSON.parse(saved);
-        return {
-          classes: Array.isArray(parsed.classes) ? parsed.classes : [],
-          students: Array.isArray(parsed.students) ? parsed.students : [],
-          subjects: Array.isArray(parsed.subjects) ? parsed.subjects : [],
-          categories: Array.isArray(parsed.categories) ? parsed.categories : [],
-          records: Array.isArray(parsed.records) ? parsed.records : []
-        };
-      } catch (error) {
-        console.error("Could not load data:", error);
-        return structuredCloneSafe(defaultData);
-      }
-    }
+function normalizeUsername(value) {
+  return String(value).trim().toLowerCase();
+}
 
-    function structuredCloneSafe(value) {
-      return JSON.parse(JSON.stringify(value));
-    }
+function usernameToEmail(username) {
+  return `${normalizeUsername(username)}@${STUDENT_EMAIL_DOMAIN}`;
+}
 
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
+function validUsername(username) {
+  return /^[a-z0-9._-]{3,30}$/.test(username);
+}
 
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-    function showView(viewName) {
-      elements.homeView.classList.toggle("hidden", viewName !== "home");
-      elements.adminView.classList.toggle("hidden", viewName !== "admin");
-      elements.studentView.classList.toggle("hidden", viewName !== "student");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+function errorMessage(error) {
+  const code = error?.code || "";
+  const messages = {
+    "auth/invalid-credential": "Incorrect email, username, or password.",
+    "auth/invalid-email": "The email address is not valid.",
+    "auth/email-already-in-use": "That username is already being used.",
+    "auth/weak-password": "The password must have at least 6 characters.",
+    "auth/too-many-requests": "Too many attempts. Wait a little and try again.",
+    "permission-denied": "Firebase denied this action. Check your Firestore rules."
+  };
+  return messages[code] || error?.message || "Something went wrong.";
+}
 
-    function getClassName(classId) {
-      return data.classes.find((item) => item.id === classId)?.name || "No class";
-    }
+function showView(viewName) {
+  elements.homeView.classList.toggle("hidden", viewName !== "home");
+  elements.adminView.classList.toggle("hidden", viewName !== "admin");
+  elements.studentView.classList.toggle("hidden", viewName !== "student");
+  window.scrollTo({ top: 0, behavior: authReady ? "smooth" : "auto" });
+}
 
-    function getStudent(studentId) {
-      return data.students.find((item) => item.id === studentId);
-    }
+function snapshotToArray(snapshot) {
+  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+}
 
-    function getSubject(subjectId) {
-      return data.subjects.find((item) => item.id === subjectId);
-    }
+function sortByName(items) {
+  return [...items].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+      sensitivity: "base"
+    })
+  );
+}
 
-    function getCategory(categoryId) {
-      return data.categories.find((item) => item.id === categoryId);
-    }
+function getClassName(classId) {
+  return data.classes.find((item) => item.id === classId)?.name || "No class";
+}
 
-    function scoreToGrade(percent) {
-      if (percent >= 80) return { letter: "A", points: 4.0 };
-      if (percent >= 75) return { letter: "B+", points: 3.5 };
-      if (percent >= 70) return { letter: "B", points: 3.0 };
-      if (percent >= 65) return { letter: "C+", points: 2.5 };
-      if (percent >= 60) return { letter: "C", points: 2.0 };
-      if (percent >= 55) return { letter: "D+", points: 1.5 };
-      if (percent >= 50) return { letter: "D", points: 1.0 };
-      return { letter: "F", points: 0.0 };
-    }
+function getStudent(studentId) {
+  return data.students.find((item) => item.id === studentId);
+}
 
-    function calculateRecord(record) {
-      const category = getCategory(record.categoryId);
-      if (!category || record.status !== "done") return null;
+function getSubject(subjectId) {
+  return data.subjects.find((item) => item.id === subjectId);
+}
 
-      const percent = Math.max(0, Math.min(100, (Number(record.score) / Number(category.maxScore)) * 100));
-      const grade = scoreToGrade(percent);
-      return { percent, ...grade };
-    }
+function getCategory(categoryId) {
+  return data.categories.find((item) => item.id === categoryId);
+}
 
-    function calculateStudentSubjectSummary(studentId, subjectId) {
-      const categories = data.categories.filter((item) => item.subjectId === subjectId);
-      const doneRecords = categories
-        .map((category) => ({ category, record: data.records.find((item) => item.studentId === studentId && item.categoryId === category.id) }))
-        .filter((item) => item.record?.status === "done");
+function scoreToGrade(percent) {
+  if (percent >= 80) return { letter: "A", points: 4.0 };
+  if (percent >= 75) return { letter: "B+", points: 3.5 };
+  if (percent >= 70) return { letter: "B", points: 3.0 };
+  if (percent >= 65) return { letter: "C+", points: 2.5 };
+  if (percent >= 60) return { letter: "C", points: 2.0 };
+  if (percent >= 55) return { letter: "D+", points: 1.5 };
+  if (percent >= 50) return { letter: "D", points: 1.0 };
+  return { letter: "F", points: 0.0 };
+}
 
-      if (doneRecords.length === 0) return null;
+function calculateRecord(record) {
+  const category = getCategory(record.categoryId);
+  if (!category || record.status !== "done") return null;
 
-      const earned = doneRecords.reduce((sum, item) => sum + Number(item.record.score), 0);
-      const maximum = doneRecords.reduce((sum, item) => sum + Number(item.category.maxScore), 0);
-      const percent = maximum > 0 ? (earned / maximum) * 100 : 0;
-      return { percent, ...scoreToGrade(percent) };
-    }
+  const percent = Math.max(
+    0,
+    Math.min(100, (Number(record.score) / Number(category.maxScore)) * 100)
+  );
 
-    function fillSelect(select, items, placeholder, labelBuilder) {
-      const currentValue = select.value;
-      select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+  return { percent, ...scoreToGrade(percent) };
+}
 
-      items.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent = labelBuilder(item);
-        select.appendChild(option);
-      });
+function calculateStudentSubjectSummary(studentId, subjectId) {
+  const categories = data.categories.filter((item) => item.subjectId === subjectId);
+  const doneRecords = categories
+    .map((category) => ({
+      category,
+      record: data.records.find(
+        (item) => item.studentId === studentId && item.categoryId === category.id
+      )
+    }))
+    .filter((item) => item.record?.status === "done");
 
-      if (items.some((item) => item.id === currentValue)) {
-        select.value = currentValue;
-      }
-    }
+  if (doneRecords.length === 0) return null;
 
-    function syncSelects() {
-      fillSelect(elements.studentClass, data.classes, "Select a class", (item) => item.name);
-      fillSelect(elements.categorySubject, data.subjects, "Select a subject", (item) => item.name);
-      fillSelect(elements.recordStudent, data.students, "Select a student", (item) => `${item.name} — ${getClassName(item.classId)}`);
-      fillSelect(elements.recordSubject, data.subjects, "Select a subject", (item) => item.name);
-      syncRecordCategories();
-    }
+  const earned = doneRecords.reduce((sum, item) => sum + Number(item.record.score), 0);
+  const maximum = doneRecords.reduce(
+    (sum, item) => sum + Number(item.category.maxScore),
+    0
+  );
+  const percent = maximum > 0 ? (earned / maximum) * 100 : 0;
 
-    function syncRecordCategories() {
-      const subjectId = elements.recordSubject.value;
-      const categories = data.categories.filter((item) => item.subjectId === subjectId);
-      fillSelect(elements.recordCategory, categories, "Select a grade item", (item) => `${item.name} (${item.maxScore} points)`);
-    }
+  return { percent, ...scoreToGrade(percent) };
+}
 
-    function renderAdmin() {
-      elements.classCount.textContent = data.classes.length;
-      elements.studentCount.textContent = data.students.length;
-      elements.subjectCount.textContent = data.subjects.length;
-      elements.categoryCount.textContent = data.categories.length;
-      syncSelects();
-      renderClasses();
-      renderStudents();
-      renderSubjects();
-      renderCategories();
-      renderRecords();
-      updateScoreField();
-    }
+async function loadAdminData() {
+  const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap] =
+    await Promise.all([
+      getDocs(collection(db, "classes")),
+      getDocs(collection(db, "users")),
+      getDocs(collection(db, "subjects")),
+      getDocs(collection(db, "categories")),
+      getDocs(collection(db, "grades"))
+    ]);
 
-    function renderClasses() {
-      if (data.classes.length === 0) {
-        elements.classList.innerHTML = '<div class="empty-box">No classes added.</div>';
-        return;
-      }
+  data = {
+    classes: sortByName(snapshotToArray(classesSnap)),
+    students: sortByName(snapshotToArray(usersSnap).filter((item) => item.role === "student")),
+    subjects: sortByName(snapshotToArray(subjectsSnap)),
+    categories: sortByName(snapshotToArray(categoriesSnap)),
+    records: snapshotToArray(gradesSnap)
+  };
 
-      elements.classList.innerHTML = data.classes.map((item) => `
+  renderAdmin();
+}
+
+async function loadStudentData(studentId) {
+  const gradesQuery = query(
+    collection(db, "grades"),
+    where("studentId", "==", studentId)
+  );
+
+  const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap] = await Promise.all([
+    getDocs(collection(db, "classes")),
+    getDocs(collection(db, "subjects")),
+    getDocs(collection(db, "categories")),
+    getDocs(gradesQuery)
+  ]);
+
+  data = {
+    classes: sortByName(snapshotToArray(classesSnap)),
+    students: [{ id: studentId, ...currentProfile }],
+    subjects: sortByName(snapshotToArray(subjectsSnap)),
+    categories: sortByName(snapshotToArray(categoriesSnap)),
+    records: snapshotToArray(gradesSnap)
+  };
+
+  renderStudentDashboard(studentId);
+}
+
+async function refreshCurrentView() {
+  if (!auth.currentUser || !currentProfile) return;
+  if (currentProfile.role === "admin") {
+    await loadAdminData();
+  } else if (currentProfile.role === "student") {
+    await loadStudentData(auth.currentUser.uid);
+  }
+}
+
+function fillSelect(select, items, placeholder, labelBuilder) {
+  const currentValue = select.value;
+  select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+
+  items.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = labelBuilder(item);
+    select.appendChild(option);
+  });
+
+  if (items.some((item) => item.id === currentValue)) {
+    select.value = currentValue;
+  }
+}
+
+function syncSelects() {
+  fillSelect(elements.studentClass, data.classes, "Select a class", (item) => item.name);
+  fillSelect(
+    elements.categorySubject,
+    data.subjects,
+    "Select a subject",
+    (item) => item.name
+  );
+  fillSelect(
+    elements.recordStudent,
+    data.students,
+    "Select a student",
+    (item) => `${item.name} — ${getClassName(item.classId)}`
+  );
+  fillSelect(
+    elements.recordSubject,
+    data.subjects,
+    "Select a subject",
+    (item) => item.name
+  );
+  syncRecordCategories();
+}
+
+function syncRecordCategories() {
+  const subjectId = elements.recordSubject.value;
+  const categories = data.categories.filter((item) => item.subjectId === subjectId);
+  fillSelect(
+    elements.recordCategory,
+    categories,
+    "Select a grade item",
+    (item) => `${item.name} (${item.maxScore} points)`
+  );
+}
+
+function renderAdmin() {
+  elements.classCount.textContent = String(data.classes.length);
+  elements.studentCount.textContent = String(data.students.length);
+  elements.subjectCount.textContent = String(data.subjects.length);
+  elements.categoryCount.textContent = String(data.categories.length);
+  syncSelects();
+  renderClasses();
+  renderStudents();
+  renderSubjects();
+  renderCategories();
+  renderRecords();
+  updateScoreField();
+}
+
+function renderClasses() {
+  if (data.classes.length === 0) {
+    elements.classList.innerHTML = '<div class="empty-box">No classes added.</div>';
+    return;
+  }
+
+  elements.classList.innerHTML = data.classes
+    .map(
+      (item) => `
         <div class="list-item">
           <div><strong>${escapeHtml(item.name)}</strong></div>
-          <button class="mini-button" type="button" data-delete-class="${item.id}">Remove</button>
+          <button class="mini-button" type="button" data-delete-class="${item.id}">
+            Remove
+          </button>
         </div>
-      `).join("");
-    }
+      `
+    )
+    .join("");
+}
 
-    function renderStudents() {
-      if (data.students.length === 0) {
-        elements.studentList.innerHTML = '<div class="empty-box">No students added.</div>';
-        return;
-      }
+function renderStudents() {
+  if (data.students.length === 0) {
+    elements.studentList.innerHTML = '<div class="empty-box">No students added.</div>';
+    return;
+  }
 
-      elements.studentList.innerHTML = data.students.map((item) => `
+  elements.studentList.innerHTML = data.students
+    .map(
+      (item) => `
         <div class="list-item">
           <div>
             <strong>${escapeHtml(item.name)}</strong>
-            <small>${escapeHtml(getClassName(item.classId))} · Username: ${escapeHtml(item.username)}</small>
+            <small>
+              ${escapeHtml(getClassName(item.classId))} · Username:
+              ${escapeHtml(item.username || "")}
+            </small>
           </div>
-          <button class="mini-button" type="button" data-delete-student="${item.id}">Remove</button>
+          <button class="mini-button" type="button" data-delete-student="${item.id}">
+            Remove data
+          </button>
         </div>
-      `).join("");
-    }
+      `
+    )
+    .join("");
+}
 
-    function renderSubjects() {
-      if (data.subjects.length === 0) {
-        elements.subjectList.innerHTML = '<div class="empty-box">No subjects added.</div>';
-        return;
-      }
+function renderSubjects() {
+  if (data.subjects.length === 0) {
+    elements.subjectList.innerHTML = '<div class="empty-box">No subjects added.</div>';
+    return;
+  }
 
-      elements.subjectList.innerHTML = data.subjects.map((item) => {
-        const count = data.categories.filter((category) => category.subjectId === item.id).length;
-        return `
-          <div class="list-item">
-            <div>
-              <strong>${escapeHtml(item.name)}</strong>
-              <small>${count} grade item${count === 1 ? "" : "s"}</small>
-            </div>
-            <button class="mini-button" type="button" data-delete-subject="${item.id}">Remove</button>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderCategories() {
-      if (data.categories.length === 0) {
-        elements.categoryList.innerHTML = '<div class="empty-box">No grade items added.</div>';
-        return;
-      }
-
-      elements.categoryList.innerHTML = data.categories.map((item) => `
+  elements.subjectList.innerHTML = data.subjects
+    .map((item) => {
+      const count = data.categories.filter((category) => category.subjectId === item.id).length;
+      return `
         <div class="list-item">
           <div>
-            <strong>${escapeHtml(getSubject(item.subjectId)?.name || "Unknown subject")} → ${escapeHtml(item.name)}</strong>
+            <strong>${escapeHtml(item.name)}</strong>
+            <small>${count} grade item${count === 1 ? "" : "s"}</small>
+          </div>
+          <button class="mini-button" type="button" data-delete-subject="${item.id}">
+            Remove
+          </button>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderCategories() {
+  if (data.categories.length === 0) {
+    elements.categoryList.innerHTML = '<div class="empty-box">No grade items added.</div>';
+    return;
+  }
+
+  elements.categoryList.innerHTML = data.categories
+    .map(
+      (item) => `
+        <div class="list-item">
+          <div>
+            <strong>
+              ${escapeHtml(getSubject(item.subjectId)?.name || "Unknown subject")}
+              → ${escapeHtml(item.name)}
+            </strong>
             <small>Maximum score: ${escapeHtml(item.maxScore)}</small>
           </div>
-          <button class="mini-button" type="button" data-delete-category="${item.id}">Remove</button>
+          <button class="mini-button" type="button" data-delete-category="${item.id}">
+            Remove
+          </button>
         </div>
-      `).join("");
-    }
+      `
+    )
+    .join("");
+}
 
-    function renderRecords() {
-      if (data.records.length === 0) {
-        elements.recordTableBody.innerHTML = "";
-        elements.recordEmpty.classList.remove("hidden");
-        return;
-      }
+function renderRecords() {
+  if (data.records.length === 0) {
+    elements.recordTableBody.innerHTML = "";
+    elements.recordEmpty.classList.remove("hidden");
+    return;
+  }
 
-      elements.recordEmpty.classList.add("hidden");
-      elements.recordTableBody.innerHTML = data.records.map((record) => {
-        const student = getStudent(record.studentId);
-        const category = getCategory(record.categoryId);
-        const subject = category ? getSubject(category.subjectId) : null;
-        const result = calculateRecord(record);
-        const scoreText = record.status === "done" && category ? `${Number(record.score).toFixed(2)} / ${Number(category.maxScore).toFixed(2)}` : "—";
-        const gradeText = result ? `${result.letter} (${result.points.toFixed(2)})` : "Not done";
+  elements.recordEmpty.classList.add("hidden");
+  elements.recordTableBody.innerHTML = data.records
+    .map((record) => {
+      const student = getStudent(record.studentId);
+      const category = getCategory(record.categoryId);
+      const subject = category ? getSubject(category.subjectId) : null;
+      const result = calculateRecord(record);
+      const scoreText =
+        record.status === "done" && category
+          ? `${Number(record.score).toFixed(2)} / ${Number(category.maxScore).toFixed(2)}`
+          : "—";
+      const gradeText = result
+        ? `${result.letter} (${result.points.toFixed(2)})`
+        : "Not done";
 
-        return `
-          <tr>
-            <td>${escapeHtml(student?.name || "Deleted student")}</td>
-            <td>${escapeHtml(student ? getClassName(student.classId) : "—")}</td>
-            <td>${escapeHtml(subject?.name || "Deleted subject")}</td>
-            <td>${escapeHtml(category?.name || "Deleted item")}</td>
-            <td><span class="status-pill ${record.status === "done" ? "status-done" : "status-not-done"}">${record.status === "done" ? "Done" : "Not done"}</span></td>
-            <td>${scoreText}</td>
-            <td>${escapeHtml(gradeText)}</td>
-            <td><button class="mini-button" type="button" data-delete-record="${record.id}">Remove</button></td>
-          </tr>
-        `;
-      }).join("");
-    }
+      return `
+        <tr>
+          <td>${escapeHtml(student?.name || "Deleted student")}</td>
+          <td>${escapeHtml(student ? getClassName(student.classId) : "—")}</td>
+          <td>${escapeHtml(subject?.name || "Deleted subject")}</td>
+          <td>${escapeHtml(category?.name || "Deleted item")}</td>
+          <td>
+            <span class="status-pill ${
+              record.status === "done" ? "status-done" : "status-not-done"
+            }">
+              ${record.status === "done" ? "Done" : "Not done"}
+            </span>
+          </td>
+          <td>${scoreText}</td>
+          <td>${escapeHtml(gradeText)}</td>
+          <td>
+            <button class="mini-button" type="button" data-delete-record="${record.id}">
+              Remove
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
 
-    function updateScoreField() {
-      const isDone = elements.recordStatus.value === "done";
-      elements.scoreField.classList.toggle("hidden", !isDone);
-      elements.recordScore.required = isDone;
+function updateScoreField() {
+  const isDone = elements.recordStatus.value === "done";
+  elements.scoreField.classList.toggle("hidden", !isDone);
+  elements.recordScore.required = isDone;
 
-      if (!isDone) {
-        elements.recordScore.value = "";
-      }
+  if (!isDone) elements.recordScore.value = "";
 
-      const category = getCategory(elements.recordCategory.value);
-      if (category) {
-        elements.recordScore.max = category.maxScore;
-        elements.recordScore.placeholder = `0 to ${category.maxScore}`;
-      } else {
-        elements.recordScore.removeAttribute("max");
-        elements.recordScore.placeholder = "Enter score";
-      }
-    }
+  const category = getCategory(elements.recordCategory.value);
+  if (category) {
+    elements.recordScore.max = category.maxScore;
+    elements.recordScore.placeholder = `0 to ${category.maxScore}`;
+  } else {
+    elements.recordScore.removeAttribute("max");
+    elements.recordScore.placeholder = "Enter score";
+  }
+}
 
-    function renderStudentDashboard(studentId) {
-      const student = getStudent(studentId);
-      if (!student) {
-        sessionStorage.removeItem(STUDENT_SESSION_KEY);
-        showView("home");
-        return;
-      }
+function renderStudentDashboard(studentId) {
+  const student = getStudent(studentId);
+  if (!student) return;
 
-      elements.studentWelcomeName.textContent = student.name;
-      elements.studentWelcomeClass.textContent = getClassName(student.classId);
+  elements.studentWelcomeName.textContent = student.name || student.username || "Student";
+  elements.studentWelcomeClass.textContent = getClassName(student.classId);
 
-      const subjectIds = [...new Set(data.categories.map((item) => item.subjectId))];
-      const relevantRecords = data.records.filter((item) => item.studentId === studentId);
-      const doneCount = relevantRecords.filter((item) => item.status === "done").length;
-      const notDoneCount = data.categories.length - doneCount;
+  const subjectIds = [...new Set(data.categories.map((item) => item.subjectId))];
+  const doneCount = data.records.filter((item) => item.status === "done").length;
+  const notDoneCount = Math.max(0, data.categories.length - doneCount);
 
-      const summaries = subjectIds
-        .map((subjectId) => ({ subjectId, summary: calculateStudentSubjectSummary(studentId, subjectId) }))
-        .filter((item) => item.summary);
+  const summaries = subjectIds
+    .map((subjectId) => ({
+      subjectId,
+      summary: calculateStudentSubjectSummary(studentId, subjectId)
+    }))
+    .filter((item) => item.summary);
 
-      const overallGpa = summaries.length
-        ? summaries.reduce((sum, item) => sum + item.summary.points, 0) / summaries.length
-        : 0;
+  const overallGpa =
+    summaries.length > 0
+      ? summaries.reduce((sum, item) => sum + item.summary.points, 0) / summaries.length
+      : 0;
 
-      elements.studentGpa.textContent = overallGpa.toFixed(2);
-      elements.studentSubjectCount.textContent = subjectIds.length;
-      elements.studentDoneCount.textContent = doneCount;
-      elements.studentNotDoneCount.textContent = Math.max(0, notDoneCount);
+  elements.studentGpa.textContent = overallGpa.toFixed(2);
+  elements.studentSubjectCount.textContent = String(subjectIds.length);
+  elements.studentDoneCount.textContent = String(doneCount);
+  elements.studentNotDoneCount.textContent = String(notDoneCount);
 
-      if (subjectIds.length === 0) {
-        elements.studentGradeContent.innerHTML = '<div class="empty-box">No subjects or grade items have been added yet.</div>';
-        return;
-      }
+  if (subjectIds.length === 0) {
+    elements.studentGradeContent.innerHTML =
+      '<div class="empty-box">No subjects or grade items have been added yet.</div>';
+    return;
+  }
 
-      elements.studentGradeContent.innerHTML = subjectIds.map((subjectId) => {
-        const subject = getSubject(subjectId);
-        const categories = data.categories.filter((item) => item.subjectId === subjectId);
-        const summary = calculateStudentSubjectSummary(studentId, subjectId);
-        const summaryText = summary
-          ? `${summary.percent.toFixed(1)}% · ${summary.letter} · GPA ${summary.points.toFixed(2)}`
-          : "No completed work yet";
+  elements.studentGradeContent.innerHTML = subjectIds
+    .map((subjectId) => {
+      const subject = getSubject(subjectId);
+      const categories = data.categories.filter((item) => item.subjectId === subjectId);
+      const summary = calculateStudentSubjectSummary(studentId, subjectId);
+      const summaryText = summary
+        ? `${summary.percent.toFixed(1)}% · ${summary.letter} · GPA ${summary.points.toFixed(2)}`
+        : "No completed work yet";
 
-        const rows = categories.map((category) => {
-          const record = data.records.find((item) => item.studentId === studentId && item.categoryId === category.id);
+      const rows = categories
+        .map((category) => {
+          const record = data.records.find((item) => item.categoryId === category.id);
           const isDone = record?.status === "done";
           const result = record ? calculateRecord(record) : null;
-          const scoreText = isDone ? `${Number(record.score).toFixed(2)} / ${Number(category.maxScore).toFixed(2)}` : "Not done";
-          const gradeText = result ? `${result.letter} (${result.points.toFixed(2)})` : "Not done";
+          const scoreText = isDone
+            ? `${Number(record.score).toFixed(2)} / ${Number(category.maxScore).toFixed(2)}`
+            : "Not done";
+          const gradeText = result
+            ? `${result.letter} (${result.points.toFixed(2)})`
+            : "Not done";
 
           return `
             <tr>
               <td>${escapeHtml(category.name)}</td>
-              <td><span class="status-pill ${isDone ? "status-done" : "status-not-done"}">${isDone ? "Done" : "Not done"}</span></td>
+              <td>
+                <span class="status-pill ${isDone ? "status-done" : "status-not-done"}">
+                  ${isDone ? "Done" : "Not done"}
+                </span>
+              </td>
               <td>${escapeHtml(scoreText)}</td>
               <td>${escapeHtml(gradeText)}</td>
             </tr>
           `;
-        }).join("");
+        })
+        .join("");
 
-        return `
-          <section class="subject-card">
-            <div class="subject-card-header">
-              <div>
-                <h3>${escapeHtml(subject?.name || "Unknown subject")}</h3>
-                <p>${escapeHtml(summaryText)}</p>
-              </div>
-              ${summary ? `<span class="grade-pill">${escapeHtml(summary.letter)}</span>` : ""}
+      return `
+        <section class="subject-card">
+          <div class="subject-card-header">
+            <div>
+              <h3>${escapeHtml(subject?.name || "Unknown subject")}</h3>
+              <p>${escapeHtml(summaryText)}</p>
             </div>
+            ${summary ? `<span class="grade-pill">${escapeHtml(summary.letter)}</span>` : ""}
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Grade item</th>
+                  <th>Status</th>
+                  <th>Score</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    })
+    .join("");
+}
 
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Grade item</th>
-                    <th>Status</th>
-                    <th>Score</th>
-                    <th>Grade</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-            </div>
-          </section>
-        `;
-      }).join("");
+async function deleteDocumentsInChunks(refs) {
+  const chunkSize = 450;
+  for (let index = 0; index < refs.length; index += chunkSize) {
+    const batch = writeBatch(db);
+    refs.slice(index, index + chunkSize).forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
+}
+
+elements.homeButton.addEventListener("click", () => {
+  if (currentProfile?.role === "admin") showView("admin");
+  else if (currentProfile?.role === "student") showView("student");
+  else showView("home");
+});
+
+elements.adminQuickButton.addEventListener("click", () => {
+  if (currentProfile?.role === "admin") {
+    showView("admin");
+  } else {
+    showView("home");
+    elements.adminEmail.focus();
+  }
+});
+
+elements.adminLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  elements.adminLoginMessage.textContent = "Signing in...";
+
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      elements.adminEmail.value.trim(),
+      elements.adminPassword.value
+    );
+    elements.adminLoginForm.reset();
+  } catch (error) {
+    elements.adminLoginMessage.textContent = errorMessage(error);
+  }
+});
+
+elements.studentLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  elements.studentLoginMessage.textContent = "Signing in...";
+
+  const username = normalizeUsername(elements.studentUsername.value);
+  if (!validUsername(username)) {
+    elements.studentLoginMessage.textContent =
+      "Use 3–30 letters, numbers, dots, underscores, or hyphens.";
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      usernameToEmail(username),
+      elements.studentPassword.value
+    );
+    elements.studentLoginForm.reset();
+  } catch (error) {
+    elements.studentLoginMessage.textContent = errorMessage(error);
+  }
+});
+
+elements.adminLogoutButton.addEventListener("click", () => signOut(auth));
+elements.studentLogoutButton.addEventListener("click", () => signOut(auth));
+
+elements.classForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = elements.className.value.trim();
+  if (!name) return;
+
+  try {
+    await addDoc(collection(db, "classes"), { name, createdAt: serverTimestamp() });
+    elements.classForm.reset();
+    await loadAdminData();
+  } catch (error) {
+    alert(errorMessage(error));
+  }
+});
+
+elements.subjectForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = elements.subjectName.value.trim();
+  if (!name) return;
+
+  try {
+    await addDoc(collection(db, "subjects"), { name, createdAt: serverTimestamp() });
+    elements.subjectForm.reset();
+    await loadAdminData();
+  } catch (error) {
+    alert(errorMessage(error));
+  }
+});
+
+elements.studentForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  elements.studentFormMessage.className = "form-message";
+  elements.studentFormMessage.textContent = "Creating student account...";
+
+  const name = elements.studentName.value.trim();
+  const classId = elements.studentClass.value;
+  const username = normalizeUsername(elements.newStudentUsername.value);
+  const password = elements.newStudentPassword.value;
+
+  if (!validUsername(username)) {
+    elements.studentFormMessage.textContent =
+      "Username must be 3–30 letters, numbers, dots, underscores, or hyphens.";
+    return;
+  }
+
+  if (password.length < 6) {
+    elements.studentFormMessage.textContent = "Password must have at least 6 characters.";
+    return;
+  }
+
+  let secondaryApp = null;
+  let credential = null;
+
+  try {
+    const usernameCheck = await getDocs(
+      query(collection(db, "users"), where("usernameLower", "==", username))
+    );
+    if (!usernameCheck.empty) {
+      throw Object.assign(new Error("That username is already being used."), {
+        code: "auth/email-already-in-use"
+      });
     }
 
-    elements.homeButton.addEventListener("click", () => showView("home"));
+    secondaryApp = initializeApp(firebaseConfig, `studentCreator-${Date.now()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+    credential = await createUserWithEmailAndPassword(
+      secondaryAuth,
+      usernameToEmail(username),
+      password
+    );
 
-    elements.adminQuickButton.addEventListener("click", () => {
-      if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
-        renderAdmin();
-        showView("admin");
-      } else {
-        showView("home");
-        elements.adminPassword.focus();
-      }
+    await setDoc(doc(db, "users", credential.user.uid), {
+      name,
+      classId,
+      role: "student",
+      username,
+      usernameLower: username,
+      email: usernameToEmail(username),
+      createdAt: serverTimestamp()
     });
 
-    elements.adminLoginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      elements.adminLoginMessage.textContent = "";
+    await signOut(secondaryAuth);
+    await deleteApp(secondaryApp);
+    secondaryApp = null;
 
-      if (elements.adminPassword.value !== ADMIN_PASSWORD) {
-        elements.adminLoginMessage.textContent = "Incorrect admin password.";
-        elements.adminPassword.select();
+    elements.studentForm.reset();
+    elements.studentFormMessage.className = "form-message success-text";
+    elements.studentFormMessage.textContent =
+      `Student created. Username: ${username} · Password: ${password}. ` +
+      "Copy the password now; Firebase will not show it again.";
+    await loadAdminData();
+  } catch (error) {
+    if (credential?.user) {
+      try {
+        await deleteUser(credential.user);
+      } catch (cleanupError) {
+        console.warn("Could not clean up incomplete account:", cleanupError);
+      }
+    }
+    if (secondaryApp) {
+      try {
+        await deleteApp(secondaryApp);
+      } catch {}
+    }
+    elements.studentFormMessage.textContent = errorMessage(error);
+  }
+});
+
+elements.categoryForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const subjectId = elements.categorySubject.value;
+  const name = elements.categoryName.value.trim();
+  const maxScore = Number(elements.categoryMaxScore.value);
+  if (!subjectId || !name || !Number.isFinite(maxScore) || maxScore <= 0) return;
+
+  try {
+    await addDoc(collection(db, "categories"), {
+      subjectId,
+      name,
+      maxScore,
+      createdAt: serverTimestamp()
+    });
+    elements.categoryName.value = "";
+    elements.categoryMaxScore.value = "100";
+    await loadAdminData();
+  } catch (error) {
+    alert(errorMessage(error));
+  }
+});
+
+elements.recordSubject.addEventListener("change", () => {
+  syncRecordCategories();
+  updateScoreField();
+});
+
+elements.recordCategory.addEventListener("change", updateScoreField);
+elements.recordStatus.addEventListener("change", updateScoreField);
+
+elements.recordForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  elements.recordMessage.className = "form-message";
+  elements.recordMessage.textContent = "Saving...";
+
+  const studentId = elements.recordStudent.value;
+  const categoryId = elements.recordCategory.value;
+  const status = elements.recordStatus.value;
+  const category = getCategory(categoryId);
+
+  if (!studentId || !category) {
+    elements.recordMessage.textContent = "Select a student, subject, and grade item.";
+    return;
+  }
+
+  let score = null;
+  if (status === "done") {
+    score = Number(elements.recordScore.value);
+    if (!Number.isFinite(score) || score < 0 || score > Number(category.maxScore)) {
+      elements.recordMessage.textContent = `Enter a score from 0 to ${category.maxScore}.`;
+      return;
+    }
+  }
+
+  try {
+    const gradeId = `${studentId}_${categoryId}`;
+    await setDoc(
+      doc(db, "grades", gradeId),
+      {
+        studentId,
+        categoryId,
+        status,
+        score,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+    await loadAdminData();
+    elements.recordMessage.className = "form-message success-text";
+    elements.recordMessage.textContent = "Grade saved online.";
+  } catch (error) {
+    elements.recordMessage.textContent = errorMessage(error);
+  }
+});
+
+document.getElementById("adminTabs").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-tab]");
+  if (!button) return;
+
+  document.querySelectorAll(".tab-button").forEach((item) => item.classList.remove("active"));
+  document.querySelectorAll(".tab-page").forEach((item) => item.classList.remove("active"));
+  button.classList.add("active");
+  document.getElementById(button.dataset.tab).classList.add("active");
+});
+
+document.body.addEventListener("click", async (event) => {
+  const classId = event.target.dataset.deleteClass;
+  const studentId = event.target.dataset.deleteStudent;
+  const subjectId = event.target.dataset.deleteSubject;
+  const categoryId = event.target.dataset.deleteCategory;
+  const recordId = event.target.dataset.deleteRecord;
+
+  try {
+    if (classId) {
+      if (data.students.some((item) => item.classId === classId)) {
+        alert("Remove or move the students in this class first.");
         return;
       }
+      if (confirm("Remove this class?")) await deleteDoc(doc(db, "classes", classId));
+    }
 
-      sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
-      sessionStorage.removeItem(STUDENT_SESSION_KEY);
-      elements.adminPassword.value = "";
-      renderAdmin();
-      showView("admin");
-    });
-
-    elements.studentLoginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      elements.studentLoginMessage.textContent = "";
-
-      const username = elements.studentUsername.value.trim().toLowerCase();
-      const password = elements.studentPassword.value;
-      const student = data.students.find((item) => item.username.toLowerCase() === username && item.password === password);
-
-      if (!student) {
-        elements.studentLoginMessage.textContent = "Incorrect username or password.";
-        return;
-      }
-
-      sessionStorage.setItem(STUDENT_SESSION_KEY, student.id);
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      elements.studentUsername.value = "";
-      elements.studentPassword.value = "";
-      renderStudentDashboard(student.id);
-      showView("student");
-    });
-
-    elements.adminLogoutButton.addEventListener("click", () => {
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      showView("home");
-    });
-
-    elements.studentLogoutButton.addEventListener("click", () => {
-      sessionStorage.removeItem(STUDENT_SESSION_KEY);
-      showView("home");
-    });
-
-    elements.classForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = elements.className.value.trim();
-      if (!name) return;
-
-      data.classes.push({ id: uid(), name });
-      elements.className.value = "";
-      saveData();
-      renderAdmin();
-    });
-
-    elements.subjectForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = elements.subjectName.value.trim();
-      if (!name) return;
-
-      data.subjects.push({ id: uid(), name });
-      elements.subjectName.value = "";
-      saveData();
-      renderAdmin();
-    });
-
-    elements.studentForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = elements.studentName.value.trim();
-      const classId = elements.studentClass.value;
-      const username = elements.newStudentUsername.value.trim();
-      const password = elements.newStudentPassword.value;
-
-      if (!name || !classId || !username || !password) return;
-
-      if (data.students.some((item) => item.username.toLowerCase() === username.toLowerCase())) {
-        alert("That username is already being used.");
-        return;
-      }
-
-      data.students.push({ id: uid(), name, classId, username, password });
-      elements.studentName.value = "";
-      elements.newStudentUsername.value = "";
-      elements.newStudentPassword.value = "";
-      saveData();
-      renderAdmin();
-    });
-
-    elements.categoryForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const subjectId = elements.categorySubject.value;
-      const name = elements.categoryName.value.trim();
-      const maxScore = Number(elements.categoryMaxScore.value);
-
-      if (!subjectId || !name || !Number.isFinite(maxScore) || maxScore <= 0) return;
-
-      data.categories.push({ id: uid(), subjectId, name, maxScore });
-      elements.categoryName.value = "";
-      elements.categoryMaxScore.value = "100";
-      saveData();
-      renderAdmin();
-    });
-
-    elements.recordSubject.addEventListener("change", () => {
-      syncRecordCategories();
-      updateScoreField();
-    });
-
-    elements.recordCategory.addEventListener("change", updateScoreField);
-    elements.recordStatus.addEventListener("change", updateScoreField);
-
-    elements.recordForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      elements.recordMessage.textContent = "";
-
-      const studentId = elements.recordStudent.value;
-      const categoryId = elements.recordCategory.value;
-      const status = elements.recordStatus.value;
-      const category = getCategory(categoryId);
-
-      if (!studentId || !category) {
-        elements.recordMessage.textContent = "Select a student, subject, and grade item.";
-        return;
-      }
-
-      let score = null;
-      if (status === "done") {
-        score = Number(elements.recordScore.value);
-
-        if (!Number.isFinite(score) || score < 0 || score > Number(category.maxScore)) {
-          elements.recordMessage.textContent = `Enter a score from 0 to ${category.maxScore}.`;
-          return;
-        }
-      }
-
-      const existing = data.records.find((item) => item.studentId === studentId && item.categoryId === categoryId);
-      if (existing) {
-        existing.status = status;
-        existing.score = score;
-      } else {
-        data.records.push({ id: uid(), studentId, categoryId, status, score });
-      }
-
-      saveData();
-      renderAdmin();
-      elements.recordMessage.className = "form-message success-text";
-      elements.recordMessage.textContent = "Grade saved.";
-    });
-
-    document.getElementById("adminTabs").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-tab]");
-      if (!button) return;
-
-      document.querySelectorAll(".tab-button").forEach((item) => item.classList.remove("active"));
-      document.querySelectorAll(".tab-page").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      document.getElementById(button.dataset.tab).classList.add("active");
-    });
-
-    document.body.addEventListener("click", (event) => {
-      const classId = event.target.dataset.deleteClass;
-      const studentId = event.target.dataset.deleteStudent;
-      const subjectId = event.target.dataset.deleteSubject;
-      const categoryId = event.target.dataset.deleteCategory;
-      const recordId = event.target.dataset.deleteRecord;
-
-      if (classId) {
-        if (data.students.some((item) => item.classId === classId)) {
-          alert("Remove or move the students in this class first.");
-          return;
-        }
-        data.classes = data.classes.filter((item) => item.id !== classId);
-      }
-
-      if (studentId) {
-        data.students = data.students.filter((item) => item.id !== studentId);
-        data.records = data.records.filter((item) => item.studentId !== studentId);
-      }
-
-      if (subjectId) {
-        const categoryIds = data.categories.filter((item) => item.subjectId === subjectId).map((item) => item.id);
-        data.subjects = data.subjects.filter((item) => item.id !== subjectId);
-        data.categories = data.categories.filter((item) => item.subjectId !== subjectId);
-        data.records = data.records.filter((item) => !categoryIds.includes(item.categoryId));
-      }
-
-      if (categoryId) {
-        data.categories = data.categories.filter((item) => item.id !== categoryId);
-        data.records = data.records.filter((item) => item.categoryId !== categoryId);
-      }
-
-      if (recordId) {
-        data.records = data.records.filter((item) => item.id !== recordId);
-      }
-
-      if (classId || studentId || subjectId || categoryId || recordId) {
-        saveData();
-        renderAdmin();
-      }
-    });
-
-    elements.clearAllButton.addEventListener("click", () => {
-      const confirmed = confirm("Delete every class, student, subject, grade item, and grade record?");
+    if (studentId) {
+      const confirmed = confirm(
+        "Remove this student's profile and grades? Their Firebase Authentication account " +
+          "will remain, so the same username cannot be reused without server-side Admin SDK support."
+      );
       if (!confirmed) return;
 
-      data = structuredCloneSafe(defaultData);
-      saveData();
-      renderAdmin();
-    });
-
-    const savedAdmin = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
-    const savedStudentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
-
-    if (savedAdmin) {
-      renderAdmin();
-      showView("admin");
-    } else if (savedStudentId && getStudent(savedStudentId)) {
-      renderStudentDashboard(savedStudentId);
-      showView("student");
-    } else {
-      showView("home");
+      const gradeRefs = data.records
+        .filter((item) => item.studentId === studentId)
+        .map((item) => doc(db, "grades", item.id));
+      gradeRefs.push(doc(db, "users", studentId));
+      await deleteDocumentsInChunks(gradeRefs);
     }
+
+    if (subjectId) {
+      if (!confirm("Remove this subject, its grade items, and all related grades?")) return;
+      const categoryIds = data.categories
+        .filter((item) => item.subjectId === subjectId)
+        .map((item) => item.id);
+      const refs = [doc(db, "subjects", subjectId)];
+      categoryIds.forEach((id) => refs.push(doc(db, "categories", id)));
+      data.records
+        .filter((item) => categoryIds.includes(item.categoryId))
+        .forEach((item) => refs.push(doc(db, "grades", item.id)));
+      await deleteDocumentsInChunks(refs);
+    }
+
+    if (categoryId) {
+      if (!confirm("Remove this grade item and its student grades?")) return;
+      const refs = [doc(db, "categories", categoryId)];
+      data.records
+        .filter((item) => item.categoryId === categoryId)
+        .forEach((item) => refs.push(doc(db, "grades", item.id)));
+      await deleteDocumentsInChunks(refs);
+    }
+
+    if (recordId && confirm("Remove this grade record?")) {
+      await deleteDoc(doc(db, "grades", recordId));
+    }
+
+    if (classId || studentId || subjectId || categoryId || recordId) {
+      await loadAdminData();
+    }
+  } catch (error) {
+    alert(errorMessage(error));
+  }
+});
+
+elements.clearAllButton.addEventListener("click", async () => {
+  const confirmed = confirm(
+    "Delete every class, subject, grade item, and grade record? Student accounts will remain."
+  );
+  if (!confirmed) return;
+
+  try {
+    const refs = [
+      ...data.classes.map((item) => doc(db, "classes", item.id)),
+      ...data.subjects.map((item) => doc(db, "subjects", item.id)),
+      ...data.categories.map((item) => doc(db, "categories", item.id)),
+      ...data.records.map((item) => doc(db, "grades", item.id))
+    ];
+    await deleteDocumentsInChunks(refs);
+    await loadAdminData();
+  } catch (error) {
+    alert(errorMessage(error));
+  }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  authReady = true;
+  elements.adminLoginMessage.textContent = "";
+  elements.studentLoginMessage.textContent = "";
+
+  if (!user) {
+    currentProfile = null;
+    data = emptyData();
+    elements.adminQuickButton.textContent = "Admin";
+    showView("home");
+    return;
+  }
+
+  try {
+    const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+    if (!profileSnapshot.exists()) {
+      await signOut(auth);
+      alert("This Firebase account does not have a Donut user profile.");
+      return;
+    }
+
+    currentProfile = profileSnapshot.data();
+
+    if (currentProfile.role === "admin") {
+      elements.adminQuickButton.textContent = "✓ Admin";
+      await loadAdminData();
+      showView("admin");
+      return;
+    }
+
+    if (currentProfile.role === "student") {
+      elements.adminQuickButton.textContent = "Admin";
+      await loadStudentData(user.uid);
+      showView("student");
+      return;
+    }
+
+    await signOut(auth);
+    alert("This account has an unsupported role.");
+  } catch (error) {
+    console.error(error);
+    alert(errorMessage(error));
+    showView("home");
+  }
+});
+
   </script>
 </body>
 </html>
