@@ -10,12 +10,23 @@
 
     <meta
         name="description"
-        content="My personal website"
+        content="Donut website"
     >
 
-    <title>My Website</title>
+    <title>Donut</title>
 
     <style>
+        :root {
+            --background: #090d1a;
+            --background-light: #263b73;
+            --text: #ffffff;
+            --muted-text: #b8c1d9;
+            --border: rgba(255, 255, 255, 0.22);
+            --surface: rgba(255, 255, 255, 0.07);
+            --success: #8fffc2;
+            --admin: #ffb74d;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -28,71 +39,114 @@
 
         body {
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            color: #ffffff;
+            font-family:
+                Inter,
+                Arial,
+                Helvetica,
+                sans-serif;
+            color: var(--text);
             background:
-                radial-gradient(circle at top, #263b73, transparent 45%),
-                #090d1a;
+                radial-gradient(
+                    circle at top,
+                    var(--background-light),
+                    transparent 45%
+                ),
+                var(--background);
         }
 
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1100px;
-            margin: auto;
+            width: min(1100px, 100%);
+            margin: 0 auto;
             padding: 24px;
         }
 
         .logo {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
-        nav a {
-            margin-left: 24px;
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            padding: 9px 12px;
             color: #dbe4ff;
             text-decoration: none;
+            border-radius: 8px;
+            transition:
+                color 0.2s ease,
+                background 0.2s ease;
         }
 
-        nav a:hover {
-            color: #ffffff;
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .admin-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 183, 77, 0.55);
+            border-radius: 9px;
+            color: #1c1204;
+            background: var(--admin);
+            font-weight: 800;
+            text-decoration: none;
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .admin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 183, 77, 0.25);
         }
 
         main {
             display: grid;
             place-items: center;
-            min-height: calc(100vh - 90px);
-            padding: 40px 24px;
+            min-height: calc(100vh - 95px);
+            padding: 45px 24px;
             text-align: center;
         }
 
         .hero {
-            max-width: 750px;
+            width: min(760px, 100%);
         }
 
         .badge {
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             padding: 8px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid var(--border);
             border-radius: 999px;
             color: #b9c8ff;
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--surface);
+            backdrop-filter: blur(8px);
         }
 
         h1 {
-            margin-bottom: 18px;
-            font-size: clamp(3rem, 10vw, 6rem);
-            line-height: 1;
+            margin-bottom: 20px;
+            font-size: clamp(3.5rem, 11vw, 7rem);
+            line-height: 0.95;
+            letter-spacing: -4px;
         }
 
-        p {
-            margin: auto;
-            max-width: 600px;
-            color: #b8c1d9;
+        .description {
+            max-width: 620px;
+            margin: 0 auto;
+            color: var(--muted-text);
             font-size: 1.15rem;
-            line-height: 1.7;
+            line-height: 1.75;
         }
 
         .buttons {
@@ -100,7 +154,7 @@
             justify-content: center;
             flex-wrap: wrap;
             gap: 14px;
-            margin-top: 32px;
+            margin-top: 34px;
         }
 
         button,
@@ -110,9 +164,17 @@
             border: 0;
             border-radius: 10px;
             font: inherit;
-            font-weight: 700;
+            font-weight: 750;
             cursor: pointer;
             text-decoration: none;
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        button:hover,
+        .button:hover {
+            transform: translateY(-2px);
         }
 
         .primary {
@@ -122,14 +184,19 @@
 
         .secondary {
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .secondary:hover {
+            background: rgba(255, 255, 255, 0.13);
         }
 
         #message {
-            min-height: 24px;
-            margin-top: 24px;
-            color: #8fffc2;
+            min-height: 26px;
+            margin-top: 25px;
+            color: var(--success);
+            font-weight: 700;
         }
 
         footer {
@@ -138,9 +205,21 @@
             text-align: center;
         }
 
-        @media (max-width: 600px) {
-            nav div:last-child {
+        @media (max-width: 650px) {
+            nav {
+                padding: 18px;
+            }
+
+            .nav-link {
                 display: none;
+            }
+
+            .admin-button {
+                padding: 9px 13px;
+            }
+
+            h1 {
+                letter-spacing: -2px;
             }
         }
     </style>
@@ -148,46 +227,64 @@
 
 <body>
     <nav>
-        <div class="logo">MyWebsite</div>
+        <div class="logo">Donut</div>
 
-        <div>
-            <a href="#home">Home</a>
-            <a href="#about">About</a>
+        <div class="nav-links">
+            <a class="nav-link" href="#home">
+                Home
+            </a>
+
+            <a class="nav-link" href="#about">
+                About
+            </a>
+
+            <a
+                class="admin-button"
+                href="https://github.com/TakkyTiggerTTT/Donut/edit/main/index.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open the GitHub website editor"
+            >
+                ⚙ Admin
+            </a>
         </div>
     </nav>
 
     <main id="home">
         <section class="hero">
-            <div class="badge">Website under development</div>
+            <div class="badge">
+                Website under development
+            </div>
 
-            <h1>Welcome.</h1>
+            <h1>Donut.</h1>
 
-            <p id="about">
-                This is my new website. More content and features
-                will be added soon.
+            <p class="description" id="about">
+                Welcome to Donut. This website is currently being
+                developed, and more content and features will be
+                added soon.
             </p>
 
             <div class="buttons">
                 <button class="primary" id="helloButton">
-                    Test JavaScript
+                    Test Website
                 </button>
 
                 <a
                     class="button secondary"
-                    href="https://github.com"
+                    href="https://github.com/TakkyTiggerTTT/Donut"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    GitHub
+                    View Repository
                 </a>
             </div>
 
-            <div id="message"></div>
+            <div id="message" aria-live="polite"></div>
         </section>
     </main>
 
     <footer>
-        <span id="year"></span> MyWebsite
+        <span id="year"></span> Donut
     </footer>
 
     <script>
@@ -198,7 +295,7 @@
         year.textContent = `© ${new Date().getFullYear()}`;
 
         helloButton.addEventListener("click", () => {
-            message.textContent = "The website is working!";
+            message.textContent = "Donut is working correctly!";
         });
     </script>
 </body>
