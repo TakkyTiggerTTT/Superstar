@@ -660,7 +660,7 @@
         padding: 17px;
       }
 
-      .nav-actions .secondary-button:not(.announcement-button) {
+      .nav-actions .secondary-button:not(.nav-feature-button) {
         display: none;
       }
 
@@ -671,10 +671,10 @@
         gap: 7px;
       }
 
-      .nav-actions .announcement-button {
+      .nav-actions .nav-feature-button {
         display: inline-flex !important;
-        padding: 9px 11px;
-        font-size: 0.86rem;
+        padding: 9px 10px;
+        font-size: 0.82rem;
       }
 
       main {
@@ -865,7 +865,8 @@
 
     <div class="nav-actions">
       <button class="button secondary-button" id="homeButton" type="button">Home</button>
-      <a class="button secondary-button announcement-button" href="./announcements.html">📢 Announcements</a>
+      <a class="button secondary-button announcement-button nav-feature-button" href="./announcements.html">📢 Announcements</a>
+      <a class="button secondary-button savelist-button nav-feature-button" href="./savelists.html">💾 SaveList</a>
       <button class="button admin-button" id="adminQuickButton" type="button">Admin</button>
     </div>
   </nav>
@@ -876,8 +877,8 @@
         <div class="badge">Student Grade Portal</div>
         <h1>Donut.</h1>
         <p class="hero-text">
-          Teachers can create classes, students, targeted subjects, grade categories, and announcements.
-          Students only see the subjects, grade items, and announcements assigned to them.
+          Teachers can create classes, students, targeted subjects, grade categories, announcements, and moderated SaveLists.
+          Students only see the school information assigned to them and their own private SaveList.
         </p>
       </div>
 
@@ -934,6 +935,10 @@
         <div class="header-buttons">
           <a class="button admin-button" href="./announcements.html">
             📢 Manage Announcements
+          </a>
+
+          <a class="button admin-button" href="./savelists.html">
+            💾 SaveList & Moderation
           </a>
 
           <a
@@ -1331,12 +1336,16 @@
       <div class="dashboard-header">
         <div>
           <h2>Student Portal</h2>
-          <p>View your grades, completion status, and announcements.</p>
+          <p>View your grades, completion status, announcements, and SaveList.</p>
         </div>
 
         <div class="header-buttons">
           <a class="button admin-button" href="./announcements.html">
             📢 My Announcements
+          </a>
+
+          <a class="button admin-button" href="./savelists.html">
+            💾 My SaveList
           </a>
 
           <button class="button secondary-button" id="studentLogoutButton" type="button">Log Out</button>
