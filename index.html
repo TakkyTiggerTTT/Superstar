@@ -51,6 +51,12 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none !important;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -203,7 +209,8 @@
     }
 
     .field input,
-    .field select {
+    .field select,
+    .field textarea {
       width: 100%;
       padding: 13px 14px;
       border: 1px solid var(--border);
@@ -214,13 +221,20 @@
     }
 
     .field input:focus,
-    .field select:focus {
+    .field select:focus,
+    .field textarea:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(145, 170, 255, 0.13);
     }
 
     .field select option {
       color: #111;
+    }
+
+    .field textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.55;
     }
 
     .full-button {
@@ -475,6 +489,142 @@
       color: var(--danger);
     }
 
+    .recipient-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .recipient-box {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .recipient-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .recipient-box-header h4 {
+      margin: 0;
+    }
+
+    .recipient-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .recipient-action {
+      padding: 6px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--muted);
+      background: var(--panel);
+      font-size: 0.82rem;
+    }
+
+    .checkbox-list {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .checkbox-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+
+    .checkbox-option:hover {
+      border-color: var(--border);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .checkbox-option input {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      accent-color: var(--accent);
+    }
+
+    .checkbox-option small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .announcement-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .announcement-card {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .announcement-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .announcement-card h3,
+    .announcement-card h4 {
+      margin: 0;
+    }
+
+    .announcement-meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .announcement-message {
+      color: #e8edf9;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .announcement-targets {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .student-tab-page {
+      display: none;
+    }
+
+    .student-tab-page.active {
+      display: block;
+    }
+
     footer {
       padding: 28px;
       color: #78829a;
@@ -495,7 +645,8 @@
 
     @media (max-width: 950px) {
       .admin-layout,
-      .login-grid {
+      .login-grid,
+      .recipient-grid {
         grid-template-columns: 1fr;
       }
 
@@ -509,8 +660,21 @@
         padding: 17px;
       }
 
-      .nav-actions .secondary-button {
+      .nav-actions .secondary-button:not(.announcement-button) {
         display: none;
+      }
+
+      .nav-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 7px;
+      }
+
+      .nav-actions .announcement-button {
+        display: inline-flex !important;
+        padding: 9px 11px;
+        font-size: 0.86rem;
       }
 
       main {
@@ -554,6 +718,7 @@
 
     <div class="nav-actions">
       <button class="button secondary-button" id="homeButton" type="button">Home</button>
+      <a class="button secondary-button announcement-button" href="./announcements.html">📢 Announcements</a>
       <button class="button admin-button" id="adminQuickButton" type="button">Admin</button>
     </div>
   </nav>
@@ -564,8 +729,8 @@
         <div class="badge">Student Grade Portal</div>
         <h1>Donut.</h1>
         <p class="hero-text">
-          Teachers can create classes, students, subjects, and grade categories.
-          Students can sign in to see whether each assignment is done and view their grades.
+          Teachers can create classes, students, targeted subjects, grade categories, and announcements.
+          Students only see the subjects, grade items, and announcements assigned to them.
         </p>
       </div>
 
@@ -620,6 +785,10 @@
         </div>
 
         <div class="header-buttons">
+          <a class="button admin-button" href="./announcements.html">
+            📢 Manage Announcements
+          </a>
+
           <a
             class="button secondary-button"
             href="https://takkytiggerttt.github.io/Donut/accounts.html"
@@ -653,11 +822,17 @@
           <div class="summary-label">Grade items</div>
           <div class="summary-value" id="categoryCount">0</div>
         </article>
+
+        <article class="summary-card">
+          <div class="summary-label">Announcements</div>
+          <div class="summary-value" id="announcementCount">0</div>
+        </article>
       </div>
 
       <div class="tab-bar" id="adminTabs">
         <button class="tab-button active" type="button" data-tab="setupTab">Setup</button>
         <button class="tab-button" type="button" data-tab="gradeTab">Enter Grades</button>
+        <button class="tab-button" type="button" data-tab="announcementsTab">Announcements</button>
         <button class="tab-button" type="button" data-tab="recordsTab">All Records</button>
       </div>
 
@@ -690,7 +865,32 @@
                   <input id="subjectName" type="text" maxlength="80" placeholder="Science" required>
                 </div>
 
+                <div class="field">
+                  <label for="subjectVisibilityMode">Show this subject to</label>
+                  <select id="subjectVisibilityMode" required>
+                    <option value="all">All students</option>
+                    <option value="selected">Selected grades / students</option>
+                  </select>
+                </div>
+
+                <div class="recipient-grid hidden" id="subjectAudiencePickers">
+                  <section class="recipient-box">
+                    <div class="recipient-box-header">
+                      <h4>Grades / classes</h4>
+                    </div>
+                    <div class="checkbox-list" id="subjectClassList"></div>
+                  </section>
+
+                  <section class="recipient-box">
+                    <div class="recipient-box-header">
+                      <h4>Individual students</h4>
+                    </div>
+                    <div class="checkbox-list" id="subjectStudentList"></div>
+                  </section>
+                </div>
+
                 <button class="button admin-button full-button" type="submit">Add Subject</button>
+                <div class="form-message" id="subjectFormMessage" aria-live="polite"></div>
               </form>
 
               <div class="list" id="subjectList"></div>
@@ -738,7 +938,7 @@
                   >
                 </div>
 
-                <button class="button admin-button full-button" type="submit">Add Student</button>
+                <button class="button admin-button full-button" id="studentCreateButton" type="submit">Add Student</button>
                 <div class="form-message" id="studentFormMessage" aria-live="polite"></div>
               </form>
 
@@ -765,7 +965,32 @@
                   <input id="categoryMaxScore" type="number" min="1" max="1000" step="1" value="100" required>
                 </div>
 
+                <div class="field">
+                  <label for="categoryVisibilityMode">Show this grade item to</label>
+                  <select id="categoryVisibilityMode" required>
+                    <option value="inherit">Same students as the subject</option>
+                    <option value="selected">Only selected grades / students</option>
+                  </select>
+                </div>
+
+                <div class="recipient-grid hidden" id="categoryAudiencePickers">
+                  <section class="recipient-box">
+                    <div class="recipient-box-header">
+                      <h4>Grades / classes</h4>
+                    </div>
+                    <div class="checkbox-list" id="categoryClassList"></div>
+                  </section>
+
+                  <section class="recipient-box">
+                    <div class="recipient-box-header">
+                      <h4>Individual students</h4>
+                    </div>
+                    <div class="checkbox-list" id="categoryStudentList"></div>
+                  </section>
+                </div>
+
                 <button class="button admin-button full-button" type="submit">Add Grade Item</button>
+                <div class="form-message" id="categoryFormMessage" aria-live="polite"></div>
               </form>
 
               <div class="list" id="categoryList"></div>
@@ -847,6 +1072,80 @@
         </div>
       </section>
 
+      <section class="tab-page" id="announcementsTab">
+        <div class="admin-layout">
+          <section class="panel">
+            <h3>Create Announcement</h3>
+            <p class="panel-note">
+              Send to one or more grade levels/classes, individual students, or both.
+              Selecting a class sends it to every student currently in that class.
+            </p>
+
+            <form id="announcementForm">
+              <div class="field">
+                <label for="announcementTitle">Announcement title</label>
+                <input
+                  id="announcementTitle"
+                  type="text"
+                  maxlength="120"
+                  placeholder="Example: Science project due Friday"
+                  required
+                >
+              </div>
+
+              <div class="field">
+                <label for="announcementMessage">Message</label>
+                <textarea
+                  id="announcementMessage"
+                  maxlength="3000"
+                  placeholder="Write the announcement here..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="recipient-grid">
+                <section class="recipient-box">
+                  <div class="recipient-box-header">
+                    <h4>Grade levels / classes</h4>
+                    <div class="recipient-actions">
+                      <button class="recipient-action" type="button" data-recipient-action="all-classes">All</button>
+                      <button class="recipient-action" type="button" data-recipient-action="clear-classes">Clear</button>
+                    </div>
+                  </div>
+                  <div class="checkbox-list" id="announcementClassList"></div>
+                </section>
+
+                <section class="recipient-box">
+                  <div class="recipient-box-header">
+                    <h4>Individual students</h4>
+                    <div class="recipient-actions">
+                      <button class="recipient-action" type="button" data-recipient-action="all-students">All</button>
+                      <button class="recipient-action" type="button" data-recipient-action="clear-students">Clear</button>
+                    </div>
+                  </div>
+                  <div class="checkbox-list" id="announcementStudentList"></div>
+                </section>
+              </div>
+
+              <button class="button admin-button full-button" type="submit">
+                Publish Announcement
+              </button>
+              <div class="form-message" id="announcementFormMessage" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="section-title">
+              <div>
+                <h3>Published Announcements</h3>
+                <p class="panel-note">Newest announcements appear first.</p>
+              </div>
+            </div>
+            <div class="announcement-list" id="announcementList"></div>
+          </section>
+        </div>
+      </section>
+
       <section class="tab-page" id="recordsTab">
         <section class="panel">
           <div class="section-title">
@@ -884,11 +1183,17 @@
     <section class="dashboard hidden" id="studentView">
       <div class="dashboard-header">
         <div>
-          <h2>My Grades</h2>
-          <p>Only the grades for the signed-in student are shown.</p>
+          <h2>Student Portal</h2>
+          <p>View your grades, completion status, and announcements.</p>
         </div>
 
-        <button class="button secondary-button" id="studentLogoutButton" type="button">Log Out</button>
+        <div class="header-buttons">
+          <a class="button admin-button" href="./announcements.html">
+            📢 My Announcements
+          </a>
+
+          <button class="button secondary-button" id="studentLogoutButton" type="button">Log Out</button>
+        </div>
       </div>
 
       <div class="student-welcome">
@@ -918,7 +1223,22 @@
         </article>
       </div>
 
-      <div id="studentGradeContent"></div>
+      <div class="tab-bar" id="studentTabs">
+        <button class="tab-button active" type="button" data-student-tab="studentGradesTab">
+          Grades
+        </button>
+        <button class="tab-button" id="studentAnnouncementTabButton" type="button" data-student-tab="studentAnnouncementsTab">
+          Announcements (0)
+        </button>
+      </div>
+
+      <section class="student-tab-page active" id="studentGradesTab">
+        <div id="studentGradeContent"></div>
+      </section>
+
+      <section class="student-tab-page" id="studentAnnouncementsTab">
+        <div class="announcement-list" id="studentAnnouncementsContent"></div>
+      </section>
     </section>
   </main>
 
@@ -967,6 +1287,7 @@ const STUDENT_EMAIL_DOMAIN = "donut-students.example.com";
 let currentProfile = null;
 let authReady = false;
 let data = emptyData();
+let studentCreationInProgress = false;
 
 const elements = {
   homeView: document.getElementById("homeView"),
@@ -988,23 +1309,35 @@ const elements = {
   studentCount: document.getElementById("studentCount"),
   subjectCount: document.getElementById("subjectCount"),
   categoryCount: document.getElementById("categoryCount"),
+  announcementCount: document.getElementById("announcementCount"),
   classForm: document.getElementById("classForm"),
   className: document.getElementById("className"),
   classList: document.getElementById("classList"),
   subjectForm: document.getElementById("subjectForm"),
   subjectName: document.getElementById("subjectName"),
+  subjectVisibilityMode: document.getElementById("subjectVisibilityMode"),
+  subjectAudiencePickers: document.getElementById("subjectAudiencePickers"),
+  subjectClassList: document.getElementById("subjectClassList"),
+  subjectStudentList: document.getElementById("subjectStudentList"),
+  subjectFormMessage: document.getElementById("subjectFormMessage"),
   subjectList: document.getElementById("subjectList"),
   studentForm: document.getElementById("studentForm"),
   studentName: document.getElementById("studentName"),
   studentClass: document.getElementById("studentClass"),
   newStudentUsername: document.getElementById("newStudentUsername"),
   newStudentPassword: document.getElementById("newStudentPassword"),
+  studentCreateButton: document.getElementById("studentCreateButton"),
   studentFormMessage: document.getElementById("studentFormMessage"),
   studentList: document.getElementById("studentList"),
   categoryForm: document.getElementById("categoryForm"),
   categorySubject: document.getElementById("categorySubject"),
   categoryName: document.getElementById("categoryName"),
   categoryMaxScore: document.getElementById("categoryMaxScore"),
+  categoryVisibilityMode: document.getElementById("categoryVisibilityMode"),
+  categoryAudiencePickers: document.getElementById("categoryAudiencePickers"),
+  categoryClassList: document.getElementById("categoryClassList"),
+  categoryStudentList: document.getElementById("categoryStudentList"),
+  categoryFormMessage: document.getElementById("categoryFormMessage"),
   categoryList: document.getElementById("categoryList"),
   recordForm: document.getElementById("recordForm"),
   recordStudent: document.getElementById("recordStudent"),
@@ -1017,13 +1350,22 @@ const elements = {
   recordTableBody: document.getElementById("recordTableBody"),
   recordEmpty: document.getElementById("recordEmpty"),
   clearAllButton: document.getElementById("clearAllButton"),
+  announcementForm: document.getElementById("announcementForm"),
+  announcementTitle: document.getElementById("announcementTitle"),
+  announcementMessage: document.getElementById("announcementMessage"),
+  announcementClassList: document.getElementById("announcementClassList"),
+  announcementStudentList: document.getElementById("announcementStudentList"),
+  announcementFormMessage: document.getElementById("announcementFormMessage"),
+  announcementList: document.getElementById("announcementList"),
   studentWelcomeName: document.getElementById("studentWelcomeName"),
   studentWelcomeClass: document.getElementById("studentWelcomeClass"),
   studentGpa: document.getElementById("studentGpa"),
   studentSubjectCount: document.getElementById("studentSubjectCount"),
   studentDoneCount: document.getElementById("studentDoneCount"),
   studentNotDoneCount: document.getElementById("studentNotDoneCount"),
-  studentGradeContent: document.getElementById("studentGradeContent")
+  studentGradeContent: document.getElementById("studentGradeContent"),
+  studentAnnouncementTabButton: document.getElementById("studentAnnouncementTabButton"),
+  studentAnnouncementsContent: document.getElementById("studentAnnouncementsContent")
 };
 
 document.getElementById("year").textContent = `© ${new Date().getFullYear()}`;
@@ -1034,7 +1376,8 @@ function emptyData() {
     students: [],
     subjects: [],
     categories: [],
-    records: []
+    records: [],
+    announcements: []
   };
 }
 
@@ -1261,6 +1604,8 @@ function askForStudentDeletionChoice(student) {
 }
 
 async function deleteStudentFirestoreData(studentId) {
+  await removeStudentFromAnnouncements(studentId);
+
   const refs = data.records
     .filter((item) => item.studentId === studentId)
     .map((item) => doc(db, "grades", item.id));
@@ -1463,7 +1808,10 @@ function calculateRecord(record) {
 }
 
 function calculateStudentSubjectSummary(studentId, subjectId) {
-  const categories = data.categories.filter((item) => item.subjectId === subjectId);
+  const student = getStudent(studentId);
+  const categories = data.categories.filter(
+    (item) => item.subjectId === subjectId && isCategoryVisibleToStudent(item, student)
+  );
   const doneRecords = categories
     .map((category) => ({
       category,
@@ -1485,14 +1833,341 @@ function calculateStudentSubjectSummary(studentId, subjectId) {
   return { percent, ...scoreToGrade(percent) };
 }
 
+function normalizeIdArray(value) {
+  return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+}
+
+function audienceMatchesStudent(item, student, defaultMode = "all") {
+  if (!item || !student) return false;
+
+  const mode = item.visibilityMode || defaultMode;
+  if (mode !== "selected") return true;
+
+  const classIds = normalizeIdArray(item.classIds);
+  const studentIds = normalizeIdArray(item.studentIds);
+
+  return classIds.includes(student.classId) || studentIds.includes(student.id);
+}
+
+function isSubjectVisibleToStudent(subject, student) {
+  return audienceMatchesStudent(subject, student, "all");
+}
+
+function isCategoryVisibleToStudent(category, student) {
+  if (!category || !student) return false;
+
+  const subject = getSubject(category.subjectId);
+  if (!subject || !isSubjectVisibleToStudent(subject, student)) return false;
+
+  return audienceMatchesStudent(category, student, "inherit");
+}
+
+function audienceDescription(item, defaultMode = "all") {
+  const mode = item?.visibilityMode || defaultMode;
+
+  if (mode === "all") return "Visible to all students";
+  if (mode === "inherit") return "Visible to the same students as the subject";
+
+  const classNames = normalizeIdArray(item?.classIds)
+    .map((id) => data.classes.find((entry) => entry.id === id)?.name)
+    .filter(Boolean);
+
+  const studentNames = normalizeIdArray(item?.studentIds)
+    .map((id) => data.students.find((entry) => entry.id === id)?.name)
+    .filter(Boolean);
+
+  const groups = [];
+  if (classNames.length) groups.push(`Grades: ${classNames.join(", ")}`);
+  if (studentNames.length) groups.push(`Students: ${studentNames.join(", ")}`);
+  return groups.join(" · ") || "No students selected";
+}
+
+function renderAudiencePicker(classContainer, studentContainer, inputPrefix) {
+  if (data.classes.length === 0) {
+    classContainer.innerHTML = '<div class="empty-box">No classes have been added.</div>';
+  } else {
+    classContainer.innerHTML = data.classes
+      .map((item) => {
+        const count = data.students.filter((student) => student.classId === item.id).length;
+        return `
+          <label class="checkbox-option">
+            <input type="checkbox" name="${inputPrefix}Class" value="${item.id}">
+            <span>
+              <strong>${escapeHtml(item.name)}</strong>
+              <small>${count} student${count === 1 ? "" : "s"}</small>
+            </span>
+          </label>
+        `;
+      })
+      .join("");
+  }
+
+  if (data.students.length === 0) {
+    studentContainer.innerHTML = '<div class="empty-box">No students have been added.</div>';
+  } else {
+    studentContainer.innerHTML = data.students
+      .map(
+        (student) => `
+          <label class="checkbox-option">
+            <input type="checkbox" name="${inputPrefix}Student" value="${student.id}">
+            <span>
+              <strong>${escapeHtml(student.name)}</strong>
+              <small>${escapeHtml(getClassName(student.classId))} · ${escapeHtml(
+                student.username || ""
+              )}</small>
+            </span>
+          </label>
+        `
+      )
+      .join("");
+  }
+}
+
+function renderSubjectAndCategoryAudiencePickers() {
+  renderAudiencePicker(
+    elements.subjectClassList,
+    elements.subjectStudentList,
+    "subjectAudience"
+  );
+
+  renderAudiencePicker(
+    elements.categoryClassList,
+    elements.categoryStudentList,
+    "categoryAudience"
+  );
+}
+
+function updateAudiencePickerVisibility() {
+  elements.subjectAudiencePickers.classList.toggle(
+    "hidden",
+    elements.subjectVisibilityMode.value !== "selected"
+  );
+
+  elements.categoryAudiencePickers.classList.toggle(
+    "hidden",
+    elements.categoryVisibilityMode.value !== "selected"
+  );
+}
+
+function getAudienceSelection(mode, classContainer, studentContainer) {
+  if (mode !== "selected") {
+    return { classIds: [], studentIds: [] };
+  }
+
+  return {
+    classIds: getCheckedValues(classContainer),
+    studentIds: getCheckedValues(studentContainer)
+  };
+}
+
+function timestampToMillis(value) {
+  if (!value) return 0;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  return 0;
+}
+
+function formatAnnouncementDate(value) {
+  const milliseconds = timestampToMillis(value);
+  if (!milliseconds) return "Just now";
+  return new Date(milliseconds).toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function sortAnnouncements(items) {
+  return [...items].sort(
+    (a, b) => timestampToMillis(b.createdAt) - timestampToMillis(a.createdAt)
+  );
+}
+
+function getCheckedValues(container) {
+  return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(
+    (input) => input.value
+  );
+}
+
+function announcementTargetText(announcement) {
+  const groups = [];
+  const classNames = Array.isArray(announcement.classNames)
+    ? announcement.classNames
+    : [];
+  const studentNames = Array.isArray(announcement.studentNames)
+    ? announcement.studentNames
+    : [];
+
+  if (classNames.length) groups.push(`Classes: ${classNames.join(", ")}`);
+  if (studentNames.length) groups.push(`Students: ${studentNames.join(", ")}`);
+  return groups.join(" · ") || `${announcement.recipientIds?.length || 0} recipients`;
+}
+
+function renderAnnouncementRecipientPickers() {
+  if (data.classes.length === 0) {
+    elements.announcementClassList.innerHTML =
+      '<div class="empty-box">No classes have been added.</div>';
+  } else {
+    elements.announcementClassList.innerHTML = data.classes
+      .map((item) => {
+        const count = data.students.filter((student) => student.classId === item.id).length;
+        return `
+          <label class="checkbox-option">
+            <input type="checkbox" name="announcementClass" value="${item.id}">
+            <span>
+              <strong>${escapeHtml(item.name)}</strong>
+              <small>${count} student${count === 1 ? "" : "s"}</small>
+            </span>
+          </label>
+        `;
+      })
+      .join("");
+  }
+
+  if (data.students.length === 0) {
+    elements.announcementStudentList.innerHTML =
+      '<div class="empty-box">No students have been added.</div>';
+  } else {
+    elements.announcementStudentList.innerHTML = data.students
+      .map(
+        (student) => `
+          <label class="checkbox-option">
+            <input type="checkbox" name="announcementStudent" value="${student.id}">
+            <span>
+              <strong>${escapeHtml(student.name)}</strong>
+              <small>${escapeHtml(getClassName(student.classId))} · ${escapeHtml(
+                student.username || ""
+              )}</small>
+            </span>
+          </label>
+        `
+      )
+      .join("");
+  }
+}
+
+function renderAnnouncements() {
+  const announcements = sortAnnouncements(data.announcements);
+  elements.announcementCount.textContent = String(announcements.length);
+
+  if (announcements.length === 0) {
+    elements.announcementList.innerHTML =
+      '<div class="empty-box">No announcements have been published.</div>';
+    return;
+  }
+
+  elements.announcementList.innerHTML = announcements
+    .map(
+      (announcement) => `
+        <article class="announcement-card">
+          <div class="announcement-card-header">
+            <div>
+              <h4>${escapeHtml(announcement.title || "Untitled announcement")}</h4>
+              <div class="announcement-meta">
+                ${escapeHtml(formatAnnouncementDate(announcement.createdAt))} ·
+                ${announcement.recipientIds?.length || 0} recipient${
+                  announcement.recipientIds?.length === 1 ? "" : "s"
+                }
+              </div>
+            </div>
+            <button
+              class="mini-button"
+              type="button"
+              data-delete-announcement="${announcement.id}"
+            >
+              Remove
+            </button>
+          </div>
+          <div class="announcement-message">${escapeHtml(announcement.message || "")}</div>
+          <div class="announcement-targets">${escapeHtml(
+            announcementTargetText(announcement)
+          )}</div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderStudentAnnouncements(studentId) {
+  const announcements = sortAnnouncements(data.announcements);
+  elements.studentAnnouncementTabButton.textContent = `Announcements (${announcements.length})`;
+
+  if (announcements.length === 0) {
+    elements.studentAnnouncementsContent.innerHTML =
+      '<div class="empty-box">You do not have any announcements yet.</div>';
+    return;
+  }
+
+  elements.studentAnnouncementsContent.innerHTML = announcements
+    .map((announcement) => {
+      const personal = Array.isArray(announcement.studentIds) &&
+        announcement.studentIds.includes(studentId);
+      const classTarget = Array.isArray(announcement.classIds) &&
+        announcement.classIds.includes(currentProfile?.classId);
+      const targetLabel = personal && classTarget
+        ? "Personal and class announcement"
+        : personal
+          ? "Personal announcement"
+          : "Class announcement";
+
+      return `
+        <article class="announcement-card">
+          <div class="announcement-card-header">
+            <div>
+              <h3>${escapeHtml(announcement.title || "Untitled announcement")}</h3>
+              <div class="announcement-meta">
+                ${escapeHtml(formatAnnouncementDate(announcement.createdAt))} ·
+                ${escapeHtml(targetLabel)}
+              </div>
+            </div>
+          </div>
+          <div class="announcement-message">${escapeHtml(announcement.message || "")}</div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function removeStudentFromAnnouncements(studentId) {
+  const affected = data.announcements.filter(
+    (announcement) => Array.isArray(announcement.recipientIds) &&
+      announcement.recipientIds.includes(studentId)
+  );
+
+  await Promise.all(
+    affected.map(async (announcement) => {
+      const recipientIds = announcement.recipientIds.filter((id) => id !== studentId);
+      const studentIds = Array.isArray(announcement.studentIds)
+        ? announcement.studentIds.filter((id) => id !== studentId)
+        : [];
+      const studentNames = studentIds.map(
+        (id) => data.students.find((student) => student.id === id)?.name || "Selected student"
+      );
+
+      if (recipientIds.length === 0) {
+        await deleteDoc(doc(db, "announcements", announcement.id));
+      } else {
+        await setDoc(
+          doc(db, "announcements", announcement.id),
+          { recipientIds, studentIds, studentNames },
+          { merge: true }
+        );
+      }
+    })
+  );
+}
+
 async function loadAdminData() {
-  const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap] =
+  const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap] =
     await Promise.all([
       getDocs(collection(db, "classes")),
       getDocs(collection(db, "users")),
       getDocs(collection(db, "subjects")),
       getDocs(collection(db, "categories")),
-      getDocs(collection(db, "grades"))
+      getDocs(collection(db, "grades")),
+      getDocs(collection(db, "announcements"))
     ]);
 
   data = {
@@ -1500,7 +2175,8 @@ async function loadAdminData() {
     students: sortByName(snapshotToArray(usersSnap).filter((item) => item.role === "student")),
     subjects: sortByName(snapshotToArray(subjectsSnap)),
     categories: sortByName(snapshotToArray(categoriesSnap)),
-    records: snapshotToArray(gradesSnap)
+    records: snapshotToArray(gradesSnap),
+    announcements: snapshotToArray(announcementsSnap)
   };
 
   renderAdmin();
@@ -1512,19 +2188,27 @@ async function loadStudentData(studentId) {
     where("studentId", "==", studentId)
   );
 
-  const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap] = await Promise.all([
-    getDocs(collection(db, "classes")),
-    getDocs(collection(db, "subjects")),
-    getDocs(collection(db, "categories")),
-    getDocs(gradesQuery)
-  ]);
+  const announcementsQuery = query(
+    collection(db, "announcements"),
+    where("recipientIds", "array-contains", studentId)
+  );
+
+  const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap] =
+    await Promise.all([
+      getDocs(collection(db, "classes")),
+      getDocs(collection(db, "subjects")),
+      getDocs(collection(db, "categories")),
+      getDocs(gradesQuery),
+      getDocs(announcementsQuery)
+    ]);
 
   data = {
     classes: sortByName(snapshotToArray(classesSnap)),
     students: [{ id: studentId, ...currentProfile }],
     subjects: sortByName(snapshotToArray(subjectsSnap)),
     categories: sortByName(snapshotToArray(categoriesSnap)),
-    records: snapshotToArray(gradesSnap)
+    records: snapshotToArray(gradesSnap),
+    announcements: snapshotToArray(announcementsSnap)
   };
 
   renderStudentDashboard(studentId);
@@ -1569,22 +2253,39 @@ function syncSelects() {
     "Select a student",
     (item) => `${item.name} — ${getClassName(item.classId)}`
   );
+  syncRecordSubjects();
+}
+
+function syncRecordSubjects() {
+  const student = getStudent(elements.recordStudent.value);
+  const subjects = student
+    ? data.subjects.filter((subject) => isSubjectVisibleToStudent(subject, student))
+    : [];
+
   fillSelect(
     elements.recordSubject,
-    data.subjects,
-    "Select a subject",
+    subjects,
+    student ? "Select a subject" : "Select a student first",
     (item) => item.name
   );
+
   syncRecordCategories();
 }
 
 function syncRecordCategories() {
+  const student = getStudent(elements.recordStudent.value);
   const subjectId = elements.recordSubject.value;
-  const categories = data.categories.filter((item) => item.subjectId === subjectId);
+  const categories = student
+    ? data.categories.filter(
+        (item) =>
+          item.subjectId === subjectId && isCategoryVisibleToStudent(item, student)
+      )
+    : [];
+
   fillSelect(
     elements.recordCategory,
     categories,
-    "Select a grade item",
+    student ? "Select a grade item" : "Select a student first",
     (item) => `${item.name} (${item.maxScore} points)`
   );
 }
@@ -1594,11 +2295,16 @@ function renderAdmin() {
   elements.studentCount.textContent = String(data.students.length);
   elements.subjectCount.textContent = String(data.subjects.length);
   elements.categoryCount.textContent = String(data.categories.length);
+  elements.announcementCount.textContent = String(data.announcements.length);
   syncSelects();
   renderClasses();
   renderStudents();
   renderSubjects();
   renderCategories();
+  renderSubjectAndCategoryAudiencePickers();
+  updateAudiencePickerVisibility();
+  renderAnnouncementRecipientPickers();
+  renderAnnouncements();
   renderRecords();
   updateScoreField();
 }
@@ -1662,7 +2368,10 @@ function renderSubjects() {
         <div class="list-item">
           <div>
             <strong>${escapeHtml(item.name)}</strong>
-            <small>${count} grade item${count === 1 ? "" : "s"}</small>
+            <small>
+              ${count} grade item${count === 1 ? "" : "s"} ·
+              ${escapeHtml(audienceDescription(item, "all"))}
+            </small>
           </div>
           <button class="mini-button" type="button" data-delete-subject="${item.id}">
             Remove
@@ -1688,7 +2397,10 @@ function renderCategories() {
               ${escapeHtml(getSubject(item.subjectId)?.name || "Unknown subject")}
               → ${escapeHtml(item.name)}
             </strong>
-            <small>Maximum score: ${escapeHtml(item.maxScore)}</small>
+            <small>
+              Maximum score: ${escapeHtml(item.maxScore)} ·
+              ${escapeHtml(audienceDescription(item, "inherit"))}
+            </small>
           </div>
           <button class="mini-button" type="button" data-delete-category="${item.id}">
             Remove
@@ -1771,9 +2483,18 @@ function renderStudentDashboard(studentId) {
   elements.studentWelcomeName.textContent = student.name || student.username || "Student";
   elements.studentWelcomeClass.textContent = getClassName(student.classId);
 
-  const subjectIds = [...new Set(data.categories.map((item) => item.subjectId))];
-  const doneCount = data.records.filter((item) => item.status === "done").length;
-  const notDoneCount = Math.max(0, data.categories.length - doneCount);
+  const visibleSubjects = data.subjects.filter((subject) =>
+    isSubjectVisibleToStudent(subject, student)
+  );
+  const visibleCategories = data.categories.filter((category) =>
+    isCategoryVisibleToStudent(category, student)
+  );
+  const subjectIds = visibleSubjects.map((subject) => subject.id);
+  const visibleCategoryIds = new Set(visibleCategories.map((category) => category.id));
+  const doneCount = data.records.filter(
+    (item) => item.status === "done" && visibleCategoryIds.has(item.categoryId)
+  ).length;
+  const notDoneCount = Math.max(0, visibleCategories.length - doneCount);
 
   const summaries = subjectIds
     .map((subjectId) => ({
@@ -1791,6 +2512,7 @@ function renderStudentDashboard(studentId) {
   elements.studentSubjectCount.textContent = String(subjectIds.length);
   elements.studentDoneCount.textContent = String(doneCount);
   elements.studentNotDoneCount.textContent = String(notDoneCount);
+  renderStudentAnnouncements(studentId);
 
   if (subjectIds.length === 0) {
     elements.studentGradeContent.innerHTML =
@@ -1801,14 +2523,14 @@ function renderStudentDashboard(studentId) {
   elements.studentGradeContent.innerHTML = subjectIds
     .map((subjectId) => {
       const subject = getSubject(subjectId);
-      const categories = data.categories.filter((item) => item.subjectId === subjectId);
+      const categories = visibleCategories.filter((item) => item.subjectId === subjectId);
       const summary = calculateStudentSubjectSummary(studentId, subjectId);
       const summaryText = summary
         ? `${summary.percent.toFixed(1)}% · ${summary.letter} · GPA ${summary.points.toFixed(2)}`
         : "No completed work yet";
 
-      const rows = categories
-        .map((category) => {
+      const rows = categories.length
+        ? categories.map((category) => {
           const record = data.records.find((item) => item.categoryId === category.id);
           const isDone = record?.status === "done";
           const result = record ? calculateRecord(record) : null;
@@ -1831,8 +2553,12 @@ function renderStudentDashboard(studentId) {
               <td>${escapeHtml(gradeText)}</td>
             </tr>
           `;
-        })
-        .join("");
+        }).join("")
+        : `
+            <tr>
+              <td colspan="4">No grade items are available for this student yet.</td>
+            </tr>
+          `;
 
       return `
         <section class="subject-card">
@@ -1944,20 +2670,54 @@ elements.classForm.addEventListener("submit", async (event) => {
 
 elements.subjectForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  elements.subjectFormMessage.className = "form-message";
+  elements.subjectFormMessage.textContent = "";
+
   const name = elements.subjectName.value.trim();
+  const visibilityMode = elements.subjectVisibilityMode.value;
+  const audience = getAudienceSelection(
+    visibilityMode,
+    elements.subjectClassList,
+    elements.subjectStudentList
+  );
+
   if (!name) return;
 
+  if (
+    visibilityMode === "selected" &&
+    audience.classIds.length === 0 &&
+    audience.studentIds.length === 0
+  ) {
+    elements.subjectFormMessage.textContent =
+      "Select at least one grade/class or one student.";
+    return;
+  }
+
   try {
-    await addDoc(collection(db, "subjects"), { name, createdAt: serverTimestamp() });
+    await addDoc(collection(db, "subjects"), {
+      name,
+      visibilityMode,
+      classIds: audience.classIds,
+      studentIds: audience.studentIds,
+      createdAt: serverTimestamp()
+    });
     elements.subjectForm.reset();
+    elements.subjectVisibilityMode.value = "all";
+    elements.subjectFormMessage.className = "form-message success-text";
+    elements.subjectFormMessage.textContent = "Subject added.";
     await loadAdminData();
   } catch (error) {
-    alert(errorMessage(error));
+    elements.subjectFormMessage.textContent = errorMessage(error);
   }
 });
 
 elements.studentForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+
+  if (studentCreationInProgress) return;
+  studentCreationInProgress = true;
+  elements.studentCreateButton.disabled = true;
+  elements.studentCreateButton.textContent = "Creating...";
   elements.studentFormMessage.className = "form-message";
   elements.studentFormMessage.textContent = "Creating student account...";
 
@@ -1966,21 +2726,24 @@ elements.studentForm.addEventListener("submit", async (event) => {
   const username = normalizeUsername(elements.newStudentUsername.value);
   const password = elements.newStudentPassword.value;
 
-  if (!validUsername(username)) {
-    elements.studentFormMessage.textContent =
-      "Username must be 3–30 letters, numbers, dots, underscores, or hyphens.";
-    return;
-  }
-
-  if (password.length < 6) {
-    elements.studentFormMessage.textContent = "Password must have at least 6 characters.";
-    return;
-  }
-
   let secondaryApp = null;
   let credential = null;
 
   try {
+    if (!name || !classId) {
+      throw new Error("Enter a student name and select a class.");
+    }
+
+    if (!validUsername(username)) {
+      throw new Error(
+        "Username must be 3–30 letters, numbers, dots, underscores, or hyphens."
+      );
+    }
+
+    if (password.length < 6) {
+      throw new Error("Password must have at least 6 characters.");
+    }
+
     const usernameCheck = await getDocs(
       query(collection(db, "users"), where("usernameLower", "==", username))
     );
@@ -1990,7 +2753,10 @@ elements.studentForm.addEventListener("submit", async (event) => {
       });
     }
 
-    secondaryApp = initializeApp(firebaseConfig, `studentCreator-${Date.now()}`);
+    secondaryApp = initializeApp(
+      firebaseConfig,
+      `studentCreator-${Date.now()}-${crypto.randomUUID?.() || Math.random()}`
+    );
     const secondaryAuth = getAuth(secondaryApp);
     credential = await createUserWithEmailAndPassword(
       secondaryAuth,
@@ -2015,7 +2781,7 @@ elements.studentForm.addEventListener("submit", async (event) => {
     elements.studentForm.reset();
     elements.studentFormMessage.className = "form-message success-text";
     elements.studentFormMessage.textContent =
-      `Student created. Username: ${username} · Password: ${password}. ` +
+      `Student created once. Username: ${username} · Password: ${password}. ` +
       "Copy the password now; Firebase will not show it again.";
     await loadAdminData();
   } catch (error) {
@@ -2032,29 +2798,143 @@ elements.studentForm.addEventListener("submit", async (event) => {
       } catch {}
     }
     elements.studentFormMessage.textContent = errorMessage(error);
+  } finally {
+    studentCreationInProgress = false;
+    elements.studentCreateButton.disabled = false;
+    elements.studentCreateButton.textContent = "Add Student";
   }
 });
 
 elements.categoryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  elements.categoryFormMessage.className = "form-message";
+  elements.categoryFormMessage.textContent = "";
+
   const subjectId = elements.categorySubject.value;
   const name = elements.categoryName.value.trim();
   const maxScore = Number(elements.categoryMaxScore.value);
+  const visibilityMode = elements.categoryVisibilityMode.value;
+  const audience = getAudienceSelection(
+    visibilityMode,
+    elements.categoryClassList,
+    elements.categoryStudentList
+  );
+
   if (!subjectId || !name || !Number.isFinite(maxScore) || maxScore <= 0) return;
+
+  if (
+    visibilityMode === "selected" &&
+    audience.classIds.length === 0 &&
+    audience.studentIds.length === 0
+  ) {
+    elements.categoryFormMessage.textContent =
+      "Select at least one grade/class or one student.";
+    return;
+  }
 
   try {
     await addDoc(collection(db, "categories"), {
       subjectId,
       name,
       maxScore,
+      visibilityMode,
+      classIds: audience.classIds,
+      studentIds: audience.studentIds,
       createdAt: serverTimestamp()
     });
     elements.categoryName.value = "";
     elements.categoryMaxScore.value = "100";
+    elements.categoryVisibilityMode.value = "inherit";
+    elements.categoryFormMessage.className = "form-message success-text";
+    elements.categoryFormMessage.textContent = "Grade item added.";
     await loadAdminData();
   } catch (error) {
-    alert(errorMessage(error));
+    elements.categoryFormMessage.textContent = errorMessage(error);
   }
+});
+
+elements.announcementForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  elements.announcementFormMessage.className = "form-message";
+  elements.announcementFormMessage.textContent = "Publishing...";
+
+  const title = elements.announcementTitle.value.trim();
+  const message = elements.announcementMessage.value.trim();
+  const classIds = getCheckedValues(elements.announcementClassList);
+  const studentIds = getCheckedValues(elements.announcementStudentList);
+
+  const classStudentIds = data.students
+    .filter((student) => classIds.includes(student.classId))
+    .map((student) => student.id);
+  const recipientIds = [...new Set([...classStudentIds, ...studentIds])];
+
+  if (!title || !message) {
+    elements.announcementFormMessage.textContent = "Enter a title and message.";
+    return;
+  }
+
+  if (classIds.length === 0 && studentIds.length === 0) {
+    elements.announcementFormMessage.textContent =
+      "Select at least one class or individual student.";
+    return;
+  }
+
+  if (recipientIds.length === 0) {
+    elements.announcementFormMessage.textContent =
+      "The selected classes do not contain any students. Select an individual student or add students first.";
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "announcements"), {
+      title,
+      message,
+      classIds,
+      classNames: classIds.map((id) => getClassName(id)),
+      studentIds,
+      studentNames: studentIds.map(
+        (id) => data.students.find((student) => student.id === id)?.name || "Selected student"
+      ),
+      recipientIds,
+      createdBy: auth.currentUser.uid,
+      createdByName: currentProfile?.name || currentProfile?.username || "Administrator",
+      createdAt: serverTimestamp()
+    });
+
+    elements.announcementForm.reset();
+    elements.announcementFormMessage.className = "form-message success-text";
+    elements.announcementFormMessage.textContent =
+      `Announcement published to ${recipientIds.length} student${recipientIds.length === 1 ? "" : "s"}.`;
+    await loadAdminData();
+  } catch (error) {
+    elements.announcementFormMessage.textContent = errorMessage(error);
+  }
+});
+
+document.getElementById("announcementsTab").addEventListener("click", (event) => {
+  const action = event.target.dataset.recipientAction;
+  if (!action) return;
+
+  const settings = {
+    "all-classes": [elements.announcementClassList, true],
+    "clear-classes": [elements.announcementClassList, false],
+    "all-students": [elements.announcementStudentList, true],
+    "clear-students": [elements.announcementStudentList, false]
+  };
+
+  const [container, checked] = settings[action] || [];
+  if (!container) return;
+  container.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+    input.checked = checked;
+  });
+});
+
+elements.subjectVisibilityMode.addEventListener("change", updateAudiencePickerVisibility);
+elements.categoryVisibilityMode.addEventListener("change", updateAudiencePickerVisibility);
+
+elements.recordStudent.addEventListener("change", () => {
+  syncRecordSubjects();
+  updateScoreField();
 });
 
 elements.recordSubject.addEventListener("change", () => {
@@ -2073,10 +2953,12 @@ elements.recordForm.addEventListener("submit", async (event) => {
   const studentId = elements.recordStudent.value;
   const categoryId = elements.recordCategory.value;
   const status = elements.recordStatus.value;
+  const student = getStudent(studentId);
   const category = getCategory(categoryId);
 
-  if (!studentId || !category) {
-    elements.recordMessage.textContent = "Select a student, subject, and grade item.";
+  if (!studentId || !student || !category || !isCategoryVisibleToStudent(category, student)) {
+    elements.recordMessage.textContent =
+      "Select a student and a subject / grade item assigned to that student.";
     return;
   }
 
@@ -2120,12 +3002,28 @@ document.getElementById("adminTabs").addEventListener("click", (event) => {
   document.getElementById(button.dataset.tab).classList.add("active");
 });
 
+document.getElementById("studentTabs").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-student-tab]");
+  if (!button) return;
+
+  document
+    .querySelectorAll("#studentTabs .tab-button")
+    .forEach((item) => item.classList.remove("active"));
+  document
+    .querySelectorAll(".student-tab-page")
+    .forEach((item) => item.classList.remove("active"));
+
+  button.classList.add("active");
+  document.getElementById(button.dataset.studentTab).classList.add("active");
+});
+
 document.body.addEventListener("click", async (event) => {
   const classId = event.target.dataset.deleteClass;
   const studentId = event.target.dataset.deleteStudent;
   const subjectId = event.target.dataset.deleteSubject;
   const categoryId = event.target.dataset.deleteCategory;
   const recordId = event.target.dataset.deleteRecord;
+  const announcementId = event.target.dataset.deleteAnnouncement;
 
   try {
     if (classId) {
@@ -2167,7 +3065,11 @@ document.body.addEventListener("click", async (event) => {
       await deleteDoc(doc(db, "grades", recordId));
     }
 
-    if (classId || studentId || subjectId || categoryId || recordId) {
+    if (announcementId && confirm("Remove this announcement for every recipient?")) {
+      await deleteDoc(doc(db, "announcements", announcementId));
+    }
+
+    if (classId || studentId || subjectId || categoryId || recordId || announcementId) {
       await loadAdminData();
     }
   } catch (error) {
