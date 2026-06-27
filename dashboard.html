@@ -809,6 +809,11 @@
           <span>Events</span>
         </a>
 
+        <a class="nav-item" href="./quiz.html">
+          <span class="nav-icon">📝</span>
+          <span>Quizzes</span>
+        </a>
+
         <a class="nav-item" href="./savelists.html">
           <span class="nav-icon">💾</span>
           <span>SaveList</span>
@@ -854,6 +859,7 @@
 
           <div class="header-actions">
             <a class="button secondary-button" href="./announcements.html">📢 Announcements</a>
+            <a class="button secondary-button" href="./quiz.html">📝 Quizzes</a>
             <a class="button accent-button" href="./index.html">Open Grades</a>
           </div>
         </div>
@@ -1088,7 +1094,7 @@
     }
 
     async function loadAdminData() {
-      const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, savesSnap] =
+      const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, savesSnap, quizzesSnap] =
         await Promise.all([
           getDocs(collection(db, "classes")),
           getDocs(collection(db, "users")),
@@ -1096,7 +1102,8 @@
           getDocs(collection(db, "categories")),
           getDocs(collection(db, "grades")),
           getDocs(collection(db, "announcements")),
-          getDocs(collection(db, "savelists"))
+          getDocs(collection(db, "savelists")),
+          getDocs(collection(db, "quizzes"))
         ]);
 
       return {
@@ -1106,19 +1113,21 @@
         categories: snapshotToArray(categoriesSnap),
         grades: snapshotToArray(gradesSnap),
         announcements: snapshotToArray(announcementsSnap),
-        saves: snapshotToArray(savesSnap)
+        saves: snapshotToArray(savesSnap),
+        quizzes: snapshotToArray(quizzesSnap)
       };
     }
 
     async function loadStudentData(userId) {
-      const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, savesSnap] =
+      const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, savesSnap, quizzesSnap] =
         await Promise.all([
           getDocs(collection(db, "classes")),
           getDocs(collection(db, "subjects")),
           getDocs(collection(db, "categories")),
           getDocs(query(collection(db, "grades"), where("studentId", "==", userId))),
           getDocs(query(collection(db, "announcements"), where("recipientIds", "array-contains", userId))),
-          getDocs(query(collection(db, "savelists"), where("ownerId", "==", userId)))
+          getDocs(query(collection(db, "savelists"), where("ownerId", "==", userId))),
+          getDocs(query(collection(db, "quizzes"), where("recipientIds", "array-contains", userId)))
         ]);
 
       return {
@@ -1127,7 +1136,8 @@
         categories: snapshotToArray(categoriesSnap),
         grades: snapshotToArray(gradesSnap),
         announcements: snapshotToArray(announcementsSnap),
-        saves: snapshotToArray(savesSnap)
+        saves: snapshotToArray(savesSnap),
+        quizzes: snapshotToArray(quizzesSnap)
       };
     }
 
@@ -1154,6 +1164,7 @@
       elements.summaryGrid.innerHTML = [
         summaryCard("Students", students.length, `${dashboardData.classes.length} classes`, true),
         summaryCard("Subjects", dashboardData.subjects.length, `${dashboardData.categories.length} grade items`),
+        summaryCard("Quizzes", dashboardData.quizzes?.length || 0, "Created quiz assignments"),
         summaryCard("Announcements", dashboardData.announcements.length, "Published school messages"),
         summaryCard("SaveLists", dashboardData.saves.length, `${bannedStudents.length} banned students`)
       ].join("");
@@ -1162,6 +1173,7 @@
         quickCard("./index.html", "📊", "Grades & setup", "Manage classes, students, subjects, subcategories, and grades."),
         quickCard("./announcements.html", "📢", "Announcements", "Send rich announcements to grades or selected students."),
         quickCard("./events.html", "📅", "Events", "Create events for entire classes and selected students."),
+        quickCard("./quiz.html", "📝", "Quizzes", "Create quiz questions, set points, and grade student attempts."),
         quickCard("./savelists.html", "💾", "SaveList moderation", "Review student saves, remove content, ban, and unban."),
         quickCard("./accounts.html", "🔑", "Student accounts", "View student usernames and account details."),
         ...(["owner", "co-owner"].includes(currentProfile.role) ? [quickCard("./owner.html", "👑", "Owner controls", "Manage administrators, co-owners, and website WIP mode.")] : [])
@@ -1260,6 +1272,7 @@
       elements.summaryGrid.innerHTML = [
         summaryCard("Overall GPA", overallGpa.toFixed(2), summaries.length ? `${summaries.length} graded subjects` : "No completed grades", true),
         summaryCard("Class", className, `${visibleSubjects.length} visible subjects`),
+        summaryCard("Quizzes", dashboardData.quizzes?.length || 0, `You have ${dashboardData.quizzes?.length || 0} quiz available.`),
         summaryCard("Completed", doneCount, "Grade items marked done"),
         summaryCard("Not done", notDoneCount, "Remaining visible grade items")
       ].join("");
@@ -1268,6 +1281,7 @@
         quickCard("./index.html", "📊", "My grades", "View scores, letter grades, GPA, and completion status."),
         quickCard("./announcements.html", "📢", "My announcements", "Read messages sent to you or your class."),
         quickCard("./events.html", "📅", "My events", "View events selected for you or your class."),
+        quickCard("./quiz.html", "📝", "My quizzes", "Complete available quizzes and see graded results."),
         quickCard("./savelists.html", "💾", "My SaveList", "Create and manage your school-monitored saved notes and images."),
         quickCard("./index.html", "🎓", "Student portal", "Open your full class and grade information.")
       ].join("");
