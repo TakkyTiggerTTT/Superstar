@@ -831,6 +831,16 @@
               <div class="image-preview-grid" id="imagePreviewGrid"></div>
             </div>
 
+            <div class="field hidden" id="announcementHideNameField">
+              <label class="checkbox-item" style="align-items: center;">
+                <input id="announcementHideName" type="checkbox">
+                <span>
+                  <strong>Hide my name</strong>
+                  <small>Owner and co-owner only. Students will still see your role.</small>
+                </span>
+              </label>
+            </div>
+
             <div class="selection-block">
               <div class="selection-header">
                 <h4>Grades / Classes</h4>
@@ -974,6 +984,8 @@
       announcementEditor: document.getElementById("announcementEditor"),
       editorToolbar: document.getElementById("editorToolbar"),
       announcementImages: document.getElementById("announcementImages"),
+      announcementHideNameField: document.getElementById("announcementHideNameField"),
+      announcementHideName: document.getElementById("announcementHideName"),
       addImagesButton: document.getElementById("addImagesButton"),
       imageStatus: document.getElementById("imageStatus"),
       imagePreviewGrid: document.getElementById("imagePreviewGrid"),
@@ -1075,6 +1087,38 @@
       const wrapper = document.createElement("div");
       wrapper.innerHTML = sanitizeRichHtml(value);
       return (wrapper.innerText || wrapper.textContent || "").trim();
+    }
+
+
+    function roleLabel(role) {
+      const value = String(role || "").toLowerCase();
+      if (value === "owner") return "Owner";
+      if (value === "co-owner") return "Co-owner";
+      if (value === "admin") return "Administrator";
+      if (value === "teacher") return "Teacher";
+      if (value === "moderator") return "Moderator";
+      return value ? value.replace(/(^|[-_\s])([a-z])/g, (match) => match.toUpperCase()).replaceAll("-", " ") : "Staff";
+    }
+
+    function canHideAnnouncementName(profile = currentProfile) {
+      return ["owner", "co-owner"].includes(String(profile?.role || "").toLowerCase());
+    }
+
+    function announcementSenderText(announcement) {
+      const role = announcement.createdByRole || announcement.authorRole || "admin";
+      const roleText = roleLabel(role);
+      const mayHide = ["owner", "co-owner"].includes(String(role).toLowerCase());
+      const hidden = announcement.hideAuthorName === true && mayHide;
+      if (hidden) return roleText;
+      const name = announcement.createdByName || announcement.authorName || "Staff";
+      return `${name} · ${roleText}`;
+    }
+
+    function updateAnnouncementPrivacyControl() {
+      if (!elements.announcementHideNameField || !elements.announcementHideName) return;
+      const allowed = canHideAnnouncementName();
+      elements.announcementHideNameField.classList.toggle("hidden", !allowed);
+      if (!allowed) elements.announcementHideName.checked = false;
     }
 
     function renderAnnouncementBody(announcement) {
@@ -1358,6 +1402,7 @@
                     ${escapeHtml(formatDate(announcement.createdAt))} ·
                     ${announcement.recipientIds?.length || 0} recipient${announcement.recipientIds?.length === 1 ? "" : "s"}
                   </div>
+                  <div class="announcement-byline">Sent by ${escapeHtml(announcementSenderText(announcement))}</div>
                 </div>
 
                 <button
@@ -1421,14 +1466,12 @@
                     <div class="announcement-meta">
                       ${escapeHtml(formatDate(announcement.createdAt))} · ${escapeHtml(audienceLabel)}
                     </div>
+                    <div class="announcement-byline">Sent by ${escapeHtml(announcementSenderText(announcement))}</div>
                   </div>
                 </div>
 
                 <div class="announcement-message">${renderAnnouncementBody(announcement)}</div>
                 ${renderAnnouncementImages(announcement)}
-                <div class="announcement-targets">
-                  Posted by ${escapeHtml(announcement.createdByName || "Administrator")}
-                </div>
               </article>
             `;
           }).join("")
@@ -1525,10 +1568,13 @@
           recipientIds,
           createdBy: auth.currentUser.uid,
           createdByName: currentProfile.name || currentProfile.username || "Administrator",
+          createdByRole: currentProfile.role || "admin",
+          hideAuthorName: canHideAnnouncementName() && elements.announcementHideName?.checked === true,
           createdAt: serverTimestamp()
         });
 
         elements.announcementForm.reset();
+        updateAnnouncementPrivacyControl();
         elements.announcementEditor.innerHTML = "";
         pendingImages = [];
         renderPendingImages();
@@ -1703,6 +1749,7 @@
         if (["admin", "co-owner", "owner"].includes(currentProfile.role)) {
           elements.accountsLink.classList.remove("hidden");
           showOnly("admin");
+          updateAnnouncementPrivacyControl();
           await loadAdminData();
           return;
         }
