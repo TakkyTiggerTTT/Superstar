@@ -882,40 +882,56 @@
 
     async function submitQuiz(event) {
       event.preventDefault();
-      if (!activeQuiz) return;
-      const attemptId = `${activeQuiz.id}_${profile.id}`;
-      const existing = await getDoc(doc(db, "quizAttempts", attemptId));
-      if (existing.exists()) {
-        els.takeMessage.className = "message err";
-        els.takeMessage.textContent = "You already submitted this quiz.";
-        return;
-      }
-      const answers = (activeQuiz.questions || []).map((question) => ({
-        questionId: question.id,
-        questionText: question.text,
-        points: Number(question.points || 0),
-        answer: document.querySelector(`[data-student-answer="${CSS.escape(question.id)}"]`)?.value.trim() || ""
-      }));
-      if (answers.some((answer) => !answer.answer)) {
-        els.takeMessage.className = "message err";
-        els.takeMessage.textContent = "Answer every question before submitting.";
-        return;
-      }
+      if (!activeQuiz || !profile?.id) return;
+
+      const submitButton = els.takeQuizForm.querySelector("button[type='submit']");
+      if (submitButton) submitButton.disabled = true;
+
+      const attemptId = `${String(activeQuiz.id)}_${String(profile.id)}`;
+
       try {
-        await setDoc(doc(db, "quizAttempts", attemptId), {
-          quizId: activeQuiz.id,
-          quizTitle: activeQuiz.title,
-          subjectId: activeQuiz.subjectId,
-          subjectName: activeQuiz.subjectName || "Subject",
-          categoryId: activeQuiz.categoryId,
-          categoryName: activeQuiz.categoryName || "Category",
-          studentId: profile.id,
-          studentName: profile.name || profile.username || "Student",
+        const existing = await getDoc(doc(db, "quizAttempts", attemptId));
+        if (existing.exists()) {
+          els.takeMessage.className = "message err";
+          els.takeMessage.textContent = "You already submitted this quiz.";
+          return;
+        }
+
+        const answers = (activeQuiz.questions || []).map((question) => {
+          const questionId = String(question.id || uid());
+          const input = document.querySelector(`[data-student-answer="${CSS.escape(questionId)}"]`);
+
+          return {
+            questionId,
+            questionText: String(question.text || "Question"),
+            points: Number(question.points || 0),
+            answer: String(input?.value || "").trim()
+          };
+        });
+
+        if (answers.length === 0 || answers.some((answer) => !answer.answer)) {
+          els.takeMessage.className = "message err";
+          els.takeMessage.textContent = "Answer every question before submitting.";
+          return;
+        }
+
+        const payload = {
+          quizId: String(activeQuiz.id),
+          quizTitle: String(activeQuiz.title || "Quiz"),
+          subjectId: String(activeQuiz.subjectId || ""),
+          subjectName: String(activeQuiz.subjectName || "Subject"),
+          categoryId: String(activeQuiz.categoryId || ""),
+          categoryName: String(activeQuiz.categoryName || "Subcategory"),
+          studentId: String(profile.id),
+          studentName: String(profile.name || profile.username || profile.email || "Student"),
           answers,
           status: "submitted",
-          maxPoints: activeQuiz.totalPoints || pointsTotal(activeQuiz),
+          maxPoints: Number(activeQuiz.totalPoints || pointsTotal(activeQuiz) || 0),
           submittedAt: serverTimestamp()
-        });
+        };
+
+        await setDoc(doc(db, "quizAttempts", attemptId), payload);
+
         activeQuiz = null;
         els.takeQuizPanel.classList.add("hidden");
         els.availablePanel.classList.remove("hidden");
@@ -923,7 +939,12 @@
       } catch (error) {
         console.error(error);
         els.takeMessage.className = "message err";
-        els.takeMessage.textContent = error.message || "Could not submit quiz.";
+        const text = String(error?.message || "");
+        els.takeMessage.textContent = text.toLowerCase().includes("permission")
+          ? "Could not submit quiz because Firestore rules are blocking quiz submissions. Update and publish the quiz rules I sent."
+          : text || "Could not submit quiz.";
+      } finally {
+        if (submitButton) submitButton.disabled = false;
       }
     }
 
