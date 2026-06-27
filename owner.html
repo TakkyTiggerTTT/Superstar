@@ -177,15 +177,25 @@
       document.documentElement.style.setProperty("--accent", settings.accentColor || "#ffb74d");
     }
 
-    async function writeLog(action, targetId = "", targetName = "") {
-      if (!auth.currentUser || !profile) return;
-      await addDoc(collection(db, "activityLogs"), {
-        action, targetId, targetName,
-        actorId: auth.currentUser.uid,
-        actorName: profile.name || profile.username || "Staff",
-        actorRole: profile.role,
-        createdAt: serverTimestamp()
-      }).catch(() => {});
+    async function writeLog(action, targetId = "", targetName = "", details = {}) {
+      if (!auth.currentUser || !profile) return false;
+      try {
+        await addDoc(collection(db, "activityLogs"), {
+          action,
+          targetId,
+          targetName,
+          details,
+          actorId: auth.currentUser.uid,
+          actorName: profile.name || profile.username || profile.email || "Staff",
+          actorRole: profile.role || "staff",
+          page: "owner.html",
+          createdAt: serverTimestamp()
+        });
+        return true;
+      } catch (error) {
+        console.warn("Activity log failed:", error);
+        return false;
+      }
     }
 
     function roleOptions(user) {
@@ -251,17 +261,34 @@
 
     $("saveWip").addEventListener("click", async () => {
       $("saveWip").disabled = true;
+      $("wipResult").style.color = "var(--muted)";
       $("wipResult").textContent = "Saving…";
+      const nextWipEnabled = settings.wipEnabled === true;
+      const nextWipMessage = $("wipMessage").value.trim() || "Superstar School is being updated. Please check again later.";
       try {
         await setDoc(doc(db, "settings", "site"), {
-          wipEnabled: settings.wipEnabled,
-          wipMessage: $("wipMessage").value.trim() || "Superstar School is being updated. Please check again later.",
+          wipEnabled: nextWipEnabled,
+          wipMessage: nextWipMessage,
           updatedAt: serverTimestamp(),
-          updatedBy: auth.currentUser.uid
+          updatedBy: auth.currentUser.uid,
+          updatedByName: profile.name || profile.username || profile.email || "Staff",
+          updatedByRole: profile.role || "staff"
         }, { merge: true });
-        await writeLog(settings.wipEnabled ? "Turned WIP mode on" : "Turned WIP mode off", "settings/site", "Website status");
-        $("wipResult").style.color = "var(--success)";
-        $("wipResult").textContent = "Website status saved.";
+
+        const logSaved = await writeLog(
+          nextWipEnabled ? "Turned WIP mode on" : "Turned WIP mode off",
+          "settings/site",
+          nextWipEnabled ? "Website is now in WIP mode" : "Website is now open",
+          { wipEnabled: nextWipEnabled, wipMessage: nextWipMessage }
+        );
+
+        if (logSaved) {
+          $("wipResult").style.color = "var(--success)";
+          $("wipResult").textContent = nextWipEnabled ? "WIP mode saved and activity log recorded." : "Website opened and activity log recorded.";
+        } else {
+          $("wipResult").style.color = "var(--danger)";
+          $("wipResult").textContent = "WIP status saved, but the activity log was blocked. Publish the Activity Log Firestore rules fix.";
+        }
       } catch (error) {
         $("wipResult").style.color = "var(--danger)";
         $("wipResult").textContent = error.message;
@@ -280,7 +307,7 @@
           themeUpdatedAt: serverTimestamp(),
           themeUpdatedBy: auth.currentUser.uid
         }, { merge: true });
-        await writeLog("Updated school theme", "settings/site", `${$("themeMode").value} ${$("accentColor").value}`);
+        await writeLog("Updated school theme", "settings/site", `${$("themeMode").value} ${$("accentColor").value}`, { themeMode: $("themeMode").value, accentColor: $("accentColor").value });
         $("themeResult").style.color = "var(--success)";
         $("themeResult").textContent = "Theme saved.";
       } catch (error) {
