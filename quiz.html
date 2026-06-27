@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar School quiz portal">
+  <title>Superstar Quizzes</title>
+  <link rel="stylesheet" href="./school-shell.css">
+  <style>
+    :root {
+      --bg: #070a14;
+      --bg-soft: #11182c;
+      --panel: rgba(255,255,255,.075);
+      --panel-solid: #11182c;
+      --border: rgba(255,255,255,.16);
+      --text: #fff;
+      --muted: #aeb9d2;
+      --accent: #ffb74d;
+      --accent-text: #261600;
+      --success: #79e8ad;
+      --danger: #ff8e8e;
+      --blue: #91aaff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 0%, #263b73, transparent 38rem),
+        var(--bg);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .6; }
+    .hidden { display: none !important; }
+
+    main {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 48px 24px 100px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 7vw, 4.5rem);
+      line-height: .95;
+      letter-spacing: -2px;
+      margin-bottom: 10px;
+    }
+    .lead { color: var(--muted); line-height: 1.65; max-width: 760px; }
+    .badge {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 7px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: #bdcaff;
+      background: var(--panel);
+      font-weight: 750;
+    }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .primary { color: #091021; background: #fff; }
+    .accent { color: var(--accent-text); background: var(--accent); }
+    .secondary { color: var(--text); border: 1px solid var(--border); background: var(--panel); }
+    .danger { color: var(--danger); border: 1px solid rgba(255,142,142,.35); background: rgba(255,142,142,.09); }
+    .success { color: #07140d; background: var(--success); }
+    .full { width: 100%; }
+
+    .grid { display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 20px; align-items: start; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin: 20px 0; }
+    .card, .panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(17,24,44,.92);
+      box-shadow: 0 22px 70px rgba(0,0,0,.2);
+      backdrop-filter: blur(12px);
+    }
+    .card { padding: 20px; }
+    .panel { padding: 24px; margin-bottom: 18px; }
+    .label { color: var(--muted); font-size: .92rem; margin-bottom: 7px; }
+    .value { font-size: 2rem; font-weight: 900; }
+    .panel h2, .panel h3 { margin-bottom: 9px; }
+    .note { color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+
+    .field { margin-bottom: 15px; }
+    .field label { display: block; margin-bottom: 8px; color: #dce4f7; font-weight: 800; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255,255,255,.065);
+    }
+    .field textarea { min-height: 100px; resize: vertical; line-height: 1.55; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(145,170,255,.13);
+    }
+    .field select option { color: #111; }
+    .check-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; max-height: 230px; overflow: auto; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.035); }
+    .check-item { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 8px; color: #dce4f7; }
+    .check-item:hover { background: rgba(255,255,255,.06); }
+    .check-item input { width: auto; }
+
+    .question-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      margin-bottom: 12px;
+    }
+    .question-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .question-head strong { color: var(--accent); }
+
+    .tabbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+    .tab {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      background: var(--panel);
+      font-weight: 800;
+    }
+    .tab.active { color: var(--accent-text); background: var(--accent); border-color: transparent; }
+    .tabpage { display: none; }
+    .tabpage.active { display: block; }
+
+    .list { display: grid; gap: 12px; }
+    .item {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.055);
+    }
+    .item-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .item h3 { margin-bottom: 6px; }
+    .meta { color: var(--muted); font-size: .92rem; line-height: 1.55; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .pill.open { color: #07140d; background: var(--success); }
+    .pill.submitted { color: #1b1405; background: var(--accent); }
+    .pill.graded { color: #091021; background: #fff; }
+
+    .empty {
+      padding: 34px 18px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
+    table { width: 100%; min-width: 850px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { color: #dce4f7; background: rgba(255,255,255,.055); font-size: .9rem; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .answer-box { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,.18); }
+    .correct { color: var(--success); }
+    .wrong { color: var(--danger); }
+    .message { min-height: 24px; margin-top: 12px; font-weight: 800; }
+    .message.ok { color: var(--success); }
+    .message.err { color: var(--danger); }
+
+    @media (max-width: 980px) {
+      .grid, .cards { grid-template-columns: 1fr; }
+      .check-grid { grid-template-columns: 1fr; }
+      .topbar, .item-head, .question-head { flex-direction: column; }
+      main { padding: 78px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="badge">📝 Superstar Quizzes</div>
+        <h1>Quizzes</h1>
+        <p class="lead" id="pageLead">Loading quiz portal...</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="button secondary" href="./dashboard.html">🏫 Dashboard</a>
+        <button class="button secondary" id="refreshButton" type="button">↻ Refresh</button>
+      </div>
+    </div>
+
+    <section id="loadingView" class="panel">
+      <h2>Loading...</h2>
+      <p class="note">Checking your Superstar account and quiz access.</p>
+    </section>
+
+    <section id="signedOutView" class="panel hidden">
+      <h2>Sign in required</h2>
+      <p class="note">Please sign in from the main portal before opening quizzes.</p>
+      <a class="button accent" href="./index.html">Go to Login</a>
+    </section>
+
+    <section id="adminView" class="hidden">
+      <div class="cards">
+        <div class="card"><div class="label">Published quizzes</div><div class="value" id="quizCount">0</div></div>
+        <div class="card"><div class="label">Submitted attempts</div><div class="value" id="submittedCount">0</div></div>
+        <div class="card"><div class="label">Graded attempts</div><div class="value" id="gradedCount">0</div></div>
+        <div class="card"><div class="label">Open attempts</div><div class="value" id="openAttemptCount">0</div></div>
+      </div>
+
+      <div class="tabbar">
+        <button class="tab active" type="button" data-tab="createTab">Create Quiz</button>
+        <button class="tab" type="button" data-tab="quizzesTab">Quizzes</button>
+        <button class="tab" type="button" data-tab="attemptsTab">Attempts</button>
+      </div>
+
+      <section class="tabpage active" id="createTab">
+        <div class="grid">
+          <section class="panel">
+            <h2>Create quiz</h2>
+            <p class="note">Students cannot read the answer key. They only see the questions until you grade the attempt.</p>
+            <form id="quizForm">
+              <div class="field">
+                <label for="quizTitle">Quiz title</label>
+                <input id="quizTitle" type="text" maxlength="120" placeholder="Example: Science Chapter 1 Quiz" required>
+              </div>
+              <div class="field">
+                <label for="quizSubject">Subject</label>
+                <select id="quizSubject" required></select>
+              </div>
+              <div class="field">
+                <label for="quizCategory">Subcategory</label>
+                <select id="quizCategory" required></select>
+              </div>
+              <div class="field">
+                <label for="quizInstructions">Instructions</label>
+                <textarea id="quizInstructions" maxlength="1200" placeholder="Students will see this before starting."></textarea>
+              </div>
+              <div class="field">
+                <label>Target classes / grades</label>
+                <div class="check-grid" id="classTargets"></div>
+              </div>
+              <div class="field">
+                <label>Target individual students</label>
+                <div class="check-grid" id="studentTargets"></div>
+              </div>
+              <div class="message" id="createMessage" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="item-head">
+              <div>
+                <h2>Questions</h2>
+                <p class="note">Each question has its own point value and hidden correct answer.</p>
+              </div>
+              <button class="button secondary" id="addQuestionButton" type="button">+ Add question</button>
+            </div>
+            <div id="questionBuilder"></div>
+            <button class="button accent full" id="publishQuizButton" type="button">Publish quiz</button>
+          </section>
+        </div>
+      </section>
+
+      <section class="tabpage" id="quizzesTab">
+        <section class="panel">
+          <div class="item-head">
+            <div>
+              <h2>Published quizzes</h2>
+              <p class="note">Delete quizzes from here. This also removes answer keys and attempts for that quiz.</p>
+            </div>
+          </div>
+          <div class="list" id="adminQuizList"></div>
+        </section>
+      </section>
+
+      <section class="tabpage" id="attemptsTab">
+        <section class="panel">
+          <h2>Student attempts</h2>
+          <p class="note">Use Grade Attempt to check answers against the hidden answer key and publish the result.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Quiz</th>
+                  <th>Status</th>
+                  <th>Score</th>
+                  <th>Submitted answers</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="attemptTable"></tbody>
+            </table>
+          </div>
+          <div class="empty hidden" id="attemptEmpty">No attempts have been submitted yet.</div>
+        </section>
+      </section>
+    </section>
+
+    <section id="studentView" class="hidden">
+      <div class="cards">
+        <div class="card"><div class="label">Available quizzes</div><div class="value" id="studentAvailableCount">0</div></div>
+        <div class="card"><div class="label">Submitted</div><div class="value" id="studentSubmittedCount">0</div></div>
+        <div class="card"><div class="label">Graded</div><div class="value" id="studentGradedCount">0</div></div>
+        <div class="card"><div class="label">Total quiz points</div><div class="value" id="studentPointCount">0</div></div>
+      </div>
+
+      <section class="panel" id="availablePanel">
+        <h2 id="availableHeading">You have 0 quiz available.</h2>
+        <p class="note">You cannot see the answers before completing the quiz.</p>
+        <div class="list" id="studentQuizList"></div>
+      </section>
+
+      <section class="panel hidden" id="takeQuizPanel">
+        <div class="item-head">
+          <div>
+            <h2 id="takeQuizTitle">Take quiz</h2>
+            <p class="note" id="takeQuizMeta"></p>
+          </div>
+          <button class="button secondary" id="cancelTakeButton" type="button">Cancel</button>
+        </div>
+        <form id="takeQuizForm">
+          <div id="takeQuestions"></div>
+          <button class="button accent full" type="submit">Submit quiz</button>
+          <div class="message" id="takeMessage" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>My completed quizzes</h2>
+        <p class="note">Submitted quizzes stay here. Correct answers appear only after the quiz is graded.</p>
+        <div class="list" id="studentAttemptList"></div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./school-shell.js"></script>
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+      deleteDoc, query, where, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const els = {
+      loadingView: document.getElementById("loadingView"),
+      signedOutView: document.getElementById("signedOutView"),
+      adminView: document.getElementById("adminView"),
+      studentView: document.getElementById("studentView"),
+      pageLead: document.getElementById("pageLead"),
+      refreshButton: document.getElementById("refreshButton"),
+      quizCount: document.getElementById("quizCount"),
+      submittedCount: document.getElementById("submittedCount"),
+      gradedCount: document.getElementById("gradedCount"),
+      openAttemptCount: document.getElementById("openAttemptCount"),
+      quizForm: document.getElementById("quizForm"),
+      quizTitle: document.getElementById("quizTitle"),
+      quizSubject: document.getElementById("quizSubject"),
+      quizCategory: document.getElementById("quizCategory"),
+      quizInstructions: document.getElementById("quizInstructions"),
+      classTargets: document.getElementById("classTargets"),
+      studentTargets: document.getElementById("studentTargets"),
+      createMessage: document.getElementById("createMessage"),
+      addQuestionButton: document.getElementById("addQuestionButton"),
+      questionBuilder: document.getElementById("questionBuilder"),
+      publishQuizButton: document.getElementById("publishQuizButton"),
+      adminQuizList: document.getElementById("adminQuizList"),
+      attemptTable: document.getElementById("attemptTable"),
+      attemptEmpty: document.getElementById("attemptEmpty"),
+      studentAvailableCount: document.getElementById("studentAvailableCount"),
+      studentSubmittedCount: document.getElementById("studentSubmittedCount"),
+      studentGradedCount: document.getElementById("studentGradedCount"),
+      studentPointCount: document.getElementById("studentPointCount"),
+      availableHeading: document.getElementById("availableHeading"),
+      studentQuizList: document.getElementById("studentQuizList"),
+      availablePanel: document.getElementById("availablePanel"),
+      takeQuizPanel: document.getElementById("takeQuizPanel"),
+      takeQuizTitle: document.getElementById("takeQuizTitle"),
+      takeQuizMeta: document.getElementById("takeQuizMeta"),
+      takeQuestions: document.getElementById("takeQuestions"),
+      takeQuizForm: document.getElementById("takeQuizForm"),
+      takeMessage: document.getElementById("takeMessage"),
+      cancelTakeButton: document.getElementById("cancelTakeButton"),
+      studentAttemptList: document.getElementById("studentAttemptList")
+    };
+
+    let profile = null;
+    let data = {
+      users: [], classes: [], subjects: [], categories: [], quizzes: [], attempts: [], answerKeys: []
+    };
+    let questions = [];
+    let activeQuiz = null;
+
+    function isAdminRole(role) {
+      return role === "admin" || role === "co-owner" || role === "owner";
+    }
+
+    function showOnly(view) {
+      for (const key of ["loadingView", "signedOutView", "adminView", "studentView"]) {
+        els[key].classList.toggle("hidden", key !== view);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function snapshotToArray(snapshot) {
+      return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+    }
+
+    function getSubject(id) { return data.subjects.find((item) => item.id === id); }
+    function getCategory(id) { return data.categories.find((item) => item.id === id); }
+    function getClass(id) { return data.classes.find((item) => item.id === id); }
+    function getUser(id) { return data.users.find((item) => item.id === id); }
+    function getAttemptForQuiz(quizId, studentId) {
+      return data.attempts.find((attempt) => attempt.quizId === quizId && attempt.studentId === studentId);
+    }
+    function getAnswerKey(quizId) { return data.answerKeys.find((key) => key.id === quizId); }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const date = value.toDate ? value.toDate() : new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function pointsTotal(quiz) {
+      return (quiz.questions || []).reduce((sum, question) => sum + Number(question.points || 0), 0);
+    }
+
+    function selectedValues(container) {
+      return [...container.querySelectorAll("input[type='checkbox']:checked")].map((box) => box.value);
+    }
+
+    function fillSelect(select, items, placeholder, labeler) {
+      const current = select.value;
+      select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+      for (const item of items) {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = labeler(item);
+        select.appendChild(option);
+      }
+      if (items.some((item) => item.id === current)) select.value = current;
+    }
+
+    function renderTargetChecks() {
+      els.classTargets.innerHTML = data.classes.length
+        ? data.classes.map((item) => `
+          <label class="check-item">
+            <input type="checkbox" value="${escapeHtml(item.id)}">
+            <span>${escapeHtml(item.name)}</span>
+          </label>
+        `).join("")
+        : `<div class="empty">No classes yet.</div>`;
+
+      const students = data.users.filter((item) => item.role === "student");
+      els.studentTargets.innerHTML = students.length
+        ? students.map((item) => `
+          <label class="check-item">
+            <input type="checkbox" value="${escapeHtml(item.id)}">
+            <span>${escapeHtml(item.name || item.username || item.email)}<br><small class="meta">${escapeHtml(getClass(item.classId)?.name || "No class")}</small></span>
+          </label>
+        `).join("")
+        : `<div class="empty">No students yet.</div>`;
+    }
+
+    function syncQuizSelects() {
+      fillSelect(els.quizSubject, data.subjects, "Select subject", (item) => item.name || "Unnamed subject");
+      const categories = data.categories.filter((item) => item.subjectId === els.quizSubject.value);
+      fillSelect(els.quizCategory, categories, "Select subcategory", (item) => item.name || "Unnamed item");
+    }
+
+    function renderQuestionBuilder() {
+      if (questions.length === 0) {
+        questions.push({ id: uid(), text: "", points: 1, correctAnswer: "" });
+      }
+
+      els.questionBuilder.innerHTML = questions.map((question, index) => `
+        <div class="question-card" data-question-id="${escapeHtml(question.id)}">
+          <div class="question-head">
+            <strong>Question ${index + 1}</strong>
+            <button class="button danger remove-question" type="button" data-remove-question="${escapeHtml(question.id)}">Remove</button>
+          </div>
+          <div class="field">
+            <label>Question text</label>
+            <textarea data-question-text="${escapeHtml(question.id)}" maxlength="1200" required>${escapeHtml(question.text)}</textarea>
+          </div>
+          <div class="field">
+            <label>Points</label>
+            <input data-question-points="${escapeHtml(question.id)}" type="number" min="0.5" max="100" step="0.5" value="${escapeHtml(question.points)}" required>
+          </div>
+          <div class="field">
+            <label>Correct answer hidden from students</label>
+            <input data-question-answer="${escapeHtml(question.id)}" type="text" maxlength="500" value="${escapeHtml(question.correctAnswer)}" required>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function collectQuestionsFromDom() {
+      questions = questions.map((question) => {
+        const text = document.querySelector(`[data-question-text="${CSS.escape(question.id)}"]`)?.value.trim() || "";
+        const points = Number(document.querySelector(`[data-question-points="${CSS.escape(question.id)}"]`)?.value || 0);
+        const correctAnswer = document.querySelector(`[data-question-answer="${CSS.escape(question.id)}"]`)?.value.trim() || "";
+        return { ...question, text, points, correctAnswer };
+      });
+    }
+
+    function normalizeAnswer(value) {
+      return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+    }
+
+    async function loadAdminData() {
+      const [usersSnap, classesSnap, subjectsSnap, categoriesSnap, quizzesSnap, attemptsSnap, answerKeysSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "classes")),
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(collection(db, "quizzes")),
+        getDocs(collection(db, "quizAttempts")),
+        getDocs(collection(db, "quizAnswerKeys"))
+      ]);
+      data.users = snapshotToArray(usersSnap);
+      data.classes = snapshotToArray(classesSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.subjects = snapshotToArray(subjectsSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.categories = snapshotToArray(categoriesSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.quizzes = snapshotToArray(quizzesSnap).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      data.attempts = snapshotToArray(attemptsSnap).sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      data.answerKeys = snapshotToArray(answerKeysSnap);
+      renderAdmin();
+    }
+
+    async function loadStudentData() {
+      const [subjectsSnap, categoriesSnap, quizzesSnap, attemptsSnap] = await Promise.all([
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(query(collection(db, "quizzes"), where("recipientIds", "array-contains", profile.id))),
+        getDocs(query(collection(db, "quizAttempts"), where("studentId", "==", profile.id)))
+      ]);
+      data.subjects = snapshotToArray(subjectsSnap);
+      data.categories = snapshotToArray(categoriesSnap);
+      data.quizzes = snapshotToArray(quizzesSnap).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      data.attempts = snapshotToArray(attemptsSnap).sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      renderStudent();
+    }
+
+    async function loadEverything() {
+      if (!auth.currentUser || !profile) return;
+      showOnly(isAdminRole(profile.role) ? "adminView" : "studentView");
+      if (isAdminRole(profile.role)) {
+        els.pageLead.textContent = "Create quizzes for classes or selected students, then grade submitted attempts.";
+        await loadAdminData();
+      } else {
+        els.pageLead.textContent = "View available quizzes, complete them once, and check your graded results.";
+        await loadStudentData();
+      }
+    }
+
+    function renderAdmin() {
+      els.quizCount.textContent = String(data.quizzes.length);
+      const submitted = data.attempts.filter((a) => a.status === "submitted").length;
+      const graded = data.attempts.filter((a) => a.status === "graded").length;
+      els.submittedCount.textContent = String(submitted);
+      els.gradedCount.textContent = String(graded);
+      els.openAttemptCount.textContent = String(submitted);
+      syncQuizSelects();
+      renderTargetChecks();
+      renderQuestionBuilder();
+      renderAdminQuizzes();
+      renderAttemptTable();
+    }
+
+    function renderAdminQuizzes() {
+      if (data.quizzes.length === 0) {
+        els.adminQuizList.innerHTML = `<div class="empty">No quizzes have been published yet.</div>`;
+        return;
+      }
+      els.adminQuizList.innerHTML = data.quizzes.map((quiz) => {
+        const subject = getSubject(quiz.subjectId)?.name || quiz.subjectName || "Subject";
+        const category = getCategory(quiz.categoryId)?.name || quiz.categoryName || "Category";
+        const attempts = data.attempts.filter((attempt) => attempt.quizId === quiz.id);
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(quiz.title)}</h3>
+                <div class="meta">${escapeHtml(subject)} → ${escapeHtml(category)} · ${quiz.questionCount || (quiz.questions || []).length} questions · ${quiz.totalPoints || pointsTotal(quiz)} points · ${attempts.length} attempts</div>
+                <div class="meta">Recipients: ${escapeHtml((quiz.recipientNames || []).join(", ") || "Selected students")}</div>
+              </div>
+              <button class="button danger" data-delete-quiz="${escapeHtml(quiz.id)}" type="button">Delete</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderAttemptTable() {
+      els.attemptEmpty.classList.toggle("hidden", data.attempts.length !== 0);
+      els.attemptTable.innerHTML = data.attempts.map((attempt) => {
+        const quiz = data.quizzes.find((item) => item.id === attempt.quizId);
+        const student = getUser(attempt.studentId);
+        const answers = (attempt.answers || []).map((answer, index) => `
+          <div class="answer-box">
+            <strong>Q${index + 1}:</strong> ${escapeHtml(answer.questionText || "Question")}<br>
+            <span class="meta">Student answer:</span> ${escapeHtml(answer.answer || "No answer")}
+          </div>
+        `).join("");
+        return `
+          <tr>
+            <td>${escapeHtml(student?.name || attempt.studentName || "Student")}</td>
+            <td>${escapeHtml(quiz?.title || attempt.quizTitle || "Quiz")}</td>
+            <td><span class="pill ${attempt.status === "graded" ? "graded" : "submitted"}">${attempt.status === "graded" ? "Graded" : "Submitted"}</span><br><small class="meta">${formatDate(attempt.submittedAt)}</small></td>
+            <td>${attempt.status === "graded" ? `${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}` : "Not graded"}</td>
+            <td>${answers}</td>
+            <td>${attempt.status === "graded" ? `<button class="button secondary" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Regrade</button>` : `<button class="button accent" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Grade Attempt</button>`}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderStudent() {
+      const available = data.quizzes.filter((quiz) => !getAttemptForQuiz(quiz.id, profile.id));
+      const submitted = data.attempts.filter((attempt) => attempt.status === "submitted");
+      const graded = data.attempts.filter((attempt) => attempt.status === "graded");
+      const earnedPoints = graded.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
+      els.studentAvailableCount.textContent = String(available.length);
+      els.studentSubmittedCount.textContent = String(submitted.length);
+      els.studentGradedCount.textContent = String(graded.length);
+      els.studentPointCount.textContent = earnedPoints.toFixed(1).replace(/\.0$/, "");
+      els.availableHeading.textContent = `You have ${available.length} quiz${available.length === 1 ? "" : "zes"} available.`;
+      renderStudentQuizzes(available);
+      renderStudentAttempts();
+    }
+
+    function renderStudentQuizzes(available) {
+      if (available.length === 0) {
+        els.studentQuizList.innerHTML = `<div class="empty">No available quizzes right now.</div>`;
+        return;
+      }
+      els.studentQuizList.innerHTML = available.map((quiz) => `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h3>${escapeHtml(quiz.title)}</h3>
+              <div class="meta">${escapeHtml(quiz.subjectName || getSubject(quiz.subjectId)?.name || "Subject")} → ${escapeHtml(quiz.categoryName || getCategory(quiz.categoryId)?.name || "Category")}</div>
+              <div class="meta">${quiz.questionCount || (quiz.questions || []).length} questions · ${quiz.totalPoints || pointsTotal(quiz)} points</div>
+            </div>
+            <button class="button accent" data-start-quiz="${escapeHtml(quiz.id)}" type="button">Start</button>
+          </div>
+          ${quiz.instructions ? `<p class="note">${escapeHtml(quiz.instructions)}</p>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function renderStudentAttempts() {
+      if (data.attempts.length === 0) {
+        els.studentAttemptList.innerHTML = `<div class="empty">You have not completed any quizzes yet.</div>`;
+        return;
+      }
+      els.studentAttemptList.innerHTML = data.attempts.map((attempt) => {
+        const answers = (attempt.answers || []).map((answer, index) => {
+          const graded = (attempt.gradedQuestions || []).find((item) => item.questionId === answer.questionId);
+          return `
+            <div class="answer-box">
+              <strong>Q${index + 1}:</strong> ${escapeHtml(answer.questionText || "Question")}<br>
+              <span class="meta">Your answer:</span> ${escapeHtml(answer.answer || "No answer")}
+              ${attempt.status === "graded" && graded ? `<br><span class="${graded.awardedPoints >= Number(answer.points || 0) ? "correct" : "wrong"}">Points: ${Number(graded.awardedPoints || 0).toFixed(1)} / ${Number(answer.points || 0).toFixed(1)}</span><br><span class="meta">Correct answer:</span> ${escapeHtml(graded.correctAnswer || "")}` : ""}
+            </div>
+          `;
+        }).join("");
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(attempt.quizTitle || "Quiz")}</h3>
+                <div class="meta">Submitted: ${formatDate(attempt.submittedAt)}</div>
+              </div>
+              <span class="pill ${attempt.status === "graded" ? "graded" : "submitted"}">${attempt.status === "graded" ? `Score ${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}` : "Waiting for grade"}</span>
+            </div>
+            ${answers}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function publishQuiz() {
+      collectQuestionsFromDom();
+      els.createMessage.className = "message";
+      els.createMessage.textContent = "";
+
+      const title = els.quizTitle.value.trim();
+      const subject = getSubject(els.quizSubject.value);
+      const category = getCategory(els.quizCategory.value);
+      const classIds = selectedValues(els.classTargets);
+      const directStudentIds = selectedValues(els.studentTargets);
+      const classStudents = data.users.filter((user) => user.role === "student" && classIds.includes(user.classId));
+      const directStudents = data.users.filter((user) => directStudentIds.includes(user.id));
+      const recipientsMap = new Map();
+      for (const student of [...classStudents, ...directStudents]) recipientsMap.set(student.id, student);
+      const recipients = [...recipientsMap.values()];
+
+      if (!title || !subject || !category) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Enter a title, subject, and subcategory.";
+        return;
+      }
+      if (recipients.length === 0) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Select at least one class or student.";
+        return;
+      }
+      if (questions.length === 0 || questions.some((q) => !q.text || !q.correctAnswer || !Number.isFinite(Number(q.points)) || Number(q.points) <= 0)) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Every question needs text, points, and a correct answer.";
+        return;
+      }
+
+      els.publishQuizButton.disabled = true;
+      try {
+        const safeQuestions = questions.map((question, index) => ({
+          id: question.id,
+          number: index + 1,
+          text: question.text,
+          points: Number(question.points)
+        }));
+        const answerKey = questions.map((question) => ({
+          questionId: question.id,
+          correctAnswer: question.correctAnswer,
+          points: Number(question.points)
+        }));
+        const totalPoints = safeQuestions.reduce((sum, question) => sum + question.points, 0);
+        const quizRef = await addDoc(collection(db, "quizzes"), {
+          title,
+          subjectId: subject.id,
+          subjectName: subject.name || "Subject",
+          categoryId: category.id,
+          categoryName: category.name || "Category",
+          instructions: els.quizInstructions.value.trim(),
+          questions: safeQuestions,
+          questionCount: safeQuestions.length,
+          totalPoints,
+          classIds,
+          classNames: classIds.map((id) => getClass(id)?.name || id),
+          recipientIds: recipients.map((student) => student.id),
+          recipientNames: recipients.map((student) => student.name || student.username || student.email),
+          createdBy: auth.currentUser.uid,
+          createdByName: profile.name || profile.username || "Admin",
+          createdAt: serverTimestamp()
+        });
+        await setDoc(doc(db, "quizAnswerKeys", quizRef.id), {
+          quizId: quizRef.id,
+          answers: answerKey,
+          createdBy: auth.currentUser.uid,
+          createdAt: serverTimestamp()
+        });
+        els.createMessage.className = "message ok";
+        els.createMessage.textContent = "Quiz published.";
+        els.quizForm.reset();
+        questions = [{ id: uid(), text: "", points: 1, correctAnswer: "" }];
+        await loadAdminData();
+      } catch (error) {
+        console.error(error);
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = error.message || "Could not publish quiz.";
+      } finally {
+        els.publishQuizButton.disabled = false;
+      }
+    }
+
+    function startQuiz(quizId) {
+      const quiz = data.quizzes.find((item) => item.id === quizId);
+      if (!quiz) return;
+      activeQuiz = quiz;
+      els.takeQuizTitle.textContent = quiz.title;
+      els.takeQuizMeta.textContent = `${quiz.subjectName || "Subject"} → ${quiz.categoryName || "Category"} · ${quiz.totalPoints || pointsTotal(quiz)} points`;
+      els.takeQuestions.innerHTML = (quiz.questions || []).map((question, index) => `
+        <div class="question-card">
+          <div class="question-head">
+            <strong>Question ${index + 1}</strong>
+            <span class="pill open">${Number(question.points || 0).toFixed(1)} pts</span>
+          </div>
+          <p style="line-height:1.6;margin-bottom:12px">${escapeHtml(question.text)}</p>
+          <div class="field">
+            <label>Your answer</label>
+            <textarea data-student-answer="${escapeHtml(question.id)}" required></textarea>
+          </div>
+        </div>
+      `).join("");
+      els.takeMessage.textContent = "";
+      els.takeQuizPanel.classList.remove("hidden");
+      els.availablePanel.classList.add("hidden");
+      els.takeQuizPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function submitQuiz(event) {
+      event.preventDefault();
+      if (!activeQuiz) return;
+      const attemptId = `${activeQuiz.id}_${profile.id}`;
+      const existing = await getDoc(doc(db, "quizAttempts", attemptId));
+      if (existing.exists()) {
+        els.takeMessage.className = "message err";
+        els.takeMessage.textContent = "You already submitted this quiz.";
+        return;
+      }
+      const answers = (activeQuiz.questions || []).map((question) => ({
+        questionId: question.id,
+        questionText: question.text,
+        points: Number(question.points || 0),
+        answer: document.querySelector(`[data-student-answer="${CSS.escape(question.id)}"]`)?.value.trim() || ""
+      }));
+      if (answers.some((answer) => !answer.answer)) {
+        els.takeMessage.className = "message err";
+        els.takeMessage.textContent = "Answer every question before submitting.";
+        return;
+      }
+      try {
+        await setDoc(doc(db, "quizAttempts", attemptId), {
+          quizId: activeQuiz.id,
+          quizTitle: activeQuiz.title,
+          subjectId: activeQuiz.subjectId,
+          subjectName: activeQuiz.subjectName || "Subject",
+          categoryId: activeQuiz.categoryId,
+          categoryName: activeQuiz.categoryName || "Category",
+          studentId: profile.id,
+          studentName: profile.name || profile.username || "Student",
+          answers,
+          status: "submitted",
+          maxPoints: activeQuiz.totalPoints || pointsTotal(activeQuiz),
+          submittedAt: serverTimestamp()
+        });
+        activeQuiz = null;
+        els.takeQuizPanel.classList.add("hidden");
+        els.availablePanel.classList.remove("hidden");
+        await loadStudentData();
+      } catch (error) {
+        console.error(error);
+        els.takeMessage.className = "message err";
+        els.takeMessage.textContent = error.message || "Could not submit quiz.";
+      }
+    }
+
+    async function gradeAttempt(attemptId) {
+      const attempt = data.attempts.find((item) => item.id === attemptId);
+      if (!attempt) return;
+      const key = getAnswerKey(attempt.quizId);
+      if (!key) {
+        alert("Answer key missing. Cannot grade this quiz.");
+        return;
+      }
+      let score = 0;
+      const gradedQuestions = (attempt.answers || []).map((answer) => {
+        const correct = (key.answers || []).find((item) => item.questionId === answer.questionId);
+        const max = Number(correct?.points || answer.points || 0);
+        const matched = normalizeAnswer(answer.answer) === normalizeAnswer(correct?.correctAnswer);
+        const awardedPoints = matched ? max : 0;
+        score += awardedPoints;
+        return {
+          questionId: answer.questionId,
+          awardedPoints,
+          correctAnswer: correct?.correctAnswer || "",
+          matched
+        };
+      });
+      const confirmed = confirm(`Auto-grade this attempt?\n\nScore: ${score.toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}\n\nExact-answer matching is used.`);
+      if (!confirmed) return;
+      await updateDoc(doc(db, "quizAttempts", attempt.id), {
+        status: "graded",
+        score,
+        gradedQuestions,
+        gradedBy: auth.currentUser.uid,
+        gradedByName: profile.name || profile.username || "Admin",
+        gradedAt: serverTimestamp()
+      });
+      await loadAdminData();
+    }
+
+    async function deleteQuiz(quizId) {
+      const confirmed = confirm("Delete this quiz, its hidden answer key, and all attempts for it?");
+      if (!confirmed) return;
+      const attempts = data.attempts.filter((attempt) => attempt.quizId === quizId);
+      await Promise.all([
+        deleteDoc(doc(db, "quizzes", quizId)),
+        deleteDoc(doc(db, "quizAnswerKeys", quizId)).catch(() => {}),
+        ...attempts.map((attempt) => deleteDoc(doc(db, "quizAttempts", attempt.id)))
+      ]);
+      await loadAdminData();
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => item.classList.remove("active"));
+        document.querySelectorAll(".tabpage").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.tab)?.classList.add("active");
+      });
+    });
+
+    els.quizSubject.addEventListener("change", syncQuizSelects);
+    els.addQuestionButton.addEventListener("click", () => {
+      collectQuestionsFromDom();
+      questions.push({ id: uid(), text: "", points: 1, correctAnswer: "" });
+      renderQuestionBuilder();
+    });
+    els.questionBuilder.addEventListener("click", (event) => {
+      const removeId = event.target.dataset.removeQuestion;
+      if (!removeId) return;
+      collectQuestionsFromDom();
+      questions = questions.filter((question) => question.id !== removeId);
+      renderQuestionBuilder();
+    });
+    els.publishQuizButton.addEventListener("click", publishQuiz);
+    els.refreshButton.addEventListener("click", loadEverything);
+    els.adminQuizList.addEventListener("click", (event) => {
+      const id = event.target.dataset.deleteQuiz;
+      if (id) deleteQuiz(id);
+    });
+    els.attemptTable.addEventListener("click", (event) => {
+      const id = event.target.dataset.gradeAttempt;
+      if (id) gradeAttempt(id);
+    });
+    els.studentQuizList.addEventListener("click", (event) => {
+      const id = event.target.dataset.startQuiz;
+      if (id) startQuiz(id);
+    });
+    els.cancelTakeButton.addEventListener("click", () => {
+      activeQuiz = null;
+      els.takeQuizPanel.classList.add("hidden");
+      els.availablePanel.classList.remove("hidden");
+    });
+    els.takeQuizForm.addEventListener("submit", submitQuiz);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        profile = null;
+        showOnly("signedOutView");
+        els.pageLead.textContent = "Sign in to access Superstar quizzes.";
+        return;
+      }
+      showOnly("loadingView");
+      const profileSnap = await getDoc(doc(db, "users", user.uid));
+      if (!profileSnap.exists()) {
+        showOnly("signedOutView");
+        els.pageLead.textContent = "Your account profile was not found.";
+        return;
+      }
+      profile = { id: user.uid, ...profileSnap.data() };
+      await loadEverything();
+    });
+  </script>
+</body>
+</html>
