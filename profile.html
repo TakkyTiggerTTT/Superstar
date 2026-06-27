@@ -3,109 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Superstar School student profile page" />
   <title>Superstar School · Profile</title>
   <link rel="stylesheet" href="./school-shell.css" />
   <style>
+    /* ACTUAL PROFILE FIX V2 - not the old blank file */
     :root{
-      --bg:#070a14;
-      --panel:#11182c;
-      --panel2:#151f38;
-      --soft:rgba(255,255,255,.075);
-      --soft2:rgba(255,255,255,.11);
-      --border:rgba(255,255,255,.16);
-      --text:#fff;
-      --muted:#aeb9d2;
-      --accent:#ffb74d;
-      --accentText:#251500;
-      --success:#79e8ad;
-      --danger:#ff8e8e;
-      --blue:#91aaff;
-      --purple:#d0a2ff;
+      --bg:#070a14;--panel:#11182c;--panel2:#18223b;--border:rgba(255,255,255,.16);--soft:rgba(255,255,255,.07);
+      --text:#fff;--muted:#aeb9d2;--accent:#ffb74d;--accentText:#231400;--green:#79e8ad;--red:#ff8e8e;--blue:#91aaff;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      min-height:100vh;
-      color:var(--text);
-      background:radial-gradient(circle at 70% -10%,#263b73,transparent 38rem),radial-gradient(circle at -10% 20%,rgba(255,183,77,.22),transparent 30rem),var(--bg);
-      font-family:Inter,Arial,sans-serif;
-    }
-    button,input,select,textarea{font:inherit}
-    .hidden{display:none!important}
-    .page{width:min(1220px,100%);margin:auto;padding:48px 24px 100px}
-    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:24px}
-    .top h1{font-size:clamp(2.35rem,7vw,4.65rem);line-height:.95;letter-spacing:-2px}
-    .lead,.note,.meta{color:var(--muted);line-height:1.6}
-    .panel,.card{
-      border:1px solid var(--border);
-      border-radius:22px;
-      background:rgba(17,24,44,.94);
-      box-shadow:0 24px 70px rgba(0,0,0,.22);
-    }
-    .panel{padding:24px;margin-bottom:18px}
-    .card{padding:18px}
-    .button{
-      display:inline-flex;align-items:center;justify-content:center;gap:8px;
-      padding:11px 16px;border:0;border-radius:12px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap;
-    }
-    .accent{color:var(--accentText);background:var(--accent)}
-    .secondary{color:#fff;border:1px solid var(--border);background:var(--soft)}
-    .danger{color:var(--danger);border:1px solid rgba(255,142,142,.35);background:rgba(255,142,142,.09)}
-    .success{color:#07140d;background:var(--success)}
-    .ghost{color:var(--muted);background:transparent;border:1px solid var(--border)}
-    .grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:start}
-    .field{margin-top:15px}
-    .field label{display:block;margin-bottom:8px;font-weight:900}
-    .field input,.field select,.field textarea{
-      width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:12px;color:#fff;background:rgba(255,255,255,.065);outline:none;
-    }
-    .field select option{color:#111;background:#fff}
-    .profile-card{text-align:center;position:sticky;top:24px}
-    .profile-photo{
-      width:168px;height:168px;border-radius:34px;display:grid;place-items:center;overflow:hidden;
-      background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);
-      font-size:4.6rem;font-weight:950;margin:0 auto 18px;background-position:center;background-size:cover;
-      border:1px solid rgba(255,255,255,.3);
-    }
-    .tiny-photo,.mini-photo{
-      width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-weight:950;background-size:cover;background-position:center;overflow:hidden;flex:0 0 auto;
-    }
-    .mini-photo{width:36px;height:36px;border-radius:11px;font-size:.9rem}
-    .name{font-size:1.9rem;font-weight:950;word-break:break-word}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:rgba(255,183,77,.16);color:var(--accent);font-weight:900;margin-top:9px}
-    .pill.blue{background:rgba(145,170,255,.15);color:var(--blue)}
-    .pill.green{background:rgba(121,232,173,.15);color:var(--success)}
-    .pill.red{background:rgba(255,142,142,.13);color:var(--danger)}
-    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
-    .stat{padding:17px;border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.055)}
-    .stat .num{font-size:2.05rem;font-weight:950;margin-top:3px}
-    .stat .caption{font-size:.88rem;color:var(--muted);font-weight:800}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-    .section-title h2{font-size:1.25rem}
-    .list{display:grid;gap:10px}
-    .row,.student-row{
-      display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:13px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.045)
-    }
-    .row-main{display:flex;gap:12px;align-items:flex-start;min-width:0}
-    .row strong{display:block;word-break:break-word}
-    .small{font-size:.9rem;color:var(--muted);line-height:1.5}
-    .message{min-height:24px;margin-top:12px;font-weight:900}
-    .ok{color:var(--success)}.err{color:var(--danger)}
-    .empty{padding:18px;border:1px dashed var(--border);border-radius:16px;color:var(--muted);background:rgba(255,255,255,.035)}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-    .tab{padding:9px 12px;border-radius:999px;border:1px solid var(--border);background:var(--soft);color:#fff;font-weight:900;cursor:pointer}
-    .tab.active{background:var(--accent);color:var(--accentText);border-color:transparent}
-    .status-submitted{color:var(--blue)}
-    .status-graded{color:var(--success)}
-    .status-retake{color:var(--danger)}
-    .score{font-size:1.4rem;font-weight:950;color:var(--success)}
-    .student-list{max-height:520px;overflow:auto;padding-right:4px}
-    .searchbox{margin-bottom:12px}
-    .searchbox input{width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:12px;color:#fff;background:rgba(255,255,255,.065)}
-    .split-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
-    .error-box{border:1px solid rgba(255,142,142,.45);background:rgba(255,142,142,.12);border-radius:16px;padding:14px;color:#ffd0d0;margin-bottom:18px;white-space:pre-wrap}
-    @media(max-width:980px){.page{padding:78px 16px}.grid,.two-col,.stats{grid-template-columns:1fr}.top{flex-direction:column}.profile-card{position:relative;top:auto}.row,.student-row{flex-direction:column}.split-actions{justify-content:flex-start}}
+    body{min-height:100vh;background:radial-gradient(circle at 70% -10%,#263b73,transparent 38rem),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+    button,input,select{font:inherit}.hidden{display:none!important}
+    .page{width:min(1240px,100%);margin:auto;padding:48px 24px 100px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+    .top h1{font-size:clamp(2.5rem,7vw,4.9rem);letter-spacing:-2px;line-height:.95}.lead,.muted{color:var(--muted);line-height:1.55}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:13px;padding:11px 16px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap}
+    .accent{background:var(--accent);color:var(--accentText)}.secondary{background:var(--soft);color:#fff;border:1px solid var(--border)}.danger{background:rgba(255,142,142,.1);color:var(--red);border:1px solid rgba(255,142,142,.35)}
+    .panel{border:1px solid var(--border);border-radius:22px;background:rgba(17,24,44,.94);box-shadow:0 24px 70px rgba(0,0,0,.22);padding:22px;margin-bottom:18px}.panel h2{margin-bottom:8px}
+    .grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .stat{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.055);padding:17px}.stat .label{font-size:.9rem;color:var(--muted);font-weight:800}.stat .num{font-size:2rem;font-weight:950;margin-top:4px}
+    .photo{width:170px;height:170px;border-radius:34px;margin:0 auto 16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-size:4.6rem;font-weight:950;background-size:cover;background-position:center;overflow:hidden;border:1px solid rgba(255,255,255,.28)}
+    .tiny{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-weight:950;background-size:cover;background-position:center;flex:0 0 auto;overflow:hidden}.icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);flex:0 0 auto}
+    .profile-card{text-align:center;position:sticky;top:24px}.name{font-size:1.8rem;font-weight:950;word-break:break-word}.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;background:rgba(255,183,77,.15);color:var(--accent);font-weight:900;margin-top:8px}.pill.green{background:rgba(121,232,173,.13);color:var(--green)}.pill.red{background:rgba(255,142,142,.13);color:var(--red)}.pill.blue{background:rgba(145,170,255,.14);color:var(--blue)}
+    .field{margin-top:14px}.field label{display:block;margin-bottom:7px;font-weight:900}.field input,.field select{width:100%;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.07);color:#fff;padding:12px 13px;outline:none}.field select option{color:#111;background:#fff}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.tab{border:1px solid var(--border);border-radius:999px;background:var(--soft);color:#fff;padding:9px 13px;font-weight:900;cursor:pointer}.tab.active{background:var(--accent);color:var(--accentText);border-color:transparent}
+    .list{display:grid;gap:10px}.row{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.045);padding:13px}.row-main{display:flex;gap:12px;min-width:0}.row strong{display:block;word-break:break-word}.small{font-size:.9rem;color:var(--muted);line-height:1.45}.empty{border:1px dashed var(--border);border-radius:16px;padding:18px;color:var(--muted);background:rgba(255,255,255,.03)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.msg{min-height:24px;margin-top:12px;font-weight:900}.ok{color:var(--green)}.err{color:var(--red)}.error{white-space:pre-wrap;border:1px solid rgba(255,142,142,.45);background:rgba(255,142,142,.1);border-radius:16px;padding:14px;margin-bottom:18px;color:#ffd2d2}.debug{font-size:.82rem;color:#9aa6c2;margin-top:10px;white-space:pre-wrap;word-break:break-word}.student-list{max-height:520px;overflow:auto;padding-right:5px}
+    @media(max-width:980px){.page{padding:78px 16px}.top,.row{flex-direction:column}.grid,.stats,.two{grid-template-columns:1fr}.profile-card{position:relative;top:auto}}
   </style>
 </head>
 <body>
@@ -113,115 +37,94 @@
     <div class="top">
       <div>
         <h1>Profile</h1>
-        <p class="lead" id="lead">Loading profile…</p>
+        <p class="lead" id="pageLead">Loading your Superstar School profile…</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="button secondary" href="./dashboard.html">🏫 Dashboard</a>
-        <button class="button secondary" id="refreshButton" type="button">↻ Refresh</button>
+        <button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button>
       </div>
     </div>
 
-    <div id="errorBox" class="error-box hidden"></div>
+    <div id="errorBox" class="error hidden"></div>
 
-    <section class="panel" id="loadingView">
+    <section id="loadingView" class="panel">
       <h2>Loading…</h2>
-      <p class="note">Checking your account and profile data.</p>
+      <p class="muted">Checking Firebase login and profile data.</p>
+      <div class="debug" id="debugText">Starting profile page V2…</div>
     </section>
 
-    <section class="panel hidden" id="signedOutView">
+    <section id="signedOutView" class="panel hidden">
       <h2>Sign in required</h2>
-      <p class="note">Please sign in first to view this page.</p>
+      <p class="muted">Please sign in first.</p>
       <a class="button accent" href="./index.html" style="margin-top:14px">Go to Login</a>
     </section>
 
-    <section class="hidden" id="appView">
+    <section id="appView" class="hidden">
       <div class="grid">
         <aside>
           <section class="panel profile-card">
-            <div id="profilePhoto" class="profile-photo">S</div>
-            <div class="name" id="profileName">Student</div>
-            <div class="meta" id="profileClass">Class</div>
-            <div class="pill" id="profileRole">Student</div>
-            <p class="note" style="margin-top:16px" id="profileEmail"></p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px">
-              <span class="pill blue" id="rankPill">Rank: —</span>
-              <span class="pill green" id="pointsPill">0 points</span>
+            <div id="profilePhoto" class="photo">S</div>
+            <div id="profileName" class="name">Student</div>
+            <div id="profileClass" class="muted">Class</div>
+            <div id="profileRole" class="pill">Student</div>
+            <p id="profileEmail" class="muted" style="margin-top:12px"></p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+              <span id="profileRank" class="pill blue">Rank: —</span>
+              <span id="profilePoints" class="pill green">0 points</span>
             </div>
           </section>
 
-          <section class="panel hidden" id="adminTools">
-            <h2>Student picture manager</h2>
-            <p class="note">Admins can add or replace student pictures. The image is compressed and saved inside the student profile.</p>
+          <section id="adminTools" class="panel hidden">
+            <h2>Student picture</h2>
+            <p class="muted">Choose a student and save a profile picture. The picture is compressed before saving.</p>
             <div class="field">
-              <label for="studentSelect">Select student</label>
+              <label for="studentSelect">Student</label>
               <select id="studentSelect"></select>
             </div>
             <div class="field">
-              <label for="photoInput">Student picture</label>
+              <label for="photoInput">Picture</label>
               <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" />
             </div>
-            <div class="split-actions" style="margin-top:16px;justify-content:flex-start">
-              <button class="button accent" id="savePhotoButton" type="button">Save picture</button>
-              <button class="button danger" id="removePhotoButton" type="button">Remove picture</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+              <button class="button accent" id="savePhotoBtn" type="button">Save picture</button>
+              <button class="button danger" id="removePhotoBtn" type="button">Remove</button>
             </div>
-            <div class="message" id="photoMessage"></div>
+            <div id="photoMessage" class="msg"></div>
           </section>
         </aside>
 
         <section>
           <div class="stats">
-            <div class="stat"><div class="caption">Quiz points</div><div class="num" id="pointsStat">0</div></div>
-            <div class="stat"><div class="caption">Completed quizzes</div><div class="num" id="completedStat">0</div></div>
-            <div class="stat"><div class="caption">Pending grading</div><div class="num" id="pendingStat">0</div></div>
-            <div class="stat"><div class="caption">Needs retake</div><div class="num" id="retakeStat">0</div></div>
+            <div class="stat"><div class="label">Quiz points</div><div class="num" id="pointsStat">0</div></div>
+            <div class="stat"><div class="label">Completed</div><div class="num" id="completedStat">0</div></div>
+            <div class="stat"><div class="label">Pending</div><div class="num" id="pendingStat">0</div></div>
+            <div class="stat"><div class="label">Needs retake</div><div class="num" id="retakeStat">0</div></div>
           </div>
 
           <div class="tabs">
-            <button class="tab active" type="button" data-tab="overview">Overview</button>
-            <button class="tab" type="button" data-tab="quizzes">Quizzes</button>
-            <button class="tab" type="button" data-tab="announcements">Announcements</button>
-            <button class="tab" type="button" data-tab="events">Events</button>
-            <button class="tab" type="button" data-tab="saves">SaveList</button>
-            <button class="tab hidden" type="button" data-tab="students" id="studentsTabButton">Students</button>
+            <button class="tab active" data-tab="overview" type="button">Overview</button>
+            <button class="tab" data-tab="quizzes" type="button">Quizzes</button>
+            <button class="tab" data-tab="announcements" type="button">Announcements</button>
+            <button class="tab" data-tab="events" type="button">Events</button>
+            <button class="tab" data-tab="saves" type="button">SaveList</button>
+            <button id="studentsTab" class="tab hidden" data-tab="students" type="button">Students</button>
           </div>
 
-          <section class="tab-panel" id="tab-overview">
-            <div class="two-col">
-              <section class="panel">
-                <div class="section-title"><h2>Profile details</h2></div>
-                <div class="list" id="detailsList"></div>
-              </section>
-              <section class="panel">
-                <div class="section-title"><h2>Latest activity</h2></div>
-                <div class="list" id="latestList"></div>
-              </section>
+          <section id="tab-overview" class="tabPanel">
+            <div class="two">
+              <section class="panel"><h2>Details</h2><div id="detailsList" class="list"></div></section>
+              <section class="panel"><h2>Latest activity</h2><div id="latestList" class="list"></div></section>
             </div>
           </section>
 
-          <section class="panel tab-panel hidden" id="tab-quizzes">
-            <div class="section-title"><h2>Quiz history</h2><a class="button ghost" href="./quiz.html">Open quizzes</a></div>
-            <div class="list" id="quizList"></div>
-          </section>
-
-          <section class="panel tab-panel hidden" id="tab-announcements">
-            <div class="section-title"><h2>Announcements received</h2><a class="button ghost" href="./announcements.html">Open announcements</a></div>
-            <div class="list" id="announcementList"></div>
-          </section>
-
-          <section class="panel tab-panel hidden" id="tab-events">
-            <div class="section-title"><h2>Assigned events</h2><a class="button ghost" href="./events.html">Open events</a></div>
-            <div class="list" id="eventList"></div>
-          </section>
-
-          <section class="panel tab-panel hidden" id="tab-saves">
-            <div class="section-title"><h2>SaveList items</h2><a class="button ghost" href="./savelists.html">Open SaveList</a></div>
-            <div class="list" id="saveList"></div>
-          </section>
-
-          <section class="panel tab-panel hidden" id="tab-students">
-            <div class="section-title"><h2>Student profiles</h2></div>
-            <div class="searchbox"><input id="studentSearch" placeholder="Search students…" /></div>
-            <div class="student-list list" id="studentList"></div>
+          <section id="tab-quizzes" class="panel tabPanel hidden"><h2>Quiz history</h2><div id="quizList" class="list"></div></section>
+          <section id="tab-announcements" class="panel tabPanel hidden"><h2>Announcements received</h2><div id="announcementList" class="list"></div></section>
+          <section id="tab-events" class="panel tabPanel hidden"><h2>Events assigned</h2><div id="eventList" class="list"></div></section>
+          <section id="tab-saves" class="panel tabPanel hidden"><h2>SaveList items</h2><div id="saveList" class="list"></div></section>
+          <section id="tab-students" class="panel tabPanel hidden">
+            <h2>Student profiles</h2>
+            <div class="field"><input id="studentSearch" placeholder="Search students…" /></div>
+            <div id="studentList" class="student-list list" style="margin-top:12px"></div>
           </section>
         </section>
       </div>
@@ -232,7 +135,7 @@
   <script type="module">
     import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, addDoc, serverTimestamp, query, where, limit } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
@@ -249,456 +152,256 @@
     const $ = (id) => document.getElementById(id);
 
     let me = null;
-    let selectedStudent = null;
+    let selected = null;
     let users = [];
     let classes = [];
     let attempts = [];
     let announcements = [];
     let events = [];
     let saves = [];
-    let rankMap = new Map();
+    let ranks = new Map();
 
-    const isAdmin = (role) => ["owner", "co-owner", "admin"].includes(role);
-    const roleLabel = (role) => role === "owner" ? "Owner" : role === "co-owner" ? "Co-owner" : role === "admin" ? "Administrator" : "Student";
-    const escapeHtml = (value) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-    const snapshot = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    const formatNumber = (n) => Number(n || 0).toFixed(1).replace(/\.0$/, "");
-    const ts = (value) => {
-      if (!value) return 0;
-      if (typeof value.toMillis === "function") return value.toMillis();
-      if (typeof value.seconds === "number") return value.seconds * 1000;
-      const parsed = Date.parse(value);
-      return Number.isFinite(parsed) ? parsed : 0;
-    };
-    const dateText = (value) => {
-      const time = ts(value);
-      return time ? new Date(time).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "No date";
-    };
-    const className = (id) => classes.find((c) => c.id === id)?.name || classes.find((c) => c.name === id)?.name || "No class";
-    const safeDataUrl = (url) => typeof url === "string" && /^data:image\/(jpeg|png|webp);base64,/i.test(url) ? url : "";
+    const adminRoles = ["owner", "co-owner", "admin"];
+    const isAdmin = (role) => adminRoles.includes(role);
+    const labelRole = (role) => role === "owner" ? "Owner" : role === "co-owner" ? "Co-owner" : role === "admin" ? "Administrator" : "Student";
+    const esc = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    const docs = (snap) => snap.docs.map((d) => ({ id:d.id, ...d.data() }));
+    const n = (v) => Number(v || 0);
+    const fmt = (v) => n(v).toFixed(1).replace(/\.0$/, "");
+    const stamp = (v) => !v ? 0 : typeof v.toMillis === "function" ? v.toMillis() : typeof v.seconds === "number" ? v.seconds * 1000 : (Date.parse(v) || 0);
+    const date = (v) => stamp(v) ? new Date(stamp(v)).toLocaleString([], {dateStyle:"medium", timeStyle:"short"}) : "No date";
+    const dataImage = (v) => typeof v === "string" && /^data:image\/(jpeg|png|webp);base64,/i.test(v) ? v : "";
 
-    function show(view) {
-      ["loadingView", "signedOutView", "appView"].forEach((id) => $(id).classList.toggle("hidden", id !== view));
+    function debug(text){ $("debugText").textContent = text; }
+    function showOnly(id){ ["loadingView","signedOutView","appView"].forEach((x)=>$(x).classList.toggle("hidden", x !== id)); }
+    function error(text){ $("errorBox").textContent = text; $("errorBox").classList.remove("hidden"); }
+    function clearError(){ $("errorBox").classList.add("hidden"); $("errorBox").textContent = ""; }
+    function className(id){ return classes.find((c)=>c.id === id)?.name || classes.find((c)=>c.name === id)?.name || id || "No class"; }
+    function nameOf(u){ return u?.name || u?.username || u?.email || "Student"; }
+
+    window.addEventListener("error", (event) => error("Profile page JavaScript error:\n" + (event.message || event.error || "Unknown error")));
+    window.addEventListener("unhandledrejection", (event) => error("Profile page promise error:\n" + (event.reason?.message || event.reason || "Unknown error")));
+
+    async function safeLoad(label, fn){
+      try { return await fn(); }
+      catch(e){
+        console.warn(label, e);
+        error(`Could not load ${label}. The page will still show what it can.\n${e.message || e}`);
+        return [];
+      }
     }
 
-    function showError(message) {
-      const box = $("errorBox");
-      box.textContent = message;
-      box.classList.remove("hidden");
-    }
-
-    function clearError() {
-      $("errorBox").classList.add("hidden");
-      $("errorBox").textContent = "";
-    }
-
-    function setPhoto(el, user) {
-      if (!el || !user) return;
-      const name = user.name || user.username || user.email || "Student";
-      const photo = safeDataUrl(user.photoDataUrl) || (typeof user.photoUrl === "string" ? user.photoUrl : "");
-      el.textContent = photo ? "" : (name.trim()[0] || "S").toUpperCase();
+    function setPhoto(el, user){
+      const photo = dataImage(user?.photoDataUrl) || (typeof user?.photoUrl === "string" ? user.photoUrl : "");
       el.style.backgroundImage = photo ? `url("${photo.replaceAll('"', "%22")}")` : "";
+      el.textContent = photo ? "" : (nameOf(user).trim()[0] || "S").toUpperCase();
     }
 
-    function getUserAttempts(userId) {
-      return attempts
-        .filter((a) => a.studentId === userId)
-        .sort((a, b) => ts(b.gradedAt || b.submittedAt || b.createdAt) - ts(a.gradedAt || a.submittedAt || a.createdAt));
+    function attemptsFor(userId){ return attempts.filter((a)=>a.studentId === userId).sort((a,b)=>stamp(b.gradedAt||b.submittedAt||b.createdAt)-stamp(a.gradedAt||a.submittedAt||a.createdAt)); }
+    function statsFor(user){
+      const all = attemptsFor(user.id);
+      const retake = all.filter((a)=>a.status === "force_retake" || a.status === "reset" || a.needsRetake || a.forcedRetake);
+      const active = all.filter((a)=>!retake.includes(a));
+      const graded = active.filter((a)=>a.status === "graded");
+      const pending = active.filter((a)=>a.status !== "graded");
+      const points = graded.reduce((sum,a)=>sum+n(a.score ?? a.totalScore ?? a.points),0);
+      return { all, graded, pending, retake, points };
+    }
+    function buildRanks(){
+      ranks = new Map();
+      const rows = users.filter((u)=>u.role === "student").map((u)=>({id:u.id, points:statsFor(u).points})).sort((a,b)=>b.points-a.points);
+      let rank = 0, prev = null;
+      rows.forEach((r,i)=>{ if(prev === null || r.points !== prev) rank = i + 1; prev = r.points; ranks.set(r.id, rank); });
+    }
+    function announcementsFor(userId){ return announcements.filter((a)=>Array.isArray(a.recipientIds)&&a.recipientIds.includes(userId)).sort((a,b)=>stamp(b.publishAt||b.createdAt)-stamp(a.publishAt||a.createdAt)); }
+    function eventsFor(userId){ return events.filter((e)=>Array.isArray(e.recipientIds)&&e.recipientIds.includes(userId)).sort((a,b)=>stamp(a.startAt||a.startTime||a.createdAt)-stamp(b.startAt||b.startTime||b.createdAt)); }
+    function savesFor(userId){ return saves.filter((s)=>s.ownerId === userId).sort((a,b)=>stamp(b.updatedAt||b.createdAt)-stamp(a.updatedAt||a.createdAt)); }
+
+    function row(icon,title,small,right=""){
+      return `<div class="row"><div class="row-main"><div class="icon">${icon}</div><div><strong>${esc(title)}</strong><div class="small">${small}</div></div></div>${right}</div>`;
     }
 
-    function computeStats(user) {
-      const mine = getUserAttempts(user.id);
-      const active = mine.filter((a) => a.status !== "force_retake" && a.status !== "reset" && a.forcedRetake !== true);
-      const graded = active.filter((a) => a.status === "graded");
-      const pending = active.filter((a) => a.status === "submitted" || a.status === "pending");
-      const retake = mine.filter((a) => a.status === "force_retake" || a.status === "reset" || a.forcedRetake === true || a.needsRetake === true);
-      const points = graded.reduce((sum, a) => sum + Number(a.score ?? a.totalScore ?? a.points ?? 0), 0);
-      return { mine, active, graded, pending, retake, points };
+    function render(user){
+      selected = user;
+      const st = statsFor(user);
+      setPhoto($("profilePhoto"), user);
+      $("profileName").textContent = nameOf(user);
+      $("profileClass").textContent = className(user.classId);
+      $("profileRole").textContent = labelRole(user.role);
+      $("profileEmail").textContent = user.email || user.username || "";
+      $("pointsStat").textContent = fmt(st.points);
+      $("completedStat").textContent = String(st.graded.length);
+      $("pendingStat").textContent = String(st.pending.length);
+      $("retakeStat").textContent = String(st.retake.length);
+      $("profilePoints").textContent = `${fmt(st.points)} points`;
+      $("profileRank").textContent = ranks.has(user.id) ? `Rank: #${ranks.get(user.id)}` : "Rank: —";
+
+      $("detailsList").innerHTML = [
+        row("👤","Name",esc(nameOf(user))),
+        row("🎓","Class",esc(className(user.classId))),
+        row("🔐","Role",esc(labelRole(user.role))),
+        row("✉️","Email / username",esc(user.email || user.username || "Not set")),
+        row("🏆","Leaderboard rank",ranks.has(user.id) ? `#${ranks.get(user.id)}` : "No rank yet")
+      ].join("");
+
+      const latest = [];
+      st.all.slice(0,3).forEach((a)=>latest.push(row("📝", a.quizTitle || a.title || "Quiz", `${a.status === "graded" ? fmt(a.score ?? a.totalScore ?? 0) + " points" : "Pending / retake"} · ${date(a.gradedAt||a.submittedAt||a.createdAt)}`)));
+      announcementsFor(user.id).slice(0,2).forEach((a)=>latest.push(row("📣", a.title || "Announcement", date(a.publishAt||a.createdAt))));
+      eventsFor(user.id).slice(0,2).forEach((e)=>latest.push(row("📅", e.title || "Event", date(e.startAt||e.startTime||e.createdAt))));
+      $("latestList").innerHTML = latest.length ? latest.join("") : `<div class="empty">No activity yet.</div>`;
+
+      $("quizList").innerHTML = st.all.length ? st.all.map((a)=>{
+        const status = a.status === "graded" ? "Graded" : (a.status === "force_retake" || a.status === "reset" || a.needsRetake || a.forcedRetake ? "Needs retake" : "Pending grading");
+        const right = a.status === "graded" ? `<div class="pill green">${fmt(a.score ?? a.totalScore ?? 0)}${a.maxPoints ? "/"+fmt(a.maxPoints) : ""}</div>` : `<div class="pill red">${esc(status)}</div>`;
+        return row("📝", a.quizTitle || a.title || "Quiz", `${esc(status)} · ${esc(a.subjectName || "Subject")} · ${date(a.gradedAt||a.submittedAt||a.createdAt)}`, right);
+      }).join("") : `<div class="empty">No quiz attempts yet.</div>`;
+
+      const anns = announcementsFor(user.id);
+      $("announcementList").innerHTML = anns.length ? anns.map((a)=>row("📣", a.title || "Announcement", `${esc(a.senderRoleLabel || labelRole(a.senderRole) || "Staff")} · ${date(a.publishAt||a.createdAt)}`, `<a class="button secondary" href="./announcements.html">View</a>`)).join("") : `<div class="empty">No announcements assigned.</div>`;
+
+      const evs = eventsFor(user.id);
+      $("eventList").innerHTML = evs.length ? evs.map((e)=>row("📅", e.title || "Event", `${esc(e.location || "No location")} · ${date(e.startAt||e.startTime||e.createdAt)}`, `<a class="button secondary" href="./events.html">View</a>`)).join("") : `<div class="empty">No events assigned.</div>`;
+
+      const sv = savesFor(user.id);
+      $("saveList").innerHTML = sv.length ? sv.map((s)=>row("💾", s.title || "Saved item", `Updated ${date(s.updatedAt||s.createdAt)}`, `<a class="button secondary" href="./savelists.html">Open</a>`)).join("") : `<div class="empty">No SaveList items yet.</div>`;
     }
 
-    function calculateRanks() {
-      rankMap = new Map();
-      const students = users.filter((u) => u.role === "student");
-      const rows = students.map((u) => ({ id: u.id, points: computeStats(u).points }))
-        .sort((a, b) => b.points - a.points);
-      let rank = 0;
-      let previous = null;
-      rows.forEach((row, index) => {
-        if (previous === null || row.points !== previous) rank = index + 1;
-        previous = row.points;
-        rankMap.set(row.id, rank);
+    function renderStudents(){
+      const canAdmin = isAdmin(me?.role);
+      $("studentsTab").classList.toggle("hidden", !canAdmin);
+      $("adminTools").classList.toggle("hidden", !canAdmin);
+      if(!canAdmin) return;
+
+      const students = users.filter((u)=>u.role === "student").sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+      $("studentSelect").innerHTML = students.length ? students.map((s)=>`<option value="${esc(s.id)}">${esc(nameOf(s))} — ${esc(className(s.classId))}</option>`).join("") : `<option value="">No students</option>`;
+
+      const term = ($("studentSearch").value || "").toLowerCase().trim();
+      const visible = students.filter((s)=>!term || `${nameOf(s)} ${s.email||""} ${s.username||""} ${className(s.classId)}`.toLowerCase().includes(term));
+      $("studentList").innerHTML = "";
+      if(!visible.length){ $("studentList").innerHTML = `<div class="empty">No students found.</div>`; return; }
+      visible.forEach((s)=>{
+        const st = statsFor(s);
+        const card = document.createElement("div");
+        card.className = "row";
+        card.innerHTML = `<div class="row-main"><div class="tiny"></div><div><strong>${esc(nameOf(s))}</strong><div class="small">${esc(className(s.classId))} · ${fmt(st.points)} points · ${ranks.has(s.id) ? "Rank #"+ranks.get(s.id) : "No rank"}</div></div></div><button class="button secondary" type="button">Open</button>`;
+        setPhoto(card.querySelector(".tiny"), s);
+        card.querySelector("button").addEventListener("click", ()=>{ $("studentSelect").value = s.id; render(s); tab("overview"); window.scrollTo({top:0,behavior:"smooth"}); });
+        $("studentList").appendChild(card);
       });
     }
 
-    function statusLabel(attempt) {
-      if (attempt.status === "graded") return `<span class="status-graded">Graded</span>`;
-      if (attempt.status === "force_retake" || attempt.status === "reset" || attempt.forcedRetake || attempt.needsRetake) return `<span class="status-retake">Needs retake</span>`;
-      return `<span class="status-submitted">Pending grading</span>`;
+    function tab(name){
+      document.querySelectorAll(".tab").forEach((b)=>b.classList.toggle("active", b.dataset.tab === name));
+      document.querySelectorAll(".tabPanel").forEach((p)=>p.classList.toggle("hidden", p.id !== `tab-${name}`));
     }
 
-    function selectTab(name) {
-      document.querySelectorAll(".tab").forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === name));
-      document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== `tab-${name}`));
-    }
-
-    function detailsRows(user, stats) {
-      const items = [
-        ["Name", user.name || "Not set"],
-        ["Username", user.username || "Not set"],
-        ["Email", user.email || "Not set"],
-        ["Role", roleLabel(user.role)],
-        ["Class", className(user.classId)],
-        ["Total quiz points", formatNumber(stats.points)],
-        ["Leaderboard rank", rankMap.has(user.id) ? `#${rankMap.get(user.id)}` : "No rank yet"]
-      ];
-      return items.map(([label, value]) => `<div class="row"><div><strong>${escapeHtml(label)}</strong><div class="small">${escapeHtml(value)}</div></div></div>`).join("");
-    }
-
-    function renderLatest(user, stats) {
-      const latest = [];
-      stats.mine.slice(0, 3).forEach((a) => latest.push({
-        icon: "📝",
-        title: a.quizTitle || a.title || "Quiz attempt",
-        text: `${a.status === "graded" ? `${formatNumber(a.score ?? a.totalScore ?? 0)} points` : "Pending or retake"} · ${dateText(a.gradedAt || a.submittedAt || a.createdAt)}`
-      }));
-      announcementsFor(user.id).slice(0, 2).forEach((a) => latest.push({ icon: "📣", title: a.title || "Announcement", text: dateText(a.publishAt || a.createdAt) }));
-      eventsFor(user.id).slice(0, 2).forEach((ev) => latest.push({ icon: "📅", title: ev.title || "Event", text: dateText(ev.startAt || ev.startTime || ev.createdAt) }));
-      if (!latest.length) return `<div class="empty">No activity yet.</div>`;
-      return latest.slice(0, 6).map((item) => `<div class="row"><div class="row-main"><div class="mini-photo">${item.icon}</div><div><strong>${escapeHtml(item.title)}</strong><div class="small">${escapeHtml(item.text)}</div></div></div></div>`).join("");
-    }
-
-    function announcementsFor(userId) {
-      return announcements
-        .filter((a) => Array.isArray(a.recipientIds) && a.recipientIds.includes(userId))
-        .sort((a, b) => ts(b.publishAt || b.createdAt) - ts(a.publishAt || a.createdAt));
-    }
-
-    function eventsFor(userId) {
-      return events
-        .filter((ev) => Array.isArray(ev.recipientIds) && ev.recipientIds.includes(userId))
-        .sort((a, b) => ts(a.startAt || a.startTime || a.createdAt) - ts(b.startAt || b.startTime || b.createdAt));
-    }
-
-    function savesFor(userId) {
-      return saves
-        .filter((s) => s.ownerId === userId)
-        .sort((a, b) => ts(b.updatedAt || b.createdAt) - ts(a.updatedAt || a.createdAt));
-    }
-
-    function renderProfile(user) {
-      if (!user) return;
-      selectedStudent = user;
-      const stats = computeStats(user);
-      setPhoto($("profilePhoto"), user);
-      $("profileName").textContent = user.name || user.username || "Student";
-      $("profileClass").textContent = className(user.classId);
-      $("profileRole").textContent = roleLabel(user.role);
-      $("profileEmail").textContent = user.email || user.username || "";
-      $("pointsStat").textContent = formatNumber(stats.points);
-      $("completedStat").textContent = String(stats.graded.length);
-      $("pendingStat").textContent = String(stats.pending.length);
-      $("retakeStat").textContent = String(stats.retake.length);
-      $("pointsPill").textContent = `${formatNumber(stats.points)} points`;
-      $("rankPill").textContent = rankMap.has(user.id) ? `Rank: #${rankMap.get(user.id)}` : "Rank: —";
-      $("detailsList").innerHTML = detailsRows(user, stats);
-      $("latestList").innerHTML = renderLatest(user, stats);
-      renderQuizList(user, stats);
-      renderAnnouncementList(user);
-      renderEventList(user);
-      renderSaveList(user);
-    }
-
-    function renderQuizList(user, stats) {
-      if (!stats.mine.length) {
-        $("quizList").innerHTML = `<div class="empty">No quiz attempts yet.</div>`;
-        return;
-      }
-      $("quizList").innerHTML = stats.mine.map((a) => {
-        const score = Number(a.score ?? a.totalScore ?? 0);
-        const max = Number(a.maxPoints ?? a.totalPoints ?? 0);
-        const feedback = a.feedback || a.teacherFeedback || "";
-        return `<div class="row">
-          <div>
-            <strong>${escapeHtml(a.quizTitle || a.title || "Quiz")}</strong>
-            <div class="small">${statusLabel(a)} · ${escapeHtml(a.subjectName || "Subject")} · ${dateText(a.gradedAt || a.submittedAt || a.createdAt)}</div>
-            ${feedback ? `<div class="small">Feedback: ${escapeHtml(feedback)}</div>` : ""}
-          </div>
-          <div class="score">${a.status === "graded" ? `${formatNumber(score)}${max ? `/${formatNumber(max)}` : ""}` : "—"}</div>
-        </div>`;
-      }).join("");
-    }
-
-    function renderAnnouncementList(user) {
-      const rows = announcementsFor(user.id);
-      if (!rows.length) {
-        $("announcementList").innerHTML = `<div class="empty">No announcements assigned to this student yet.</div>`;
-        return;
-      }
-      $("announcementList").innerHTML = rows.map((a) => `<div class="row">
-        <div>
-          <strong>${escapeHtml(a.title || "Announcement")}</strong>
-          <div class="small">${escapeHtml(a.senderRoleLabel || roleLabel(a.senderRole) || "Staff")} · ${dateText(a.publishAt || a.createdAt)}</div>
-        </div>
-        <a class="button ghost" href="./announcements.html">View</a>
-      </div>`).join("");
-    }
-
-    function renderEventList(user) {
-      const rows = eventsFor(user.id);
-      if (!rows.length) {
-        $("eventList").innerHTML = `<div class="empty">No events assigned to this student yet.</div>`;
-        return;
-      }
-      $("eventList").innerHTML = rows.map((ev) => `<div class="row">
-        <div>
-          <strong>${escapeHtml(ev.title || "Event")}</strong>
-          <div class="small">${escapeHtml(ev.location || "No location")} · ${dateText(ev.startAt || ev.startTime || ev.createdAt)}</div>
-        </div>
-        <a class="button ghost" href="./events.html">View</a>
-      </div>`).join("");
-    }
-
-    function renderSaveList(user) {
-      const rows = savesFor(user.id);
-      if (!rows.length) {
-        $("saveList").innerHTML = `<div class="empty">No SaveList items yet.</div>`;
-        return;
-      }
-      $("saveList").innerHTML = rows.map((s) => `<div class="row">
-        <div>
-          <strong>${escapeHtml(s.title || "Saved item")}</strong>
-          <div class="small">Updated ${dateText(s.updatedAt || s.createdAt)}</div>
-        </div>
-        <a class="button ghost" href="./savelists.html">Open</a>
-      </div>`).join("");
-    }
-
-    function renderStudentDirectory() {
-      const panelButton = $("studentsTabButton");
-      const admin = isAdmin(me?.role);
-      panelButton.classList.toggle("hidden", !admin);
-      $("adminTools").classList.toggle("hidden", !admin);
-      if (!admin) return;
-
-      const term = ($("studentSearch").value || "").toLowerCase().trim();
-      const students = users.filter((u) => u.role === "student")
-        .filter((u) => !term || `${u.name || ""} ${u.username || ""} ${u.email || ""} ${className(u.classId)}`.toLowerCase().includes(term))
-        .sort((a, b) => (a.name || a.username || "").localeCompare(b.name || b.username || ""));
-
-      $("studentSelect").innerHTML = users.filter((u) => u.role === "student")
-        .sort((a, b) => (a.name || a.username || "").localeCompare(b.name || b.username || ""))
-        .map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.username || "Student")} — ${escapeHtml(className(s.classId))}</option>`)
-        .join("");
-
-      if (!students.length) {
-        $("studentList").innerHTML = `<div class="empty">No student accounts found.</div>`;
-        return;
-      }
-
-      $("studentList").innerHTML = students.map((s) => {
-        const st = computeStats(s);
-        const rank = rankMap.has(s.id) ? `#${rankMap.get(s.id)}` : "—";
-        return `<div class="student-row">
-          <div class="row-main">
-            <div class="tiny-photo" data-photo-id="${escapeHtml(s.id)}"></div>
-            <div>
-              <strong>${escapeHtml(s.name || s.username || "Student")}</strong>
-              <div class="small">${escapeHtml(className(s.classId))} · ${formatNumber(st.points)} points · Rank ${rank}</div>
-            </div>
-          </div>
-          <button class="button secondary" type="button" data-open-student="${escapeHtml(s.id)}">Open</button>
-        </div>`;
-      }).join("");
-
-      students.forEach((s) => setPhoto(document.querySelector(`[data-photo-id="${CSS.escape(s.id)}"]`), s));
-    }
-
-    async function safeFetch(label, callback, fallback = []) {
-      try {
-        return await callback();
-      } catch (error) {
-        console.warn(`${label} failed`, error);
-        showError(`Some profile data could not load: ${label}\n${error.message || error}`);
-        return fallback;
-      }
-    }
-
-    async function loadData() {
-      if (!auth.currentUser || !me) return;
+    async function loadAll(){
       clearError();
-      show("loadingView");
+      if(!auth.currentUser || !me) return;
+      debug("Loading Firestore data…");
 
-      if (isAdmin(me.role)) {
-        users = await safeFetch("users", async () => snapshot(await getDocs(collection(db, "users"))));
-        classes = await safeFetch("classes", async () => snapshot(await getDocs(collection(db, "classes"))));
-        attempts = await safeFetch("quiz attempts", async () => snapshot(await getDocs(collection(db, "quizAttempts"))));
-        announcements = await safeFetch("announcements", async () => snapshot(await getDocs(collection(db, "announcements"))));
-        events = await safeFetch("events", async () => snapshot(await getDocs(collection(db, "events"))));
-        saves = await safeFetch("SaveList", async () => snapshot(await getDocs(collection(db, "savelists"))));
+      if(isAdmin(me.role)){
+        users = await safeLoad("users", async()=>docs(await getDocs(collection(db,"users"))));
+        classes = await safeLoad("classes", async()=>docs(await getDocs(collection(db,"classes"))));
+        attempts = await safeLoad("quiz attempts", async()=>docs(await getDocs(collection(db,"quizAttempts"))));
+        announcements = await safeLoad("announcements", async()=>docs(await getDocs(collection(db,"announcements"))));
+        events = await safeLoad("events", async()=>docs(await getDocs(collection(db,"events"))));
+        saves = await safeLoad("SaveList", async()=>docs(await getDocs(collection(db,"savelists"))));
       } else {
         users = [me];
-        classes = await safeFetch("class", async () => {
-          if (!me.classId) return [];
-          const snap = await getDoc(doc(db, "classes", me.classId));
-          return snap.exists() ? [{ id: snap.id, ...snap.data() }] : [];
-        });
-        attempts = await safeFetch("quiz attempts", async () => snapshot(await getDocs(query(collection(db, "quizAttempts"), where("studentId", "==", me.id)))));
-        announcements = await safeFetch("announcements", async () => snapshot(await getDocs(query(collection(db, "announcements"), where("recipientIds", "array-contains", me.id)))));
-        events = await safeFetch("events", async () => snapshot(await getDocs(query(collection(db, "events"), where("recipientIds", "array-contains", me.id)))));
-        saves = await safeFetch("SaveList", async () => snapshot(await getDocs(query(collection(db, "savelists"), where("ownerId", "==", me.id)))));
+        classes = await safeLoad("class", async()=> me.classId ? docs(await getDocs(query(collection(db,"classes"), limit(100)))) : []);
+        attempts = await safeLoad("your quiz attempts", async()=>docs(await getDocs(query(collection(db,"quizAttempts"), where("studentId","==",me.id)))));
+        announcements = await safeLoad("your announcements", async()=>docs(await getDocs(query(collection(db,"announcements"), where("recipientIds","array-contains",me.id)))));
+        events = await safeLoad("your events", async()=>docs(await getDocs(query(collection(db,"events"), where("recipientIds","array-contains",me.id)))));
+        saves = await safeLoad("your SaveList", async()=>docs(await getDocs(query(collection(db,"savelists"), where("ownerId","==",me.id)))));
       }
 
-      if (!users.find((u) => u.id === me.id)) users.push(me);
-      calculateRanks();
-      renderStudentDirectory();
+      if(!users.find((u)=>u.id === me.id)) users.push(me);
+      buildRanks();
+      renderStudents();
 
       let target = me;
-      if (isAdmin(me.role)) {
-        const students = users.filter((u) => u.role === "student");
-        if (selectedStudent && users.find((u) => u.id === selectedStudent.id)) {
-          target = users.find((u) => u.id === selectedStudent.id);
-        } else {
-          target = students[0] || me;
-        }
+      if(isAdmin(me.role)){
+        const students = users.filter((u)=>u.role === "student");
+        if(selected && users.find((u)=>u.id === selected.id)) target = users.find((u)=>u.id === selected.id);
+        else target = students[0] || me;
       }
-      $("lead").textContent = isAdmin(me.role) ? "View student profiles, quiz history, announcements, events, SaveList items, and profile pictures." : "View your Superstar School profile, points, quiz history, announcements, events, and SaveList items.";
-      renderProfile(target);
-      show("appView");
+      $("pageLead").textContent = isAdmin(me.role) ? "View student profiles and add student pictures." : "View your student profile, quiz results, announcements, events, and SaveList.";
+      render(target);
+      showOnly("appView");
+      debug("Loaded.");
     }
 
-    async function compressImage(file) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
+    async function compressImage(file){
+      return new Promise((resolve,reject)=>{
         const reader = new FileReader();
-        reader.onload = () => {
-          img.onload = () => {
-            const max = 300;
-            const scale = Math.min(1, max / Math.max(img.width, img.height));
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.max(1, Math.round(img.width * scale));
-            canvas.height = Math.max(1, Math.round(img.height * scale));
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/jpeg", 0.72));
-          };
-          img.onerror = reject;
-          img.src = reader.result;
-        };
+        const img = new Image();
+        reader.onload = ()=>{ img.onload = ()=>{
+          const max = 320;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", .72));
+        }; img.onerror = reject; img.src = String(reader.result); };
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
     }
 
-    async function logActivity(action, targetId, targetName) {
-      try {
-        await addDoc(collection(db, "activityLogs"), {
-          action,
-          targetId,
-          targetName,
-          actorId: auth.currentUser.uid,
-          actorName: me.name || me.username || "Staff",
-          actorRole: me.role,
-          createdAt: serverTimestamp()
-        });
-      } catch (error) {
-        console.warn("Activity log failed", error);
-      }
+    async function log(action, target){
+      try{ await addDoc(collection(db,"activityLogs"), { action, targetId: target.id, targetName: nameOf(target), actorId: auth.currentUser.uid, actorName: nameOf(me), actorRole: me.role, createdAt: serverTimestamp() }); }
+      catch(e){ console.warn("activity log failed", e); }
     }
 
-    document.querySelectorAll(".tab").forEach((btn) => {
-      btn.addEventListener("click", () => selectTab(btn.dataset.tab));
-    });
+    document.querySelectorAll(".tab").forEach((b)=>b.addEventListener("click", ()=>tab(b.dataset.tab)));
+    $("refreshBtn").addEventListener("click", loadAll);
+    $("studentSearch").addEventListener("input", renderStudents);
+    $("studentSelect").addEventListener("change", ()=>{ const s = users.find((u)=>u.id === $("studentSelect").value); if(s) render(s); });
 
-    $("refreshButton").addEventListener("click", loadData);
-    $("studentSearch").addEventListener("input", renderStudentDirectory);
-    $("studentSelect").addEventListener("change", () => {
-      const student = users.find((u) => u.id === $("studentSelect").value);
-      if (student) renderProfile(student);
-    });
-    $("studentList").addEventListener("click", (event) => {
-      const id = event.target?.dataset?.openStudent;
-      if (!id) return;
-      const student = users.find((u) => u.id === id);
-      if (student) {
-        $("studentSelect").value = id;
-        renderProfile(student);
-        selectTab("overview");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    });
-
-    $("savePhotoButton").addEventListener("click", async () => {
-      const student = selectedStudent;
+    $("savePhotoBtn").addEventListener("click", async()=>{
       const file = $("photoInput").files[0];
-      if (!student) {
-        $("photoMessage").className = "message err";
-        $("photoMessage").textContent = "Choose a student first.";
-        return;
-      }
-      if (!file) {
-        $("photoMessage").className = "message err";
-        $("photoMessage").textContent = "Choose a picture first.";
-        return;
-      }
-      $("photoMessage").className = "message";
-      $("photoMessage").textContent = "Compressing and saving picture…";
-      try {
-        const dataUrl = await compressImage(file);
-        await updateDoc(doc(db, "users", student.id), {
-          photoDataUrl: dataUrl,
-          photoUpdatedAt: serverTimestamp(),
-          photoUpdatedBy: auth.currentUser.uid
-        });
-        await logActivity("Updated student picture", student.id, student.name || student.username || "Student");
-        $("photoMessage").className = "message ok";
-        $("photoMessage").textContent = "Picture saved.";
-        await loadData();
-      } catch (error) {
-        $("photoMessage").className = "message err";
-        $("photoMessage").textContent = error.message || String(error);
-      }
+      if(!selected || selected.role !== "student"){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a student first."; return; }
+      if(!file){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a picture first."; return; }
+      try{
+        $("photoMessage").className="msg"; $("photoMessage").textContent="Compressing picture…";
+        const data = await compressImage(file);
+        $("photoMessage").textContent="Saving picture…";
+        await updateDoc(doc(db,"users",selected.id), { photoDataUrl:data, photoUpdatedAt:serverTimestamp(), photoUpdatedBy:auth.currentUser.uid });
+        await log("Updated student picture", selected);
+        $("photoMessage").className="msg ok"; $("photoMessage").textContent="Picture saved.";
+        await loadAll();
+      } catch(e){ $("photoMessage").className="msg err"; $("photoMessage").textContent=e.message || String(e); }
     });
 
-    $("removePhotoButton").addEventListener("click", async () => {
-      const student = selectedStudent;
-      if (!student) return;
-      $("photoMessage").className = "message";
-      $("photoMessage").textContent = "Removing picture…";
-      try {
-        await updateDoc(doc(db, "users", student.id), {
-          photoDataUrl: "",
-          photoUpdatedAt: serverTimestamp(),
-          photoUpdatedBy: auth.currentUser.uid
-        });
-        await logActivity("Removed student picture", student.id, student.name || student.username || "Student");
-        $("photoMessage").className = "message ok";
-        $("photoMessage").textContent = "Picture removed.";
-        await loadData();
-      } catch (error) {
-        $("photoMessage").className = "message err";
-        $("photoMessage").textContent = error.message || String(error);
-      }
+    $("removePhotoBtn").addEventListener("click", async()=>{
+      if(!selected || selected.role !== "student"){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a student first."; return; }
+      try{
+        await updateDoc(doc(db,"users",selected.id), { photoDataUrl:"", photoUpdatedAt:serverTimestamp(), photoUpdatedBy:auth.currentUser.uid });
+        await log("Removed student picture", selected);
+        $("photoMessage").className="msg ok"; $("photoMessage").textContent="Picture removed.";
+        await loadAll();
+      } catch(e){ $("photoMessage").className="msg err"; $("photoMessage").textContent=e.message || String(e); }
     });
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, async(user)=>{
       clearError();
-      if (!user) {
-        show("signedOutView");
-        return;
-      }
-      show("loadingView");
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (!snap.exists()) {
-          showError("Your Firebase Authentication account exists, but there is no matching profile in Firestore users/{uid}.");
-          show("signedOutView");
+      if(!user){ showOnly("signedOutView"); return; }
+      showOnly("loadingView");
+      try{
+        debug("Reading users/" + user.uid + " …");
+        const mySnap = await getDoc(doc(db,"users",user.uid));
+        if(!mySnap.exists()){
+          error("Your Authentication account exists, but Firestore users/" + user.uid + " does not exist.");
+          showOnly("signedOutView");
           return;
         }
-        me = { id: user.uid, ...snap.data() };
-        await loadData();
-      } catch (error) {
-        showError(error.message || String(error));
-        show("signedOutView");
+        me = { id:user.uid, ...mySnap.data() };
+        await loadAll();
+      } catch(e){
+        error(e.message || String(e));
+        showOnly("signedOutView");
       }
     });
   </script>
