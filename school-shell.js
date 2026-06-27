@@ -14,18 +14,25 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
 const isOwnerPage = page === "owner.html";
 const isMaintenancePage = page === "maintenance.html";
+
 let currentProfile = null;
 let currentSettings = {
   wipEnabled: false,
   wipMessage: "Donut School is being updated. Please check again later."
 };
 let authResolved = false;
+let unsubscribeProfile = null;
 
 function isManagementRole(role) {
   return role === "owner" || role === "co-owner";
+}
+
+function isStaffRole(role) {
+  return role === "admin" || role === "co-owner" || role === "owner";
 }
 
 function roleLabel(role) {
@@ -39,44 +46,8 @@ function activeFor(file) {
   return page === file ? " active" : "";
 }
 
-function dispatchSettings() {
-  window.dispatchEvent(new CustomEvent("donut-site-settings", { detail: currentSettings }));
-}
-
-function redirectToMaintenance() {
-  if (!isMaintenancePage) location.replace("./maintenance.html");
-}
-
-function enforceAccess() {
-  dispatchSettings();
-
-  if (currentSettings.wipEnabled) {
-    // Wait until Firebase Authentication and the user's Firestore profile are resolved.
-    // This prevents an owner or co-owner being redirected before their role is known.
-    if (!authResolved) return;
-
-    // The Owner Controls page must stay reachable while WIP mode is on,
-    // even when nobody is signed in yet. owner.html performs its own
-    // owner/co-owner permission check after login.
-    if (isOwnerPage) return;
-
-    if (isManagementRole(currentProfile?.role)) return;
-    redirectToMaintenance();
-    return;
-  }
-
-  if (isMaintenancePage) {
-    location.replace(auth.currentUser ? "./dashboard.html" : "./index.html");
-    return;
-  }
-
-  if (isOwnerPage && authResolved && !isManagementRole(currentProfile?.role)) {
-    location.replace(auth.currentUser ? "./dashboard.html" : "./index.html");
-  }
-}
-
 function navItems(role) {
-  const staff = ["admin", "co-owner", "owner"].includes(role);
+  const staff = isStaffRole(role);
   const management = isManagementRole(role);
   const items = [
     ["dashboard.html", "🏫", "Dashboard", true],
@@ -99,13 +70,119 @@ function navItems(role) {
     .join("");
 }
 
+function dispatchSettings() {
+  window.dispatchEvent(new CustomEvent("donut-site-settings", {
+    detail: currentSettings
+  }));
+}
+
+function dispatchProfile() {
+  window.dispatchEvent(new CustomEvent("donut-profile-ready", {
+    detail: currentProfile
+  }));
+}
+
+function redirectToMaintenance() {
+  if (!isMaintenancePage) {
+    location.replace("./maintenance.html");
+  }
+}
+
+function enforceAccess() {
+  dispatchSettings();
+
+  if (currentSettings.wipEnabled) {
+    if (!authResolved) return;
+
+    // owner.html must stay open so owners/co-owners can sign in and disable WIP.
+    if (isOwnerPage) return;
+
+    // Owners and co-owners may still access the site while WIP mode is on.
+    if (isManagementRole(currentProfile?.role)) return;
+
+    redirectToMaintenance();
+    return;
+  }
+
+  // If WIP is off, maintenance page should leave automatically.
+  if (isMaintenancePage) {
+    location.replace(auth.currentUser ? "./dashboard.html" : "./index.html");
+    return;
+  }
+
+  // Signed-out users must be able to open owner.html so they can log in.
+  // Signed-in non-owner users should not access owner.html.
+  if (
+    isOwnerPage &&
+    authResolved &&
+    auth.currentUser &&
+    !isManagementRole(currentProfile?.role)
+  ) {
+    location.replace("./dashboard.html");
+  }
+}
+
+function removeShell() {
+  document.getElementById("donutShellMenuButton")?.remove();
+  document.getElementById("donutShellSidebar")?.remove();
+  document.getElementById("donutShellOverlay")?.remove();
+  document.body.classList.remove("donut-shell-active");
+}
+
+function updateShell(profile) {
+  if (!profile || isMaintenancePage) {
+    removeShell();
+    return;
+  }
+
+  let sidebar = document.getElementById("donutShellSidebar");
+
+  if (!sidebar) {
+    injectShell(profile);
+    return;
+  }
+
+  const name = profile.name || profile.username || "User";
+  const initial = name.trim().charAt(0).toUpperCase() || "D";
+
+  const avatar = sidebar.querySelector(".donut-shell-avatar");
+  const profileName = sidebar.querySelector(".donut-shell-profile-name");
+  const profileRole = sidebar.querySelector(".donut-shell-profile-role");
+  const nav = sidebar.querySelector(".donut-shell-nav");
+
+  if (avatar) avatar.textContent = initial;
+  if (profileName) profileName.textContent = name;
+  if (profileRole) profileRole.textContent = roleLabel(profile.role);
+  if (nav) {
+    nav.innerHTML = navItems(profile.role);
+    nav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", closeShell);
+    });
+  }
+
+  document.body.classList.add("donut-shell-active");
+}
+
+function openShell() {
+  document.getElementById("donutShellSidebar")?.classList.add("open");
+  document.getElementById("donutShellOverlay")?.classList.add("open");
+}
+
+function closeShell() {
+  document.getElementById("donutShellSidebar")?.classList.remove("open");
+  document.getElementById("donutShellOverlay")?.classList.remove("open");
+}
+
 function injectShell(profile) {
-  if (!profile || isMaintenancePage || document.getElementById("donutShellSidebar")) return;
+  if (!profile || isMaintenancePage) return;
   if (document.querySelector(".app-shell .sidebar")) return;
+
+  removeShell();
 
   const name = profile.name || profile.username || "User";
   const initial = name.trim().charAt(0).toUpperCase() || "D";
   const wrapper = document.createElement("div");
+
   wrapper.innerHTML = `
     <button class="donut-shell-menu-button" id="donutShellMenuButton" type="button" aria-label="Open school menu">☰</button>
     <aside class="donut-shell-sidebar" id="donutShellSidebar">
@@ -113,6 +190,7 @@ function injectShell(profile) {
         <span class="donut-shell-brand-mark">D</span>
         <span>Donut School</span>
       </div>
+
       <div class="donut-shell-profile">
         <div class="donut-shell-avatar">${initial}</div>
         <div style="min-width:0">
@@ -120,8 +198,11 @@ function injectShell(profile) {
           <div class="donut-shell-profile-role">${roleLabel(profile.role)}</div>
         </div>
       </div>
+
       <nav class="donut-shell-nav">${navItems(profile.role)}</nav>
+
       <div class="donut-shell-spacer"></div>
+
       <div class="donut-shell-footer">
         <button class="donut-shell-refresh" id="donutShellRefresh" type="button">↻ Refresh</button>
         <button class="donut-shell-logout" id="donutShellLogout" type="button">Log Out</button>
@@ -134,25 +215,75 @@ function injectShell(profile) {
   document.querySelector(".donut-shell-profile-name").textContent = name;
   document.body.classList.add("donut-shell-active");
 
-  const sidebar = document.getElementById("donutShellSidebar");
-  const overlay = document.getElementById("donutShellOverlay");
-  const open = () => {
-    sidebar.classList.add("open");
-    overlay.classList.add("open");
-  };
-  const close = () => {
-    sidebar.classList.remove("open");
-    overlay.classList.remove("open");
-  };
-
-  document.getElementById("donutShellMenuButton").addEventListener("click", open);
-  overlay.addEventListener("click", close);
-  sidebar.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
-  document.getElementById("donutShellRefresh").addEventListener("click", () => location.reload());
-  document.getElementById("donutShellLogout").addEventListener("click", async () => {
-    await signOut(auth);
-    location.replace("./index.html");
+  document.getElementById("donutShellMenuButton")?.addEventListener("click", openShell);
+  document.getElementById("donutShellOverlay")?.addEventListener("click", closeShell);
+  document.querySelectorAll(".donut-shell-nav a").forEach((link) => {
+    link.addEventListener("click", closeShell);
   });
+
+  document.getElementById("donutShellRefresh")?.addEventListener("click", () => {
+    location.reload();
+  });
+
+  document.getElementById("donutShellLogout")?.addEventListener("click", async () => {
+    await logoutEverywhere();
+  });
+}
+
+async function logoutEverywhere() {
+  await signOut(auth).catch(() => {});
+  currentProfile = null;
+  removeShell();
+  dispatchProfile();
+
+  // When logout happens from any subpage, return to login page.
+  if (page !== "index.html") {
+    location.replace("./index.html");
+  }
+}
+
+function listenToProfile(user) {
+  if (unsubscribeProfile) {
+    unsubscribeProfile();
+    unsubscribeProfile = null;
+  }
+
+  if (!user) {
+    currentProfile = null;
+    updateShell(null);
+    enforceAccess();
+    dispatchProfile();
+    return;
+  }
+
+  unsubscribeProfile = onSnapshot(
+    doc(db, "users", user.uid),
+    async (snapshot) => {
+      if (!snapshot.exists()) {
+        currentProfile = null;
+        updateShell(null);
+        dispatchProfile();
+        await signOut(auth).catch(() => {});
+        if (page !== "index.html") location.replace("./index.html");
+        return;
+      }
+
+      currentProfile = {
+        id: user.uid,
+        ...snapshot.data()
+      };
+
+      updateShell(currentProfile);
+      enforceAccess();
+      dispatchProfile();
+    },
+    async (error) => {
+      console.warn("Could not listen for shell profile:", error);
+      currentProfile = null;
+      updateShell(null);
+      dispatchProfile();
+    }
+  );
 }
 
 onSnapshot(
@@ -161,6 +292,7 @@ onSnapshot(
     currentSettings = snapshot.exists()
       ? { ...currentSettings, ...snapshot.data() }
       : currentSettings;
+
     enforceAccess();
   },
   (error) => {
@@ -168,22 +300,37 @@ onSnapshot(
   }
 );
 
-onAuthStateChanged(auth, async (user) => {
-  currentProfile = null;
-
-  if (user) {
-    try {
-      const profileSnapshot = await getDoc(doc(db, "users", user.uid));
-      if (profileSnapshot.exists()) {
-        currentProfile = { id: user.uid, ...profileSnapshot.data() };
-      }
-    } catch (error) {
-      console.warn("Could not load shell profile:", error);
-    }
-  }
-
+onAuthStateChanged(auth, (user) => {
   authResolved = true;
+  listenToProfile(user);
+});
+
+// Let page code ask the shell to refresh without reloading the page.
+window.DonutShell = {
+  get auth() {
+    return auth;
+  },
+  get profile() {
+    return currentProfile;
+  },
+  get settings() {
+    return currentSettings;
+  },
+  refresh() {
+    updateShell(currentProfile);
+    enforceAccess();
+    dispatchProfile();
+  },
+  logout: logoutEverywhere
+};
+
+// Keep the sidebar correct when returning to the tab after signing in/out elsewhere.
+window.addEventListener("pageshow", () => {
+  updateShell(currentProfile);
   enforceAccess();
-  if (currentProfile) injectShell(currentProfile);
-  window.dispatchEvent(new CustomEvent("donut-profile-ready", { detail: currentProfile }));
+});
+
+window.addEventListener("focus", () => {
+  updateShell(currentProfile);
+  enforceAccess();
 });
