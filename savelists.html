@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar SaveList for students and administrators">
+  <title>Superstar SaveList</title>
+
+  <style>
+    :root {
+      --bg: #070a14;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel-solid: #11182c;
+      --border: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --muted: #aeb9d2;
+      --accent: #ffb74d;
+      --accent-text: #261600;
+      --success: #79e8ad;
+      --danger: #ff8e8e;
+      --blue: #91aaff;
+      --purple: #c5a3ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 0%, #263b73, transparent 38rem),
+        var(--bg);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: min(1220px, 100%);
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 850;
+    }
+
+    .nav-actions,
+    .header-actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 750;
+      text-decoration: none;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary-button {
+      color: #091021;
+      background: #ffffff;
+    }
+
+    .secondary-button {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .secondary-button:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .accent-button {
+      color: var(--accent-text);
+      background: var(--accent);
+    }
+
+    .success-button {
+      color: #07140d;
+      background: var(--success);
+    }
+
+    .danger-button {
+      color: var(--danger);
+      border: 1px solid rgba(255, 142, 142, 0.4);
+      background: rgba(255, 142, 142, 0.09);
+    }
+
+    main {
+      width: min(1220px, 100%);
+      margin: 0 auto;
+      padding: 48px 24px 100px;
+    }
+
+    .hero {
+      max-width: 850px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: #bdcaff;
+      background: var(--panel);
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: clamp(3.5rem, 10vw, 6.8rem);
+      line-height: 0.93;
+      letter-spacing: -4px;
+    }
+
+    .hero-text,
+    .muted {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .notice {
+      margin-top: 26px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 183, 77, 0.38);
+      border-radius: 14px;
+      color: #ffd79f;
+      background: rgba(255, 183, 77, 0.08);
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .login-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 38px auto 0;
+    }
+
+    .panel {
+      padding: 23px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(17, 24, 44, 0.95);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin-bottom: 8px;
+    }
+
+    .panel-note {
+      margin-bottom: 19px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #dce4f7;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea,
+    .field select,
+    .search-input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.065);
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus,
+    .search-input:focus,
+    .editor:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(145, 170, 255, 0.13);
+    }
+
+    .field select option {
+      color: #111111;
+    }
+
+    .full-button {
+      width: 100%;
+    }
+
+    .form-message {
+      min-height: 24px;
+      margin-top: 12px;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .success-text {
+      color: var(--success) !important;
+    }
+
+    .dashboard {
+      animation: appear 0.25s ease;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 23px;
+    }
+
+    .dashboard-header h2 {
+      margin-bottom: 7px;
+      font-size: clamp(2rem, 5vw, 3rem);
+    }
+
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      background: var(--panel);
+    }
+
+    .tab-button.active {
+      color: var(--accent-text);
+      border-color: transparent;
+      background: var(--accent);
+      font-weight: 800;
+    }
+
+    .tab-page {
+      display: none;
+    }
+
+    .tab-page.active {
+      display: block;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 9px;
+    }
+
+    .tool-button {
+      min-width: 40px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--panel);
+      font-weight: 800;
+    }
+
+    .tool-button:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .editor {
+      min-height: 210px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.055);
+      line-height: 1.65;
+    }
+
+    .editor:empty::before {
+      color: #7f8aa7;
+      content: attr(data-placeholder);
+      pointer-events: none;
+    }
+
+    .editor h2,
+    .rich-content h2 {
+      margin: 12px 0 7px;
+      font-size: 1.5rem;
+    }
+
+    .editor h3,
+    .rich-content h3 {
+      margin: 10px 0 6px;
+      font-size: 1.2rem;
+    }
+
+    .editor ul,
+    .editor ol,
+    .rich-content ul,
+    .rich-content ol {
+      margin: 8px 0 8px 22px;
+    }
+
+    .editor blockquote,
+    .rich-content blockquote {
+      margin: 10px 0;
+      padding: 9px 13px;
+      border-left: 3px solid var(--purple);
+      color: #d8c8ff;
+      background: rgba(197, 163, 255, 0.08);
+    }
+
+    .editor a,
+    .rich-content a {
+      color: #9db5ff;
+    }
+
+    .image-input-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .image-preview-grid,
+    .save-image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .image-preview {
+      position: relative;
+      overflow: hidden;
+      min-height: 130px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .image-preview img,
+    .save-image-grid img {
+      display: block;
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      border-radius: 11px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .remove-image-button {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 50%;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.72);
+    }
+
+    .save-list,
+    .moderation-list,
+    .access-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .save-card,
+    .student-card {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .save-card-header,
+    .student-card-header,
+    .section-title,
+    .toolbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .save-card h3,
+    .student-card h3 {
+      margin-bottom: 5px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .rich-content {
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+      line-height: 1.65;
+    }
+
+    .rich-content p,
+    .rich-content div {
+      margin-bottom: 7px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .status-active {
+      color: #07140d;
+      background: var(--success);
+    }
+
+    .status-banned {
+      color: #2b0707;
+      background: var(--danger);
+    }
+
+    .moderation-banner {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(145, 170, 255, 0.35);
+      border-radius: 12px;
+      color: #c9d5ff;
+      background: rgba(145, 170, 255, 0.08);
+      line-height: 1.55;
+    }
+
+    .ban-reason {
+      margin-top: 10px;
+      padding: 11px 13px;
+      border: 1px solid rgba(255, 142, 142, 0.32);
+      border-radius: 11px;
+      color: #ffc1c1;
+      background: rgba(255, 142, 142, 0.07);
+      line-height: 1.5;
+    }
+
+    .empty-box {
+      padding: 42px 18px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .banned-view {
+      max-width: 650px;
+      margin: 60px auto 0;
+      text-align: center;
+    }
+
+    .banned-icon {
+      display: grid;
+      place-items: center;
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      color: #2b0707;
+      background: var(--danger);
+      font-size: 2.1rem;
+      font-weight: 900;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.76);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal.visible {
+      display: grid;
+    }
+
+    .modal-card {
+      width: min(480px, 100%);
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel-solid);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-card h2 {
+      margin-bottom: 9px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 6000;
+      display: none;
+      padding: 13px 17px;
+      border-radius: 10px;
+      color: #07140d;
+      background: var(--success);
+      font-weight: 800;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.32);
+    }
+
+    .toast.visible {
+      display: block;
+      animation: appear 0.2s ease;
+    }
+
+    footer {
+      padding: 28px;
+      color: #78829a;
+      text-align: center;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 920px) {
+      .workspace-grid,
+      .login-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      nav,
+      main {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      nav {
+        align-items: flex-start;
+      }
+
+      .nav-actions {
+        justify-content: flex-end;
+      }
+
+      .nav-actions .button {
+        padding: 9px 10px;
+        font-size: 0.82rem;
+      }
+
+      .dashboard-header,
+      .save-card-header,
+      .student-card-header,
+      .section-title,
+      .toolbar-row {
+        flex-direction: column;
+      }
+
+      .header-actions,
+      .header-actions .button,
+      .card-actions,
+      .card-actions .button,
+      .toolbar-row .search-input {
+        width: 100%;
+      }
+
+      .image-preview-grid,
+      .save-image-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="./school-shell.css">
+  <script type="module" src="./school-shell.js"></script>
+</head>
+
+<body>
+  <nav>
+    <div class="logo">Superstar SaveList</div>
+
+    <div class="nav-actions">
+      <a class="button secondary-button" href="./dashboard.html">Dashboard</a>
+      <a class="button secondary-button" href="./index.html">Grades</a>
+      <a class="button secondary-button" href="./announcements.html">Announcements</a>
+      <button class="button accent-button" id="navAccountButton" type="button">Sign In</button>
+    </div>
+  </nav>
+
+  <main>
+    <section id="loginView">
+      <div class="hero">
+        <div class="badge">School SaveList</div>
+        <h1>Save it.</h1>
+        <p class="hero-text">
+          Students and administrators can store formatted notes and images online.
+          School administrators can review student SaveLists for safety and school-policy compliance.
+        </p>
+        <div class="notice">
+          <strong>Student privacy notice:</strong> SaveList is a school-managed space, not a private vault.
+          Administrators can review every student save. Do not store private passwords, financial information,
+          medical information, or content that violates school rules.
+        </div>
+      </div>
+
+      <div class="login-grid">
+        <section class="panel">
+          <h2>Student Login</h2>
+          <p class="panel-note">Use the student username and password created in the Superstar grade portal.</p>
+
+          <form id="studentLoginForm">
+            <div class="field">
+              <label for="studentUsername">Username</label>
+              <input id="studentUsername" type="text" autocomplete="username" required>
+            </div>
+
+            <div class="field">
+              <label for="studentPassword">Password</label>
+              <input id="studentPassword" type="password" autocomplete="current-password" required>
+            </div>
+
+            <button class="button primary-button full-button" type="submit">Sign In as Student</button>
+            <div class="form-message" id="studentLoginMessage" aria-live="polite"></div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Administrator Login</h2>
+          <p class="panel-note">Use the Firebase administrator email and password.</p>
+
+          <form id="adminLoginForm">
+            <div class="field">
+              <label for="adminEmail">Admin email</label>
+              <input id="adminEmail" type="email" autocomplete="username" required>
+            </div>
+
+            <div class="field">
+              <label for="adminPassword">Admin password</label>
+              <input id="adminPassword" type="password" autocomplete="current-password" required>
+            </div>
+
+            <button class="button accent-button full-button" type="submit">Open SaveList</button>
+            <div class="form-message" id="adminLoginMessage" aria-live="polite"></div>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <section class="dashboard hidden" id="dashboardView">
+      <div class="dashboard-header">
+        <div>
+          <h2 id="dashboardTitle">My SaveList</h2>
+          <p class="muted" id="dashboardSubtitle">Create and manage your saved notes and images.</p>
+        </div>
+
+        <div class="header-actions">
+          <button class="button secondary-button" id="refreshButton" type="button">Refresh</button>
+          <button class="button danger-button" id="logoutButton" type="button">Log Out</button>
+        </div>
+      </div>
+
+      <div class="tab-bar" id="tabBar">
+        <button class="tab-button active" type="button" data-tab="mySavesTab">My Saves</button>
+        <button class="tab-button admin-only hidden" type="button" data-tab="studentSavesTab">Student Saves</button>
+        <button class="tab-button admin-only hidden" type="button" data-tab="studentAccessTab">Student Access</button>
+      </div>
+
+      <section class="tab-page active" id="mySavesTab">
+        <div class="workspace-grid">
+          <section class="panel">
+            <h3 id="editorTitle">Create a Save</h3>
+            <p class="panel-note">Add formatted text and up to two compressed pictures.</p>
+
+            <form id="saveForm">
+              <div class="field">
+                <label for="saveTitle">Title</label>
+                <input id="saveTitle" type="text" maxlength="120" placeholder="Example: Science project ideas" required>
+              </div>
+
+              <div class="field">
+                <label>Text</label>
+
+                <div class="editor-toolbar" id="editorToolbar">
+                  <button class="tool-button" type="button" data-command="bold" title="Bold"><strong>B</strong></button>
+                  <button class="tool-button" type="button" data-command="italic" title="Italic"><em>I</em></button>
+                  <button class="tool-button" type="button" data-command="underline" title="Underline"><u>U</u></button>
+                  <button class="tool-button" type="button" data-block="h2" title="Large heading">H2</button>
+                  <button class="tool-button" type="button" data-block="h3" title="Small heading">H3</button>
+                  <button class="tool-button" type="button" data-command="insertUnorderedList" title="Bullet list">• List</button>
+                  <button class="tool-button" type="button" data-command="insertOrderedList" title="Numbered list">1. List</button>
+                  <button class="tool-button" type="button" data-block="blockquote" title="Quote">❝</button>
+                  <button class="tool-button" type="button" data-link="true" title="Add link">Link</button>
+                </div>
+
+                <div
+                  class="editor"
+                  id="saveEditor"
+                  contenteditable="true"
+                  data-placeholder="Write your saved note here..."
+                  role="textbox"
+                  aria-multiline="true"
+                ></div>
+              </div>
+
+              <div class="field">
+                <label for="saveImages">Pictures</label>
+                <input id="saveImages" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+                <p class="image-input-note">
+                  Maximum two pictures per save. Pictures are resized and compressed before being stored.
+                </p>
+                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+              </div>
+
+              <div class="card-actions">
+                <button class="button accent-button" id="saveButton" type="submit">Save</button>
+                <button class="button secondary-button hidden" id="cancelEditButton" type="button">Cancel Edit</button>
+              </div>
+
+              <div class="form-message" id="saveMessage" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="section-title">
+              <div>
+                <h3>My Saved Items</h3>
+                <p class="panel-note">Newest updates appear first.</p>
+              </div>
+              <input class="search-input" id="mySaveSearch" type="search" placeholder="Search my saves">
+            </div>
+
+            <div class="save-list" id="mySaveList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-page" id="studentSavesTab">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <h3>Student Save Moderation</h3>
+              <p class="panel-note">Administrators can review every student save and remove content that breaks school rules.</p>
+            </div>
+            <input class="search-input" id="moderationSearch" type="search" placeholder="Search student, class, title, or text">
+          </div>
+
+          <div class="moderation-banner">
+            Review content fairly and follow your school's safeguarding, privacy, and disciplinary policies.
+            SaveList does not automatically decide whether content is inappropriate.
+          </div>
+
+          <div class="moderation-list" id="moderationList"></div>
+        </section>
+      </section>
+
+      <section class="tab-page" id="studentAccessTab">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <h3>Student SaveList Access</h3>
+              <p class="panel-note">Ban or unban a student and record the reason shown to that student.</p>
+            </div>
+            <input class="search-input" id="accessSearch" type="search" placeholder="Search student, class, or reason">
+          </div>
+
+          <div class="access-list" id="accessList"></div>
+        </section>
+      </section>
+    </section>
+
+    <section class="banned-view hidden" id="bannedView">
+      <div class="panel">
+        <div class="banned-icon">!</div>
+        <h2>SaveList access suspended</h2>
+        <p class="panel-note">
+          A school administrator has suspended your access to SaveList.
+        </p>
+        <div class="ban-reason" id="studentBanReason">No reason was provided.</div>
+        <div class="card-actions" style="justify-content:center; margin-top:20px;">
+          <a class="button secondary-button" href="./index.html">Return to Grade Portal</a>
+          <button class="button danger-button" id="bannedLogoutButton" type="button">Log Out</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="banModal" role="dialog" aria-modal="true" aria-labelledby="banModalTitle">
+    <form class="modal-card" id="banForm">
+      <h2 id="banModalTitle">Ban student from SaveList</h2>
+      <p class="panel-note" id="banStudentLabel">Enter the reason for the ban.</p>
+
+      <div class="field">
+        <label for="banReason">Reason</label>
+        <textarea id="banReason" rows="5" maxlength="500" placeholder="Explain which school rule was broken and what the student should do next." required></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="button secondary-button" id="cancelBanButton" type="button">Cancel</button>
+        <button class="button danger-button" id="confirmBanButton" type="submit">Ban Student</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" aria-live="polite">Saved</div>
+
+  <footer><span id="year"></span> Superstar SaveList</footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDoc,
+      getDocs,
+      addDoc,
+      setDoc,
+      deleteDoc,
+      query,
+      where,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const STUDENT_EMAIL_DOMAIN = "donut-students.example.com";
+    const MAX_IMAGES = 2;
+    const MAX_IMAGE_DATA_LENGTH = 330000;
+    const MAX_TOTAL_IMAGE_DATA_LENGTH = 660000;
+
+    let currentUser = null;
+    let currentProfile = null;
+    let mySaves = [];
+    let allSaves = [];
+    let allStudents = [];
+    let selectedImages = [];
+    let editingSaveId = null;
+    let pendingBanStudentId = null;
+
+    const elements = {
+      loginView: document.getElementById("loginView"),
+      dashboardView: document.getElementById("dashboardView"),
+      bannedView: document.getElementById("bannedView"),
+      navAccountButton: document.getElementById("navAccountButton"),
+      studentLoginForm: document.getElementById("studentLoginForm"),
+      studentUsername: document.getElementById("studentUsername"),
+      studentPassword: document.getElementById("studentPassword"),
+      studentLoginMessage: document.getElementById("studentLoginMessage"),
+      adminLoginForm: document.getElementById("adminLoginForm"),
+      adminEmail: document.getElementById("adminEmail"),
+      adminPassword: document.getElementById("adminPassword"),
+      adminLoginMessage: document.getElementById("adminLoginMessage"),
+      dashboardTitle: document.getElementById("dashboardTitle"),
+      dashboardSubtitle: document.getElementById("dashboardSubtitle"),
+      logoutButton: document.getElementById("logoutButton"),
+      bannedLogoutButton: document.getElementById("bannedLogoutButton"),
+      refreshButton: document.getElementById("refreshButton"),
+      tabBar: document.getElementById("tabBar"),
+      saveForm: document.getElementById("saveForm"),
+      saveTitle: document.getElementById("saveTitle"),
+      saveEditor: document.getElementById("saveEditor"),
+      saveImages: document.getElementById("saveImages"),
+      imagePreviewGrid: document.getElementById("imagePreviewGrid"),
+      saveButton: document.getElementById("saveButton"),
+      cancelEditButton: document.getElementById("cancelEditButton"),
+      saveMessage: document.getElementById("saveMessage"),
+      editorTitle: document.getElementById("editorTitle"),
+      mySaveList: document.getElementById("mySaveList"),
+      mySaveSearch: document.getElementById("mySaveSearch"),
+      moderationList: document.getElementById("moderationList"),
+      moderationSearch: document.getElementById("moderationSearch"),
+      accessList: document.getElementById("accessList"),
+      accessSearch: document.getElementById("accessSearch"),
+      studentBanReason: document.getElementById("studentBanReason"),
+      banModal: document.getElementById("banModal"),
+      banForm: document.getElementById("banForm"),
+      banStudentLabel: document.getElementById("banStudentLabel"),
+      banReason: document.getElementById("banReason"),
+      cancelBanButton: document.getElementById("cancelBanButton"),
+      confirmBanButton: document.getElementById("confirmBanButton"),
+      toast: document.getElementById("toast")
+    };
+
+    document.getElementById("year").textContent = `© ${new Date().getFullYear()}`;
+
+    function normalizeUsername(value) {
+      return String(value).trim().toLowerCase();
+    }
+
+    function usernameToEmail(username) {
+      return `${normalizeUsername(username)}@${STUDENT_EMAIL_DOMAIN}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function timestampMs(value) {
+      if (!value) return 0;
+      if (typeof value.toMillis === "function") return value.toMillis();
+      if (typeof value.seconds === "number") return value.seconds * 1000;
+      return 0;
+    }
+
+    function formatDate(value) {
+      const ms = timestampMs(value);
+      if (!ms) return "Just now";
+      return new Date(ms).toLocaleString([], {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+    }
+
+    function profileIsBanned(profile) {
+      return profile?.savelistBanned === true;
+    }
+
+    function isAdmin() {
+      return ["admin", "co-owner", "owner"].includes(currentProfile?.role);
+    }
+
+    function safeImageSource(value) {
+      const source = String(value || "");
+      return /^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(source)
+        ? source
+        : "";
+    }
+
+    function sanitizeRichHtml(input) {
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString(`<div id="safe-root">${String(input || "")}</div>`, "text/html");
+      const root = parsed.getElementById("safe-root");
+      const allowedTags = new Set([
+        "DIV", "P", "BR", "B", "STRONG", "I", "EM", "U",
+        "UL", "OL", "LI", "H2", "H3", "BLOCKQUOTE", "A", "SPAN"
+      ]);
+
+      function cleanNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) return;
+
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          node.remove();
+          return;
+        }
+
+        [...node.children].forEach(cleanNode);
+
+        if (!allowedTags.has(node.tagName)) {
+          const fragment = parsed.createDocumentFragment();
+          while (node.firstChild) fragment.appendChild(node.firstChild);
+          node.replaceWith(fragment);
+          return;
+        }
+
+        const originalHref = node.tagName === "A"
+          ? String(node.getAttribute("href") || node.getAttribute("data-original-href") || "")
+          : "";
+
+        [...node.attributes].forEach((attribute) => node.removeAttribute(attribute.name));
+
+        if (node.tagName === "A") {
+          const href = originalHref;
+          let safeHref = "";
+
+          try {
+            const url = new URL(href, window.location.href);
+            if (["http:", "https:", "mailto:"].includes(url.protocol)) {
+              safeHref = url.href;
+            }
+          } catch {
+            safeHref = "";
+          }
+
+          if (safeHref) {
+            node.setAttribute("href", safeHref);
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noopener noreferrer");
+          } else {
+            node.replaceWith(parsed.createTextNode(node.textContent || ""));
+          }
+        }
+      }
+
+      [...root.children].forEach(cleanNode);
+
+      return root.innerHTML.trim();
+    }
+
+    function plainTextFromHtml(html) {
+      const div = document.createElement("div");
+      div.innerHTML = sanitizeRichHtml(html);
+      return (div.textContent || "").trim();
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("visible");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => elements.toast.classList.remove("visible"), 1800);
+    }
+
+    function showOnly(view) {
+      elements.loginView.classList.toggle("hidden", view !== "login");
+      elements.dashboardView.classList.toggle("hidden", view !== "dashboard");
+      elements.bannedView.classList.toggle("hidden", view !== "banned");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function snapshotArray(snapshot) {
+      return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    }
+
+    async function loadProfile(uid) {
+      const profileSnap = await getDoc(doc(db, "users", uid));
+      return profileSnap.exists() ? { id: profileSnap.id, ...profileSnap.data() } : null;
+    }
+
+    async function loadMySaves() {
+      const savesQuery = query(collection(db, "savelists"), where("ownerId", "==", currentUser.uid));
+      const snapshot = await getDocs(savesQuery);
+      mySaves = snapshotArray(snapshot).sort((a, b) => timestampMs(b.updatedAt) - timestampMs(a.updatedAt));
+      renderMySaves();
+    }
+
+    async function loadAdminData() {
+      const [usersSnapshot, savesSnapshot] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "savelists"))
+      ]);
+
+      allStudents = snapshotArray(usersSnapshot)
+        .filter((profile) => profile.role === "student")
+        .sort((a, b) => String(a.name || a.username).localeCompare(String(b.name || b.username)));
+
+      allSaves = snapshotArray(savesSnapshot)
+        .sort((a, b) => timestampMs(b.updatedAt) - timestampMs(a.updatedAt));
+
+      mySaves = allSaves.filter((save) => save.ownerId === currentUser.uid);
+
+      renderMySaves();
+      renderModeration();
+      renderAccessList();
+    }
+
+    async function refreshAll() {
+      elements.refreshButton.disabled = true;
+      try {
+        currentProfile = await loadProfile(currentUser.uid);
+
+        if (!currentProfile) throw new Error("Your user profile could not be found.");
+
+        if (!isAdmin() && profileIsBanned(currentProfile)) {
+          showBannedView();
+          return;
+        }
+
+        if (isAdmin()) {
+          await loadAdminData();
+        } else {
+          await loadMySaves();
+        }
+
+        showToast("Refreshed");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to refresh SaveList.");
+      } finally {
+        elements.refreshButton.disabled = false;
+      }
+    }
+
+    function renderImageGrid(images) {
+      const safeImages = (Array.isArray(images) ? images : [])
+        .map(safeImageSource)
+        .filter(Boolean);
+
+      if (safeImages.length === 0) return "";
+
+      return `
+        <div class="save-image-grid">
+          ${safeImages.map((image) => `<img src="${image}" alt="Saved picture">`).join("")}
+        </div>
+      `;
+    }
+
+    function renderMySaves() {
+      const queryText = elements.mySaveSearch.value.trim().toLowerCase();
+      const filtered = mySaves.filter((save) => {
+        const text = `${save.title || ""} ${plainTextFromHtml(save.bodyHtml || "")}`.toLowerCase();
+        return text.includes(queryText);
+      });
+
+      if (filtered.length === 0) {
+        elements.mySaveList.innerHTML = '<div class="empty-box">No saved items match your search.</div>';
+        return;
+      }
+
+      elements.mySaveList.innerHTML = filtered.map((save) => `
+        <article class="save-card">
+          <div class="save-card-header">
+            <div>
+              <h3>${escapeHtml(save.title || "Untitled")}</h3>
+              <p class="meta">Updated ${escapeHtml(formatDate(save.updatedAt || save.createdAt))}</p>
+            </div>
+
+            <div class="card-actions">
+              <button class="button secondary-button" type="button" data-edit-save="${save.id}">Edit</button>
+              <button class="button danger-button" type="button" data-delete-save="${save.id}">Delete</button>
+            </div>
+          </div>
+
+          <div class="rich-content">${sanitizeRichHtml(save.bodyHtml || "")}</div>
+          ${renderImageGrid(save.images)}
+        </article>
+      `).join("");
+    }
+
+    function studentForSave(save) {
+      return allStudents.find((student) => student.id === save.ownerId);
+    }
+
+    function renderModeration() {
+      const queryText = elements.moderationSearch.value.trim().toLowerCase();
+      const studentSaves = allSaves.filter((save) => save.ownerRole === "student");
+      const filtered = studentSaves.filter((save) => {
+        const student = studentForSave(save);
+        const searchable = [
+          student?.name,
+          student?.username,
+          student?.className,
+          save.ownerName,
+          save.ownerClassName,
+          save.title,
+          plainTextFromHtml(save.bodyHtml || "")
+        ].join(" ").toLowerCase();
+        return searchable.includes(queryText);
+      });
+
+      if (filtered.length === 0) {
+        elements.moderationList.innerHTML = '<div class="empty-box">No student saves match your search.</div>';
+        return;
+      }
+
+      elements.moderationList.innerHTML = filtered.map((save) => {
+        const student = studentForSave(save);
+        const banned = profileIsBanned(student);
+        const name = student?.name || save.ownerName || "Unknown student";
+        const className = student?.className || save.ownerClassName || "No class";
+
+        return `
+          <article class="save-card">
+            <div class="save-card-header">
+              <div>
+                <h3>${escapeHtml(save.title || "Untitled")}</h3>
+                <p class="meta">
+                  ${escapeHtml(name)} · ${escapeHtml(className)} · Updated ${escapeHtml(formatDate(save.updatedAt || save.createdAt))}
+                </p>
+                <div style="margin-top:9px;">
+                  <span class="status-pill ${banned ? "status-banned" : "status-active"}">
+                    ${banned ? "SaveList banned" : "Active"}
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-actions">
+                ${banned
+                  ? `<button class="button success-button" type="button" data-unban-student="${save.ownerId}">Unban</button>`
+                  : `<button class="button danger-button" type="button" data-ban-student="${save.ownerId}">Ban Student</button>`}
+                <button class="button danger-button" type="button" data-admin-delete-save="${save.id}">Delete Save</button>
+              </div>
+            </div>
+
+            ${banned && student?.savelistBanReason
+              ? `<div class="ban-reason"><strong>Ban reason:</strong> ${escapeHtml(student.savelistBanReason)}</div>`
+              : ""}
+
+            <div class="rich-content">${sanitizeRichHtml(save.bodyHtml || "")}</div>
+            ${renderImageGrid(save.images)}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderAccessList() {
+      const queryText = elements.accessSearch.value.trim().toLowerCase();
+      const filtered = allStudents.filter((student) => {
+        const searchable = [
+          student.name,
+          student.username,
+          student.className,
+          student.savelistBanReason
+        ].join(" ").toLowerCase();
+        return searchable.includes(queryText);
+      });
+
+      if (filtered.length === 0) {
+        elements.accessList.innerHTML = '<div class="empty-box">No students match your search.</div>';
+        return;
+      }
+
+      elements.accessList.innerHTML = filtered.map((student) => {
+        const banned = profileIsBanned(student);
+        const saveCount = allSaves.filter((save) => save.ownerId === student.id).length;
+
+        return `
+          <article class="student-card">
+            <div class="student-card-header">
+              <div>
+                <h3>${escapeHtml(student.name || student.username || "Student")}</h3>
+                <p class="meta">
+                  ${escapeHtml(student.className || "No class")} · Username: ${escapeHtml(student.username || "—")} · ${saveCount} save${saveCount === 1 ? "" : "s"}
+                </p>
+                <div style="margin-top:9px;">
+                  <span class="status-pill ${banned ? "status-banned" : "status-active"}">
+                    ${banned ? "Banned" : "Active"}
+                  </span>
+                </div>
+              </div>
+
+              <div class="card-actions">
+                ${banned
+                  ? `<button class="button success-button" type="button" data-unban-student="${student.id}">Unban</button>`
+                  : `<button class="button danger-button" type="button" data-ban-student="${student.id}">Ban Student</button>`}
+                <button class="button secondary-button" type="button" data-view-student-saves="${student.id}">View Saves</button>
+              </div>
+            </div>
+
+            ${banned
+              ? `<div class="ban-reason"><strong>Reason:</strong> ${escapeHtml(student.savelistBanReason || "No reason provided")}</div>`
+              : ""}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderImagePreviews() {
+      if (selectedImages.length === 0) {
+        elements.imagePreviewGrid.innerHTML = "";
+        return;
+      }
+
+      elements.imagePreviewGrid.innerHTML = selectedImages.map((image, index) => `
+        <div class="image-preview">
+          <img src="${safeImageSource(image)}" alt="Selected picture ${index + 1}">
+          <button class="remove-image-button" type="button" data-remove-image="${index}" aria-label="Remove picture">×</button>
+        </div>
+      `).join("");
+    }
+
+    async function compressImage(file) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        throw new Error("Only JPG, PNG, and WebP pictures are allowed.");
+      }
+
+      const source = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Could not read the picture."));
+        reader.readAsDataURL(file);
+      });
+
+      const image = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Could not open the picture."));
+        img.src = source;
+      });
+
+      const maxSide = 1280;
+      const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext("2d", { alpha: false });
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      let quality = 0.82;
+      let result = canvas.toDataURL("image/jpeg", quality);
+
+      while (result.length > MAX_IMAGE_DATA_LENGTH && quality > 0.42) {
+        quality -= 0.08;
+        result = canvas.toDataURL("image/jpeg", quality);
+      }
+
+      if (result.length > MAX_IMAGE_DATA_LENGTH) {
+        throw new Error("This picture is still too large after compression. Choose a smaller picture.");
+      }
+
+      return result;
+    }
+
+    function resetEditor() {
+      editingSaveId = null;
+      selectedImages = [];
+      elements.saveTitle.value = "";
+      elements.saveEditor.innerHTML = "";
+      elements.saveImages.value = "";
+      elements.editorTitle.textContent = "Create a Save";
+      elements.saveButton.textContent = "Save";
+      elements.cancelEditButton.classList.add("hidden");
+      elements.saveMessage.textContent = "";
+      renderImagePreviews();
+    }
+
+    function startEditing(saveId) {
+      const save = mySaves.find((item) => item.id === saveId);
+      if (!save) return;
+
+      editingSaveId = save.id;
+      selectedImages = (Array.isArray(save.images) ? save.images : [])
+        .map(safeImageSource)
+        .filter(Boolean);
+      elements.saveTitle.value = save.title || "";
+      elements.saveEditor.innerHTML = sanitizeRichHtml(save.bodyHtml || "");
+      elements.editorTitle.textContent = "Edit Save";
+      elements.saveButton.textContent = "Update Save";
+      elements.cancelEditButton.classList.remove("hidden");
+      renderImagePreviews();
+      document.getElementById("mySavesTab").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function deleteOwnSave(saveId) {
+      if (!confirm("Delete this saved item permanently?")) return;
+      try {
+        await deleteDoc(doc(db, "savelists", saveId));
+        if (editingSaveId === saveId) resetEditor();
+        await loadMySaves();
+        showToast("Save deleted");
+      } catch (error) {
+        console.error(error);
+        alert(error.code === "permission-denied"
+          ? "You cannot use SaveList because your access may have been suspended. Refresh the page."
+          : (error.message || "Unable to delete the save."));
+      }
+    }
+
+    async function deleteStudentSave(saveId) {
+      if (!isAdmin()) return;
+      if (!confirm("Delete this student's saved item permanently?")) return;
+      try {
+        await deleteDoc(doc(db, "savelists", saveId));
+        await loadAdminData();
+        showToast("Student save deleted");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to delete the student save.");
+      }
+    }
+
+    function openBanModal(studentId) {
+      const student = allStudents.find((item) => item.id === studentId);
+      if (!student) return;
+      pendingBanStudentId = studentId;
+      elements.banStudentLabel.textContent = `Ban ${student.name || student.username} from using SaveList.`;
+      elements.banReason.value = "";
+      elements.banModal.classList.add("visible");
+      document.body.classList.add("modal-open");
+      setTimeout(() => elements.banReason.focus(), 40);
+    }
+
+    function closeBanModal() {
+      pendingBanStudentId = null;
+      elements.banModal.classList.remove("visible");
+      document.body.classList.remove("modal-open");
+      elements.banReason.value = "";
+    }
+
+    async function banStudent(studentId, reason) {
+      const trimmedReason = String(reason || "").trim();
+      if (!trimmedReason) throw new Error("A ban reason is required.");
+
+      await setDoc(doc(db, "users", studentId), {
+        savelistBanned: true,
+        savelistBanReason: trimmedReason,
+        savelistBannedAt: serverTimestamp(),
+        savelistBannedBy: currentUser.uid
+      }, { merge: true });
+    }
+
+    async function unbanStudent(studentId) {
+      const student = allStudents.find((item) => item.id === studentId);
+      if (!student) return;
+      if (!confirm(`Unban ${student.name || student.username} from SaveList?`)) return;
+
+      try {
+        await setDoc(doc(db, "users", studentId), {
+          savelistBanned: false,
+          savelistBanReason: "",
+          savelistUnbannedAt: serverTimestamp(),
+          savelistUnbannedBy: currentUser.uid
+        }, { merge: true });
+        await loadAdminData();
+        showToast("Student unbanned");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to unban the student.");
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === tabId);
+      });
+      document.querySelectorAll(".tab-page").forEach((page) => {
+        page.classList.toggle("active", page.id === tabId);
+      });
+    }
+
+    function viewStudentSaves(studentId) {
+      const student = allStudents.find((item) => item.id === studentId);
+      if (!student) return;
+      elements.moderationSearch.value = student.name || student.username || "";
+      renderModeration();
+      switchTab("studentSavesTab");
+      document.getElementById("studentSavesTab").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function configureDashboard() {
+      const admin = isAdmin();
+      document.querySelectorAll(".admin-only").forEach((item) => item.classList.toggle("hidden", !admin));
+      elements.dashboardTitle.textContent = admin ? "SaveList Administration" : "My SaveList";
+      elements.dashboardSubtitle.textContent = admin
+        ? "Create your own saves, review student content, and manage student access."
+        : `Signed in as ${currentProfile.name || currentProfile.username || "Student"}.`;
+      elements.navAccountButton.textContent = admin ? "✓ Admin" : "✓ Student";
+      switchTab("mySavesTab");
+    }
+
+    function showBannedView() {
+      elements.studentBanReason.textContent = currentProfile?.savelistBanReason || "No reason was provided.";
+      elements.navAccountButton.textContent = "Access Suspended";
+      showOnly("banned");
+    }
+
+    async function startAuthenticatedPage() {
+      currentProfile = await loadProfile(currentUser.uid);
+
+      if (!currentProfile) {
+        await signOut(auth);
+        throw new Error("No Superstar user profile was found for this login.");
+      }
+
+      if (!isAdmin() && profileIsBanned(currentProfile)) {
+        showBannedView();
+        return;
+      }
+
+      configureDashboard();
+      showOnly("dashboard");
+
+      if (isAdmin()) {
+        await loadAdminData();
+      } else {
+        await loadMySaves();
+      }
+    }
+
+    elements.studentLoginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.studentLoginMessage.textContent = "";
+      const username = normalizeUsername(elements.studentUsername.value);
+
+      try {
+        await signInWithEmailAndPassword(auth, usernameToEmail(username), elements.studentPassword.value);
+        elements.studentUsername.value = "";
+        elements.studentPassword.value = "";
+      } catch (error) {
+        console.error(error);
+        elements.studentLoginMessage.textContent = "Incorrect username or password.";
+      }
+    });
+
+    elements.adminLoginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.adminLoginMessage.textContent = "";
+
+      try {
+        await signInWithEmailAndPassword(auth, elements.adminEmail.value.trim(), elements.adminPassword.value);
+        elements.adminEmail.value = "";
+        elements.adminPassword.value = "";
+      } catch (error) {
+        console.error(error);
+        elements.adminLoginMessage.textContent = "Incorrect administrator email or password.";
+      }
+    });
+
+    elements.navAccountButton.addEventListener("click", () => {
+      if (!currentUser) {
+        showOnly("login");
+        return;
+      }
+
+      if (!isAdmin() && profileIsBanned(currentProfile)) {
+        showBannedView();
+      } else {
+        showOnly("dashboard");
+      }
+    });
+
+    elements.logoutButton.addEventListener("click", () => signOut(auth));
+    elements.bannedLogoutButton.addEventListener("click", () => signOut(auth));
+    elements.refreshButton.addEventListener("click", refreshAll);
+
+    elements.tabBar.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-tab]");
+      if (!button || button.classList.contains("hidden")) return;
+      switchTab(button.dataset.tab);
+    });
+
+    document.getElementById("editorToolbar").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      elements.saveEditor.focus();
+
+      if (button.dataset.command) {
+        document.execCommand(button.dataset.command, false, null);
+      } else if (button.dataset.block) {
+        document.execCommand("formatBlock", false, button.dataset.block);
+      } else if (button.dataset.link) {
+        const value = prompt("Enter a full web address, such as https://example.com");
+        if (!value) return;
+        try {
+          const url = new URL(value);
+          if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+          document.execCommand("createLink", false, url.href);
+        } catch {
+          alert("Enter a valid http:// or https:// web address.");
+        }
+      }
+    });
+
+    elements.saveEditor.addEventListener("paste", (event) => {
+      const html = event.clipboardData?.getData("text/html");
+      if (!html) return;
+      event.preventDefault();
+      document.execCommand("insertHTML", false, sanitizeRichHtml(html));
+    });
+
+    elements.saveImages.addEventListener("change", async () => {
+      const files = [...elements.saveImages.files];
+      elements.saveImages.value = "";
+
+      if (selectedImages.length + files.length > MAX_IMAGES) {
+        alert(`You can attach a maximum of ${MAX_IMAGES} pictures.`);
+        return;
+      }
+
+      elements.saveImages.disabled = true;
+      try {
+        for (const file of files) {
+          const image = await compressImage(file);
+          selectedImages.push(image);
+        }
+
+        const totalLength = selectedImages.reduce((sum, image) => sum + image.length, 0);
+        if (totalLength > MAX_TOTAL_IMAGE_DATA_LENGTH) {
+          selectedImages.splice(Math.max(0, selectedImages.length - files.length), files.length);
+          throw new Error("The selected pictures are too large together. Use fewer or smaller pictures.");
+        }
+
+        renderImagePreviews();
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to add the picture.");
+      } finally {
+        elements.saveImages.disabled = false;
+      }
+    });
+
+    elements.imagePreviewGrid.addEventListener("click", (event) => {
+      const indexValue = event.target.dataset.removeImage;
+      if (indexValue === undefined) return;
+      selectedImages.splice(Number(indexValue), 1);
+      renderImagePreviews();
+    });
+
+    elements.saveForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.saveMessage.className = "form-message";
+      elements.saveMessage.textContent = "";
+
+      if (!currentProfile || (!isAdmin() && profileIsBanned(currentProfile))) {
+        elements.saveMessage.textContent = "Your SaveList access is suspended.";
+        return;
+      }
+
+      const title = elements.saveTitle.value.trim();
+      const bodyHtml = sanitizeRichHtml(elements.saveEditor.innerHTML);
+      const bodyText = plainTextFromHtml(bodyHtml);
+
+      if (!title) {
+        elements.saveMessage.textContent = "Enter a title.";
+        return;
+      }
+
+      if (!bodyText && selectedImages.length === 0) {
+        elements.saveMessage.textContent = "Add some text or at least one picture.";
+        return;
+      }
+
+      if (bodyHtml.length > 20000) {
+        elements.saveMessage.textContent = "The text is too long. Shorten it before saving.";
+        return;
+      }
+
+      elements.saveButton.disabled = true;
+
+      try {
+        if (editingSaveId) {
+          await setDoc(doc(db, "savelists", editingSaveId), {
+            title,
+            bodyHtml,
+            images: selectedImages,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+          showToast("Save updated");
+        } else {
+          await addDoc(collection(db, "savelists"), {
+            ownerId: currentUser.uid,
+            ownerName: currentProfile.name || currentProfile.username || "User",
+            ownerRole: currentProfile.role,
+            ownerClassId: currentProfile.classId || "",
+            ownerClassName: currentProfile.className || "",
+            title,
+            bodyHtml,
+            images: selectedImages,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          showToast("Saved");
+        }
+
+        resetEditor();
+        if (isAdmin()) await loadAdminData();
+        else await loadMySaves();
+      } catch (error) {
+        console.error(error);
+        if (error.code === "permission-denied") {
+          currentProfile = await loadProfile(currentUser.uid);
+          if (!isAdmin() && profileIsBanned(currentProfile)) {
+            showBannedView();
+          } else {
+            elements.saveMessage.textContent = "Firebase denied this save. Confirm that the updated Firestore rules are published.";
+          }
+        } else {
+          elements.saveMessage.textContent = error.message || "Unable to save the item.";
+        }
+      } finally {
+        elements.saveButton.disabled = false;
+      }
+    });
+
+    elements.cancelEditButton.addEventListener("click", resetEditor);
+    elements.mySaveSearch.addEventListener("input", renderMySaves);
+    elements.moderationSearch.addEventListener("input", renderModeration);
+    elements.accessSearch.addEventListener("input", renderAccessList);
+
+    elements.mySaveList.addEventListener("click", (event) => {
+      const editId = event.target.dataset.editSave;
+      const deleteId = event.target.dataset.deleteSave;
+      if (editId) startEditing(editId);
+      if (deleteId) deleteOwnSave(deleteId);
+    });
+
+    elements.moderationList.addEventListener("click", (event) => {
+      const banId = event.target.dataset.banStudent;
+      const unbanId = event.target.dataset.unbanStudent;
+      const deleteId = event.target.dataset.adminDeleteSave;
+      if (banId) openBanModal(banId);
+      if (unbanId) unbanStudent(unbanId);
+      if (deleteId) deleteStudentSave(deleteId);
+    });
+
+    elements.accessList.addEventListener("click", (event) => {
+      const banId = event.target.dataset.banStudent;
+      const unbanId = event.target.dataset.unbanStudent;
+      const viewId = event.target.dataset.viewStudentSaves;
+      if (banId) openBanModal(banId);
+      if (unbanId) unbanStudent(unbanId);
+      if (viewId) viewStudentSaves(viewId);
+    });
+
+    elements.banForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!pendingBanStudentId) return;
+      elements.confirmBanButton.disabled = true;
+
+      try {
+        await banStudent(pendingBanStudentId, elements.banReason.value);
+        closeBanModal();
+        await loadAdminData();
+        showToast("Student banned from SaveList");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to ban the student.");
+      } finally {
+        elements.confirmBanButton.disabled = false;
+      }
+    });
+
+    elements.cancelBanButton.addEventListener("click", closeBanModal);
+    elements.banModal.addEventListener("click", (event) => {
+      if (event.target === elements.banModal) closeBanModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && elements.banModal.classList.contains("visible")) {
+        closeBanModal();
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      currentProfile = null;
+      mySaves = [];
+      allSaves = [];
+      allStudents = [];
+      resetEditor();
+
+      if (!user) {
+        elements.navAccountButton.textContent = "Sign In";
+        showOnly("login");
+        return;
+      }
+
+      try {
+        await startAuthenticatedPage();
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Unable to open SaveList.");
+        await signOut(auth);
+      }
+    });
+  </script>
+</body>
+</html>
