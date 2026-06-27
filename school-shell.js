@@ -55,6 +55,7 @@ function navItems(role) {
     ["index.html", "📊", "Grades", true],
     ["announcements.html", "📢", "Announcements", true],
     ["events.html", "📅", "Events", true],
+    ["quiz.html", "📝", "Quizzes", true],
     ["savelists.html", "💾", "SaveList", true],
     ["accounts.html", "🔑", "Student Accounts", staff],
     ["owner.html", "👑", "Owner", management]
