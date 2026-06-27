@@ -171,6 +171,7 @@
     .pill.open { color: #07140d; background: var(--success); }
     .pill.submitted { color: #1b1405; background: var(--accent); }
     .pill.graded { color: #091021; background: #fff; }
+    .pill.forced { color: #fff; background: rgba(255, 143, 143, .22); border: 1px solid rgba(255,143,143,.45); }
 
     .empty {
       padding: 34px 18px;
@@ -294,7 +295,7 @@
             <div class="item-head">
               <div>
                 <h2>Questions</h2>
-                <p class="note">Each question has its own point value. There is no stored correct answer. After a student submits, admins tick correct/wrong and points are added automatically.</p>
+                <p class="note">Each question has its own maximum point value. There is no stored correct answer. After a student submits, admins mark correct/wrong and choose how many points the student earns.</p>
               </div>
               <button class="button secondary" id="addQuestionButton" type="button">+ Add question</button>
             </div>
@@ -319,7 +320,7 @@
       <section class="tabpage" id="attemptsTab">
         <section class="panel">
           <h2>Student attempts</h2>
-          <p class="note">Use Grade Attempt to review the student answers. Tick correct to automatically give full points, or leave unticked for 0 points.</p>
+          <p class="note">Use Grade Attempt to review student answers. Mark each question correct or wrong and set the points earned. Use Force retake when a student must complete the quiz again; the student will simply see it as not completed.</p>
           <div class="table-wrap">
             <table>
               <thead>
@@ -701,6 +702,26 @@
       }).join("");
     }
 
+    function statusLabel(status) {
+      if (status === "graded") return "Graded";
+      if (status === "force_retake") return "Force retake";
+      return "Submitted";
+    }
+
+    function statusClass(status) {
+      if (status === "graded") return "graded";
+      if (status === "force_retake") return "forced";
+      return "submitted";
+    }
+
+    function activeStudentAttempts(studentId = profile?.id) {
+      return data.attempts.filter((attempt) =>
+        attempt.studentId === studentId &&
+        attempt.status !== "force_retake" &&
+        attempt.forcedRetake !== true
+      );
+    }
+
     function renderAttemptTable() {
       els.attemptEmpty.classList.toggle("hidden", data.attempts.length !== 0);
       els.attemptTable.innerHTML = data.attempts.map((attempt) => {
@@ -712,26 +733,44 @@
             <span class="meta">Student answer:</span> ${escapeHtml(answer.answer || "No answer")}
           </div>
         `).join("");
+        const status = attempt.status || "submitted";
+        const scoreText = status === "graded"
+          ? `${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}`
+          : status === "force_retake"
+            ? "Reset for retake"
+            : "Not graded";
+        const actionButtons = status === "force_retake"
+          ? `<span class="meta">Student must retake</span>`
+          : `
+              ${status === "graded"
+                ? `<button class="button secondary" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Regrade</button>`
+                : `<button class="button accent" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Grade Attempt</button>`}
+              <button class="button secondary" data-force-retake="${escapeHtml(attempt.id)}" type="button">Force retake</button>
+            `;
         return `
           <tr>
             <td>${escapeHtml(student?.name || attempt.studentName || "Student")}</td>
             <td>${escapeHtml(quiz?.title || attempt.quizTitle || "Quiz")}</td>
-            <td><span class="pill ${attempt.status === "graded" ? "graded" : "submitted"}">${attempt.status === "graded" ? "Graded" : "Submitted"}</span><br><small class="meta">${formatDate(attempt.submittedAt)}</small></td>
-            <td>${attempt.status === "graded" ? `${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}` : "Not graded"}</td>
+            <td>
+              <span class="pill ${statusClass(status)}">${statusLabel(status)}</span><br>
+              <small class="meta">${status === "force_retake" ? `Reset: ${formatDate(attempt.forcedAt || attempt.submittedAt)}` : formatDate(attempt.submittedAt)}</small>
+            </td>
+            <td>${scoreText}</td>
             <td>${answers}</td>
-            <td>${attempt.status === "graded" ? `<button class="button secondary" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Regrade</button>` : `<button class="button accent" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Grade Attempt</button>`}</td>
+            <td>${actionButtons}</td>
           </tr>
         `;
       }).join("");
     }
 
     function renderStudent() {
+      const visibleAttempts = activeStudentAttempts();
       const available = data.quizzes.filter((quiz) => {
-        const attemptsForQuiz = data.attempts.filter((attempt) => attempt.quizId === quiz.id);
+        const attemptsForQuiz = visibleAttempts.filter((attempt) => attempt.quizId === quiz.id);
         return quiz.allowRetakes !== false || attemptsForQuiz.length === 0;
       });
-      const submitted = data.attempts.filter((attempt) => attempt.status === "submitted");
-      const graded = data.attempts.filter((attempt) => attempt.status === "graded");
+      const submitted = visibleAttempts.filter((attempt) => attempt.status === "submitted");
+      const graded = visibleAttempts.filter((attempt) => attempt.status === "graded");
       const earnedPoints = graded.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
       els.studentAvailableCount.textContent = String(available.length);
       els.studentSubmittedCount.textContent = String(submitted.length);
@@ -748,7 +787,7 @@
         return;
       }
       els.studentQuizList.innerHTML = available.map((quiz) => {
-        const attemptsForQuiz = data.attempts.filter((attempt) => attempt.quizId === quiz.id);
+        const attemptsForQuiz = activeStudentAttempts().filter((attempt) => attempt.quizId === quiz.id);
         const isRetake = attemptsForQuiz.length > 0;
         return `
           <article class="item">
@@ -768,11 +807,12 @@
     }
 
     function renderStudentAttempts() {
-      if (data.attempts.length === 0) {
+      const visibleAttempts = activeStudentAttempts();
+      if (visibleAttempts.length === 0) {
         els.studentAttemptList.innerHTML = `<div class="empty">You have not completed any quizzes yet.</div>`;
         return;
       }
-      els.studentAttemptList.innerHTML = data.attempts.map((attempt) => {
+      els.studentAttemptList.innerHTML = visibleAttempts.map((attempt) => {
         const answers = (attempt.answers || []).map((answer, index) => {
           const graded = (attempt.gradedQuestions || []).find((item) => item.questionId === answer.questionId);
           return `
@@ -876,7 +916,7 @@
     function startQuiz(quizId) {
       const quiz = data.quizzes.find((item) => item.id === quizId);
       if (!quiz) return;
-      const previousAttempts = data.attempts.filter((attempt) => attempt.quizId === quiz.id && attempt.studentId === profile.id);
+      const previousAttempts = activeStudentAttempts().filter((attempt) => attempt.quizId === quiz.id);
       if (quiz.allowRetakes === false && previousAttempts.length > 0) {
         alert("You have already submitted this quiz. Retakes are not enabled for this quiz.");
         return;
@@ -910,7 +950,7 @@
       const submitButton = els.takeQuizForm.querySelector("button[type='submit']");
       if (submitButton) submitButton.disabled = true;
 
-      const existingAttempts = data.attempts.filter((attempt) => attempt.quizId === activeQuiz.id && attempt.studentId === profile.id);
+      const existingAttempts = activeStudentAttempts().filter((attempt) => attempt.quizId === activeQuiz.id);
       if (activeQuiz.allowRetakes === false && existingAttempts.length > 0) {
         els.takeMessage.className = "message err";
         els.takeMessage.textContent = "You already submitted this quiz and retakes are not enabled.";
@@ -1004,12 +1044,17 @@
               <span class="meta">Student answer:</span><br>
               ${escapeHtml(answer.answer || "No answer")}
             </div>
-            <div class="grade-control-grid" style="grid-template-columns: 1fr;">
+            <div class="grade-control-grid">
               <label class="check-item">
                 <input type="checkbox" data-grade-correct="${escapeHtml(answer.questionId)}" data-max-points="${max}" ${markedCorrect ? "checked" : ""}>
-                <span>Mark correct — awards ${max.toFixed(1)} points automatically. Leave unchecked for 0 points.</span>
+                <span>Mark correct</span>
+              </label>
+              <label>
+                Points earned
+                <input type="number" min="0" max="${max}" step="0.1" data-grade-points="${escapeHtml(answer.questionId)}" value="${Math.min(max, Math.max(0, points)).toFixed(1)}">
               </label>
             </div>
+            <p class="note">Checking correct fills full points. You can still set any score from 0 to ${max.toFixed(1)}.</p>
             <div class="field grade-feedback">
               <label>Optional feedback</label>
               <textarea data-grade-feedback="${escapeHtml(answer.questionId)}" maxlength="600">${escapeHtml(previous?.feedback || "")}</textarea>
@@ -1022,9 +1067,15 @@
       els.manualGradePanel.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    function updateManualGradeTotal() {
-      const total = [...els.manualGradeQuestions.querySelectorAll("[data-grade-correct]")]
-        .reduce((sum, input) => sum + (input.checked ? Number(input.dataset.maxPoints || 0) : 0), 0);
+    function updateManualGradeTotal(event) {
+      if (event?.target?.matches?.("[data-grade-correct]")) {
+        const questionId = event.target.dataset.gradeCorrect;
+        const max = Number(event.target.dataset.maxPoints || 0);
+        const pointsInput = els.manualGradeQuestions.querySelector(`[data-grade-points="${CSS.escape(questionId)}"]`);
+        if (pointsInput) pointsInput.value = event.target.checked ? max.toFixed(1) : "0";
+      }
+      const total = [...els.manualGradeQuestions.querySelectorAll("[data-grade-points]")]
+        .reduce((sum, input) => sum + Number(input.value || 0), 0);
       const max = Number(activeGradeAttempt?.maxPoints || 0);
       els.manualGradeTotal.textContent = `${total.toFixed(1)} / ${max.toFixed(1)}`;
     }
@@ -1036,9 +1087,10 @@
       const gradedQuestions = (activeGradeAttempt.answers || []).map((answer) => {
         const max = Number(answer.points || 0);
         const correctInput = els.manualGradeQuestions.querySelector(`[data-grade-correct="${CSS.escape(answer.questionId)}"]`);
+        const pointsInput = els.manualGradeQuestions.querySelector(`[data-grade-points="${CSS.escape(answer.questionId)}"]`);
         const feedbackInput = els.manualGradeQuestions.querySelector(`[data-grade-feedback="${CSS.escape(answer.questionId)}"]`);
         const markedCorrect = correctInput?.checked === true;
-        const awardedPoints = markedCorrect ? max : 0;
+        const awardedPoints = Math.min(max, Math.max(0, Number(pointsInput?.value || 0)));
         score += awardedPoints;
         return {
           questionId: answer.questionId,
@@ -1058,6 +1110,22 @@
       });
       activeGradeAttempt = null;
       els.manualGradePanel.classList.add("hidden");
+      await loadAdminData();
+    }
+
+    async function forceRetakeAttempt(attemptId) {
+      const attempt = data.attempts.find((item) => item.id === attemptId);
+      if (!attempt) return;
+      const student = getUser(attempt.studentId);
+      const confirmed = confirm(`Force ${student?.name || attempt.studentName || "this student"} to retake ${attempt.quizTitle || "this quiz"}? The student will not see a special message; the quiz will simply appear as not completed.`);
+      if (!confirmed) return;
+      await updateDoc(doc(db, "quizAttempts", attempt.id), {
+        status: "force_retake",
+        forcedRetake: true,
+        forcedBy: auth.currentUser.uid,
+        forcedByName: profile.name || profile.username || "Admin",
+        forcedAt: serverTimestamp()
+      });
       await loadAdminData();
     }
 
@@ -1103,8 +1171,10 @@
       if (id) deleteQuiz(id);
     });
     els.attemptTable.addEventListener("click", (event) => {
-      const id = event.target.dataset.gradeAttempt;
-      if (id) startManualGrade(id);
+      const gradeId = event.target.dataset.gradeAttempt;
+      const forceId = event.target.dataset.forceRetake;
+      if (gradeId) startManualGrade(gradeId);
+      if (forceId) forceRetakeAttempt(forceId);
     });
     els.studentQuizList.addEventListener("click", (event) => {
       const id = event.target.dataset.startQuiz;
