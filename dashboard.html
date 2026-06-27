@@ -1332,6 +1332,27 @@
       renderAnnouncements(dashboardData.announcements);
     }
 
+
+    function roleLabel(role) {
+      const value = String(role || "").toLowerCase();
+      if (value === "owner") return "Owner";
+      if (value === "co-owner") return "Co-owner";
+      if (value === "admin") return "Administrator";
+      if (value === "teacher") return "Teacher";
+      if (value === "moderator") return "Moderator";
+      return value ? value.replace(/(^|[-_\s])([a-z])/g, (match) => match.toUpperCase()).replaceAll("-", " ") : "Staff";
+    }
+
+    function announcementSenderText(announcement) {
+      const role = announcement.createdByRole || announcement.authorRole || "admin";
+      const roleText = roleLabel(role);
+      const mayHide = ["owner", "co-owner"].includes(String(role).toLowerCase());
+      const hidden = announcement.hideAuthorName === true && mayHide;
+      if (hidden) return roleText;
+      const name = announcement.createdByName || announcement.authorName || "Staff";
+      return `${name} · ${roleText}`;
+    }
+
     function renderAnnouncements(items) {
       const sorted = [...items]
         .sort((a, b) => timestampToMillis(b.createdAt) - timestampToMillis(a.createdAt))
@@ -1345,7 +1366,7 @@
                 <div>
                   <strong>${escapeHtml(item.title || "Announcement")}</strong>
                   <p>${escapeHtml(preview || "Open the announcement to read more.")}</p>
-                  <small>${escapeHtml(formatDate(item.createdAt))}</small>
+                  <small>${escapeHtml(formatDate(item.createdAt))} · Sent by ${escapeHtml(announcementSenderText(item))}</small>
                 </div>
               </div>
             `;
