@@ -890,12 +890,10 @@
       const attemptId = `${String(activeQuiz.id)}_${String(profile.id)}`;
 
       try {
-        const existing = await getDoc(doc(db, "quizAttempts", attemptId));
-        if (existing.exists()) {
-          els.takeMessage.className = "message err";
-          els.takeMessage.textContent = "You already submitted this quiz.";
-          return;
-        }
+        // Do not pre-read the attempt here. Firestore can reject reads of a
+        // missing quizAttempt document depending on rules. The fixed document ID
+        // still prevents duplicate submissions because students are not allowed
+        // to update an existing attempt.
 
         const answers = (activeQuiz.questions || []).map((question) => {
           const questionId = String(question.id || uid());
@@ -941,7 +939,7 @@
         els.takeMessage.className = "message err";
         const text = String(error?.message || "");
         els.takeMessage.textContent = text.toLowerCase().includes("permission")
-          ? "Could not submit quiz because Firestore rules are blocking quiz submissions. Update and publish the quiz rules I sent."
+          ? "Could not submit quiz. This usually means either you already submitted this quiz, or Firestore rules are still blocking the create request."
           : text || "Could not submit quiz.";
       } finally {
         if (submitButton) submitButton.disabled = false;
