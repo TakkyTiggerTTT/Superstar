@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar school dashboard">
+  <title>Superstar School Dashboard</title>
+  <!-- DASHBOARD FULL SIDEBAR FIX: includes Notifications, Profile, Leaderboard, Activity Log -->
+
+  <style>
+    :root {
+      --bg: #070a14;
+      --bg-soft: #0c1223;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel-solid: #11182c;
+      --panel-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.15);
+      --text: #ffffff;
+      --muted: #aeb9d2;
+      --accent: #ffb74d;
+      --accent-dark: #251500;
+      --blue: #91aaff;
+      --success: #79e8ad;
+      --danger: #ff8e8e;
+      --sidebar-width: 270px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 75% -10%, #263b73, transparent 38rem),
+        var(--bg);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 17px;
+      border: 0;
+      border-radius: 11px;
+      font-weight: 760;
+      text-decoration: none;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary-button {
+      color: #091021;
+      background: #ffffff;
+    }
+
+    .secondary-button {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .secondary-button:hover {
+      background: var(--panel-hover);
+    }
+
+    .accent-button {
+      color: var(--accent-dark);
+      background: var(--accent);
+    }
+
+    .accent-button:hover {
+      box-shadow: 0 10px 28px rgba(255, 183, 77, 0.24);
+    }
+
+    .danger-button {
+      color: var(--danger);
+      border: 1px solid rgba(255, 142, 142, 0.35);
+      background: rgba(255, 142, 142, 0.09);
+    }
+
+    .loading-screen {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .loading-card,
+    .login-card {
+      width: min(470px, 100%);
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(17, 24, 44, 0.96);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(12px);
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 16px;
+      border: 4px solid rgba(255, 255, 255, 0.14);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .login-page {
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .login-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: min(1080px, 100%);
+      margin: 0 auto 52px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.55rem;
+      font-weight: 850;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 13px;
+      color: var(--accent-dark);
+      background: var(--accent);
+      box-shadow: 0 12px 32px rgba(255, 183, 77, 0.22);
+    }
+
+    .login-hero {
+      max-width: 780px;
+      margin: 0 auto 34px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      margin-bottom: 17px;
+      padding: 7px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: #bdcaff;
+      background: var(--panel);
+      font-weight: 700;
+    }
+
+    .login-hero h1 {
+      margin-bottom: 17px;
+      font-size: clamp(3rem, 10vw, 6.4rem);
+      line-height: 0.95;
+      letter-spacing: -4px;
+    }
+
+    .login-hero p {
+      max-width: 650px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.7;
+    }
+
+    .login-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      width: min(960px, 100%);
+      margin: auto;
+    }
+
+    .login-card h2 {
+      margin-bottom: 8px;
+    }
+
+    .card-note {
+      margin-bottom: 20px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #dce4f7;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.065);
+    }
+
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(145, 170, 255, 0.13);
+    }
+
+    .full-button {
+      width: 100%;
+    }
+
+    .form-message {
+      min-height: 24px;
+      margin-top: 12px;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 22px 17px;
+      border-right: 1px solid var(--border);
+      background: rgba(8, 12, 24, 0.94);
+      backdrop-filter: blur(18px);
+      z-index: 40;
+    }
+
+    .sidebar-brand {
+      padding: 0 8px 24px;
+    }
+
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 19px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .avatar {
+      display: grid;
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 13px;
+      color: var(--accent-dark);
+      background: var(--accent);
+      font-weight: 900;
+    }
+
+    .profile-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .profile-role {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .sidebar-nav {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 13px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      color: #cdd6ec;
+      text-decoration: none;
+      font-weight: 720;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      border-color: var(--border);
+      background: var(--panel);
+    }
+
+    .nav-item.active {
+      color: var(--accent-dark);
+      background: var(--accent);
+    }
+
+    .nav-icon {
+      width: 23px;
+      text-align: center;
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .sidebar-footer {
+      display: grid;
+      gap: 9px;
+    }
+
+    .sidebar-footer .button {
+      width: 100%;
+    }
+
+    .content-area {
+      min-width: 0;
+    }
+
+    .mobile-header {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 17px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 12, 24, 0.94);
+      backdrop-filter: blur(16px);
+    }
+
+    .menu-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: var(--text);
+      background: var(--panel);
+    }
+
+    .main-content {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      padding: 38px 34px 80px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 27px;
+    }
+
+    .page-header h1 {
+      margin-bottom: 8px;
+      font-size: clamp(2.1rem, 5vw, 3.6rem);
+      letter-spacing: -2px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .summary-card {
+      padding: 21px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+    }
+
+    .summary-card.highlight {
+      border-color: rgba(255, 183, 77, 0.36);
+      background: rgba(255, 183, 77, 0.09);
+    }
+
+    .summary-label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .summary-value {
+      font-size: 2rem;
+      font-weight: 900;
+    }
+
+    .summary-subtext {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      padding: 23px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(17, 24, 44, 0.9);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 17px;
+    }
+
+    .panel-header h2 {
+      font-size: 1.28rem;
+    }
+
+    .panel-header a {
+      color: var(--blue);
+      font-size: 0.9rem;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .quick-card {
+      display: block;
+      min-height: 145px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.045);
+      text-decoration: none;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .quick-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(145, 170, 255, 0.42);
+      background: rgba(255, 255, 255, 0.085);
+    }
+
+    .quick-icon {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      margin-bottom: 13px;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(145, 170, 255, 0.15);
+      font-size: 1.25rem;
+    }
+
+    .quick-card h3 {
+      margin-bottom: 6px;
+      font-size: 1.03rem;
+    }
+
+    .quick-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.038);
+    }
+
+    .list-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .list-item p,
+    .list-item small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: #07140d;
+      background: var(--success);
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .pill.warning {
+      color: #281000;
+      background: var(--accent);
+    }
+
+    .pill.danger {
+      color: #2a0606;
+      background: var(--danger);
+    }
+
+    .empty-state {
+      padding: 28px 16px;
+      border: 1px dashed var(--border);
+      border-radius: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .notice {
+      margin-bottom: 20px;
+      padding: 15px 17px;
+      border: 1px solid rgba(255, 183, 77, 0.36);
+      border-radius: 13px;
+      color: #ffd59b;
+      background: rgba(255, 183, 77, 0.08);
+      line-height: 1.55;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .sidebar-overlay.visible {
+      display: block;
+    }
+
+    @media (max-width: 1100px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 850px) {
+      .login-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .app-shell {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-105%);
+        width: min(var(--sidebar-width), 86vw);
+        transition: transform 0.22s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      .main-content {
+        padding: 28px 18px 70px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .login-page {
+        padding: 20px 16px 50px;
+      }
+
+      .login-topbar {
+        margin-bottom: 36px;
+      }
+
+      .login-topbar .button {
+        padding: 9px 11px;
+        font-size: 0.84rem;
+      }
+
+      .login-hero h1 {
+        letter-spacing: -2px;
+      }
+
+      .page-header,
+      .panel-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .header-actions,
+      .header-actions .button {
+        width: 100%;
+      }
+
+      .summary-grid,
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+
+/* Superstar star logo update */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo::before {
+  content: "";
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.20);
+}
+.brand-mark {
+  overflow: hidden !important;
+  color: transparent !important;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat !important;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.22) !important;
+}
+
+  </style>
+  <link rel="stylesheet" href="./school-shell.css">
+  <script type="module" src="./school-shell.js"></script>
+</head>
+
+<body>
+  <section class="loading-screen" id="loadingView">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h2>Opening Superstar Dashboard</h2>
+      <p class="card-note">Checking your Firebase account and loading school data…</p>
+    </div>
+  </section>
+
+  <section class="login-page hidden" id="loginView">
+    <div class="login-topbar">
+      <div class="brand">
+        <span class="brand-mark">D</span>
+        <span>Superstar School</span>
+      </div>
+
+      <a class="button secondary-button" href="./grades.html">Grade Portal</a>
+    </div>
+
+    <div class="login-hero">
+      <div class="eyebrow">Connected school dashboard</div>
+      <h1>Everything in one place.</h1>
+      <p>
+        Open grades, announcements, SaveList, student accounts, and school tools from one dashboard.
+      </p>
+    </div>
+
+    <div class="login-grid">
+      <section class="login-card">
+        <h2>Student Login</h2>
+        <p class="card-note">Use the username and password created by your school administrator.</p>
+
+        <form id="studentLoginForm">
+          <div class="field">
+            <label for="studentUsername">Username</label>
+            <input id="studentUsername" type="text" autocomplete="username" required>
+          </div>
+
+          <div class="field">
+            <label for="studentPassword">Password</label>
+            <input id="studentPassword" type="password" autocomplete="current-password" required>
+          </div>
+
+          <button class="button primary-button full-button" type="submit">Open Student Dashboard</button>
+          <div class="form-message" id="studentLoginMessage" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="login-card">
+        <h2>Administrator Login</h2>
+        <p class="card-note">Use your Firebase administrator email and password.</p>
+
+        <form id="adminLoginForm">
+          <div class="field">
+            <label for="adminEmail">Admin email</label>
+            <input id="adminEmail" type="email" autocomplete="username" required>
+          </div>
+
+          <div class="field">
+            <label for="adminPassword">Admin password</label>
+            <input id="adminPassword" type="password" autocomplete="current-password" required>
+          </div>
+
+          <button class="button accent-button full-button" type="submit">Open Admin Dashboard</button>
+          <div class="form-message" id="adminLoginMessage" aria-live="polite"></div>
+        </form>
+      </section>
+    </div>
+  </section>
+
+  <section class="app-shell hidden" id="appView">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand">
+          <span class="brand-mark">D</span>
+          <span>Superstar School</span>
+        </div>
+      </div>
+
+      <div class="sidebar-profile">
+        <div class="avatar" id="profileAvatar">D</div>
+        <div style="min-width:0">
+          <div class="profile-name" id="profileName">User</div>
+          <div class="profile-role" id="profileRole">Account</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item active" href="./dashboard.html">
+          <span class="nav-icon">🏫</span>
+          <span>Dashboard</span>
+        </a>
+
+        <a class="nav-item" href="./grades.html">
+          <span class="nav-icon">📊</span>
+          <span>Grades</span>
+        </a>
+
+        <a class="nav-item" href="./announcements.html">
+          <span class="nav-icon">📢</span>
+          <span>Announcements</span>
+        </a>
+
+        <a class="nav-item" href="./events.html">
+          <span class="nav-icon">📅</span>
+          <span>Events</span>
+        </a>
+
+        <a class="nav-item" href="./calendar.html">
+          <span class="nav-icon">🗓️</span>
+          <span>Calendar</span>
+        </a>
+
+        <a class="nav-item" href="./quiz.html">
+          <span class="nav-icon">📝</span>
+          <span>Quizzes</span>
+        </a>
+
+        <a class="nav-item" href="./notifications.html">
+          <span class="nav-icon">🔔</span>
+          <span>Notifications</span>
+        </a>
+
+        <a class="nav-item" href="./profile.html">
+          <span class="nav-icon">👤</span>
+          <span>Profile</span>
+        </a>
+
+        <a class="nav-item" href="./leaderboard.html">
+          <span class="nav-icon">🏆</span>
+          <span>Leaderboard</span>
+        </a>
+
+        <a class="nav-item" href="./savelists.html">
+          <span class="nav-icon">💾</span>
+          <span>SaveList</span>
+        </a>
+
+        <a class="nav-item admin-only hidden" href="./accounts.html">
+          <span class="nav-icon">🔑</span>
+          <span>Student Accounts</span>
+        </a>
+
+        <a class="nav-item owner-only hidden" href="./activity.html">
+          <span class="nav-icon">🧾</span>
+          <span>Activity Log</span>
+        </a>
+
+        <a class="nav-item owner-only hidden" href="./owner.html">
+          <span class="nav-icon">👑</span>
+          <span>Owner</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <button class="button secondary-button" id="refreshButton" type="button">↻ Refresh</button>
+        <button class="button danger-button" id="logoutButton" type="button">Log Out</button>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="content-area">
+      <header class="mobile-header">
+        <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
+        <div class="brand" style="font-size:1.15rem">
+          <span class="brand-mark" style="width:36px;height:36px">D</span>
+          <span>Dashboard</span>
+        </div>
+        <button class="menu-button" id="mobileRefreshButton" type="button" aria-label="Refresh">↻</button>
+      </header>
+
+      <main class="main-content">
+        <div class="page-header">
+          <div>
+            <h1 id="welcomeTitle">Welcome back</h1>
+            <p id="welcomeSubtitle">Your school overview is loading.</p>
+          </div>
+
+          <div class="header-actions">
+            <a class="button secondary-button" href="./announcements.html">📢 Announcements</a>
+            <a class="button secondary-button" href="./quiz.html">📝 Quizzes</a>
+            <a class="button accent-button" href="./grades.html">Open Grades</a>
+          </div>
+        </div>
+
+        <div class="notice hidden" id="banNotice"></div>
+
+        <section class="summary-grid" id="summaryGrid"></section>
+
+        <div class="dashboard-grid">
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Quick access</h2>
+                <span style="color:var(--muted);font-size:.9rem">Superstar tools</span>
+              </div>
+
+              <div class="quick-grid" id="quickGrid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2 id="mainListTitle">Recent activity</h2>
+                <a id="mainListLink" href="./grades.html">View all</a>
+              </div>
+
+              <div class="list" id="mainList"></div>
+            </section>
+          </div>
+
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Recent announcements</h2>
+                <a href="./announcements.html">Open</a>
+              </div>
+
+              <div class="list" id="announcementList"></div>
+            </section>
+
+            <section class="panel admin-only hidden">
+              <div class="panel-header">
+                <h2>School status</h2>
+                <span style="color:var(--muted);font-size:.9rem">Admin</span>
+              </div>
+
+              <div class="list" id="statusList"></div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDoc,
+      getDocs,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const STUDENT_EMAIL_DOMAIN = "donut-students.example.com";
+
+    let currentProfile = null;
+    let dashboardData = null;
+
+    const elements = {
+      loadingView: document.getElementById("loadingView"),
+      loginView: document.getElementById("loginView"),
+      appView: document.getElementById("appView"),
+      studentLoginForm: document.getElementById("studentLoginForm"),
+      studentUsername: document.getElementById("studentUsername"),
+      studentPassword: document.getElementById("studentPassword"),
+      studentLoginMessage: document.getElementById("studentLoginMessage"),
+      adminLoginForm: document.getElementById("adminLoginForm"),
+      adminEmail: document.getElementById("adminEmail"),
+      adminPassword: document.getElementById("adminPassword"),
+      adminLoginMessage: document.getElementById("adminLoginMessage"),
+      sidebar: document.getElementById("sidebar"),
+      sidebarOverlay: document.getElementById("sidebarOverlay"),
+      menuButton: document.getElementById("menuButton"),
+      refreshButton: document.getElementById("refreshButton"),
+      mobileRefreshButton: document.getElementById("mobileRefreshButton"),
+      logoutButton: document.getElementById("logoutButton"),
+      profileAvatar: document.getElementById("profileAvatar"),
+      profileName: document.getElementById("profileName"),
+      profileRole: document.getElementById("profileRole"),
+      welcomeTitle: document.getElementById("welcomeTitle"),
+      welcomeSubtitle: document.getElementById("welcomeSubtitle"),
+      banNotice: document.getElementById("banNotice"),
+      summaryGrid: document.getElementById("summaryGrid"),
+      quickGrid: document.getElementById("quickGrid"),
+      mainListTitle: document.getElementById("mainListTitle"),
+      mainListLink: document.getElementById("mainListLink"),
+      mainList: document.getElementById("mainList"),
+      announcementList: document.getElementById("announcementList"),
+      statusList: document.getElementById("statusList")
+    };
+
+    function studentEmail(username) {
+      return `${String(username).trim().toLowerCase()}@${STUDENT_EMAIL_DOMAIN}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function stripHtml(value) {
+      const temp = document.createElement("div");
+      temp.innerHTML = String(value || "");
+      return (temp.textContent || temp.innerText || "").trim();
+    }
+
+    function snapshotToArray(snapshot) {
+      return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    }
+
+    function timestampToMillis(value) {
+      if (!value) return 0;
+      if (typeof value.toMillis === "function") return value.toMillis();
+      if (typeof value.seconds === "number") return value.seconds * 1000;
+      return 0;
+    }
+
+    function formatDate(value) {
+      const millis = timestampToMillis(value);
+      if (!millis) return "Recently";
+      return new Date(millis).toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function scoreToGrade(percent) {
+      if (percent >= 80) return { letter: "A", points: 4.0 };
+      if (percent >= 75) return { letter: "B+", points: 3.5 };
+      if (percent >= 70) return { letter: "B", points: 3.0 };
+      if (percent >= 65) return { letter: "C+", points: 2.5 };
+      if (percent >= 60) return { letter: "C", points: 2.0 };
+      if (percent >= 55) return { letter: "D+", points: 1.5 };
+      if (percent >= 50) return { letter: "D", points: 1.0 };
+      return { letter: "F", points: 0.0 };
+    }
+
+    function normalizeIdArray(value) {
+      return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+    }
+
+    function audienceMatchesStudent(item, student, defaultMode = "all") {
+      if (!item || !student) return false;
+      const mode = item.visibilityMode || defaultMode;
+      if (mode !== "selected") return true;
+      return normalizeIdArray(item.classIds).includes(student.classId) ||
+        normalizeIdArray(item.studentIds).includes(student.id);
+    }
+
+    function categoryVisible(category, subject, student) {
+      if (!category || !subject || !student) return false;
+      if (!audienceMatchesStudent(subject, student, "all")) return false;
+      return audienceMatchesStudent(category, student, "inherit");
+    }
+
+    function showOnly(view) {
+      elements.loadingView.classList.toggle("hidden", view !== "loading");
+      elements.loginView.classList.toggle("hidden", view !== "login");
+      elements.appView.classList.toggle("hidden", view !== "app");
+    }
+
+    function setAdminVisibility(isAdmin) {
+      document.querySelectorAll(".admin-only").forEach((item) => {
+        item.classList.toggle("hidden", !isAdmin);
+      });
+    }
+
+    function openSidebar() {
+      elements.sidebar.classList.add("open");
+      elements.sidebarOverlay.classList.add("visible");
+    }
+
+    function closeSidebar() {
+      elements.sidebar.classList.remove("open");
+      elements.sidebarOverlay.classList.remove("visible");
+    }
+
+    function summaryCard(label, value, subtext = "", highlight = false) {
+      return `
+        <article class="summary-card${highlight ? " highlight" : ""}">
+          <div class="summary-label">${escapeHtml(label)}</div>
+          <div class="summary-value">${escapeHtml(value)}</div>
+          ${subtext ? `<div class="summary-subtext">${escapeHtml(subtext)}</div>` : ""}
+        </article>
+      `;
+    }
+
+    function quickCard(href, icon, title, description) {
+      return `
+        <a class="quick-card" href="${escapeHtml(href)}">
+          <span class="quick-icon">${icon}</span>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(description)}</p>
+        </a>
+      `;
+    }
+
+    async function loadAdminData() {
+      const [classesSnap, usersSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, savesSnap, quizzesSnap] =
+        await Promise.all([
+          getDocs(collection(db, "classes")),
+          getDocs(collection(db, "users")),
+          getDocs(collection(db, "subjects")),
+          getDocs(collection(db, "categories")),
+          getDocs(collection(db, "grades")),
+          getDocs(collection(db, "announcements")),
+          getDocs(collection(db, "savelists")),
+          getDocs(collection(db, "quizzes"))
+        ]);
+
+      return {
+        classes: snapshotToArray(classesSnap),
+        users: snapshotToArray(usersSnap),
+        subjects: snapshotToArray(subjectsSnap),
+        categories: snapshotToArray(categoriesSnap),
+        grades: snapshotToArray(gradesSnap),
+        announcements: snapshotToArray(announcementsSnap),
+        saves: snapshotToArray(savesSnap),
+        quizzes: snapshotToArray(quizzesSnap)
+      };
+    }
+
+    async function loadStudentData(userId) {
+      const [classesSnap, subjectsSnap, categoriesSnap, gradesSnap, announcementsSnap, everyoneAnnouncementsSnap, savesSnap, quizzesSnap] =
+        await Promise.all([
+          getDocs(collection(db, "classes")),
+          getDocs(collection(db, "subjects")),
+          getDocs(collection(db, "categories")),
+          getDocs(query(collection(db, "grades"), where("studentId", "==", userId))),
+          getDocs(query(collection(db, "announcements"), where("recipientIds", "array-contains", userId))),
+          getDocs(query(collection(db, "announcements"), where("isEveryone", "==", true))),
+          getDocs(query(collection(db, "savelists"), where("ownerId", "==", userId))),
+          getDocs(query(collection(db, "quizzes"), where("recipientIds", "array-contains", userId)))
+        ]);
+
+      const announcementMap = new Map();
+      [...snapshotToArray(announcementsSnap), ...snapshotToArray(everyoneAnnouncementsSnap)]
+        .forEach((announcement) => announcementMap.set(announcement.id, announcement));
+
+      return {
+        classes: snapshotToArray(classesSnap),
+        subjects: snapshotToArray(subjectsSnap),
+        categories: snapshotToArray(categoriesSnap),
+        grades: snapshotToArray(gradesSnap),
+        announcements: [...announcementMap.values()],
+        saves: snapshotToArray(savesSnap),
+        quizzes: snapshotToArray(quizzesSnap)
+      };
+    }
+
+    function renderProfile() {
+      const name = currentProfile.name || currentProfile.username || "User";
+      const role = currentProfile.role === "owner" ? "Owner" : currentProfile.role === "co-owner" ? "Co-owner" : currentProfile.role === "admin" ? "Administrator" : "Student";
+      const initial = name.trim().charAt(0).toUpperCase() || "S";
+
+      elements.profileAvatar.textContent = initial;
+      elements.profileName.textContent = name;
+      elements.profileRole.textContent = role;
+      elements.welcomeTitle.textContent = `Welcome back, ${name}`;
+      elements.welcomeSubtitle.textContent = ["admin", "co-owner", "owner"].includes(currentProfile.role)
+        ? "Here is the latest overview of your Superstar school system."
+        : "Here is your latest school overview, grades, and announcements.";
+    }
+
+    function renderAdminDashboard() {
+      const students = dashboardData.users.filter((item) => item.role === "student");
+      const bannedStudents = students.filter((item) => item.savelistBanned === true);
+      const doneGrades = dashboardData.grades.filter((item) => item.status === "done");
+      const notDoneGrades = dashboardData.grades.filter((item) => item.status !== "done");
+
+      elements.summaryGrid.innerHTML = [
+        summaryCard("Students", students.length, `${dashboardData.classes.length} classes`, true),
+        summaryCard("Subjects", dashboardData.subjects.length, `${dashboardData.categories.length} grade items`),
+        summaryCard("Quizzes", dashboardData.quizzes?.length || 0, "Created quiz assignments"),
+        summaryCard("Announcements", dashboardData.announcements.length, "Published school messages"),
+        summaryCard("SaveLists", dashboardData.saves.length, `${bannedStudents.length} banned students`)
+      ].join("");
+
+      elements.quickGrid.innerHTML = [
+        quickCard("./grades.html", "📊", "Grades & setup", "Manage classes, students, subjects, subcategories, and grades."),
+        quickCard("./announcements.html", "📢", "Announcements", "Send rich announcements to grades or selected students."),
+        quickCard("./events.html", "📅", "Events", "Create events for entire classes and selected students."),
+        quickCard("./calendar.html", "🗓️", "Class calendar", "Pick ICT dates for each class and grade subcategory."),
+        quickCard("./quiz.html", "📝", "Quizzes", "Create timed quizzes, set question types, grade attempts, and view analytics."),
+        quickCard("./notifications.html", "🔔", "Notifications", "See grading tasks, scheduled announcements, drafts, and retakes."),
+        quickCard("./profile.html", "👤", "Student profiles", "View student profiles and add student pictures."),
+        quickCard("./student-report.html", "📈", "Student reports", "View GPA, completed work, and scores by subject."),
+        quickCard("./leaderboard.html", "🏆", "Leaderboard", "View student rankings by quiz points."),
+        quickCard("./savelists.html", "💾", "SaveList moderation", "Review student saves, remove content, ban, and unban."),
+        quickCard("./accounts.html", "🔑", "Student accounts", "View student usernames and account details."),
+        ...(["owner", "co-owner"].includes(currentProfile.role) ? [quickCard("./activity.html", "🧾", "Activity log", "Review important staff actions."), quickCard("./owner.html", "👑", "Owner controls", "Manage administrators, co-owners, theme, and website WIP mode.")] : [])
+      ].join("");
+
+      elements.mainListTitle.textContent = "Newest students";
+      elements.mainListLink.href = "./grades.html";
+      elements.mainListLink.textContent = "Manage students";
+
+      const newestStudents = [...students]
+        .sort((a, b) => timestampToMillis(b.createdAt) - timestampToMillis(a.createdAt))
+        .slice(0, 6);
+
+      elements.mainList.innerHTML = newestStudents.length
+        ? newestStudents.map((student) => {
+            const className = dashboardData.classes.find((item) => item.id === student.classId)?.name || "No class";
+            return `
+              <div class="list-item">
+                <div>
+                  <strong>${escapeHtml(student.name || student.username || "Student")}</strong>
+                  <small>${escapeHtml(className)} · @${escapeHtml(student.username || "")}</small>
+                </div>
+                <span class="pill${student.savelistBanned ? " danger" : ""}">${student.savelistBanned ? "Banned" : "Active"}</span>
+              </div>
+            `;
+          }).join("")
+        : '<div class="empty-state">No student accounts have been created yet.</div>';
+
+      elements.statusList.innerHTML = [
+        `
+          <div class="list-item">
+            <div><strong>Completed grade records</strong><small>Marked done</small></div>
+            <span class="pill">${doneGrades.length}</span>
+          </div>
+        `,
+        `
+          <div class="list-item">
+            <div><strong>Incomplete grade records</strong><small>Marked not done</small></div>
+            <span class="pill warning">${notDoneGrades.length}</span>
+          </div>
+        `,
+        `
+          <div class="list-item">
+            <div><strong>SaveList bans</strong><small>Students currently blocked</small></div>
+            <span class="pill${bannedStudents.length ? " danger" : ""}">${bannedStudents.length}</span>
+          </div>
+        `
+      ].join("");
+
+      renderAnnouncements(dashboardData.announcements);
+    }
+
+    function studentSubjectSummaries(student) {
+      const visibleSubjects = dashboardData.subjects.filter((subject) => audienceMatchesStudent(subject, student, "all"));
+      const summaries = [];
+
+      visibleSubjects.forEach((subject) => {
+        const categories = dashboardData.categories.filter(
+          (category) => category.subjectId === subject.id && categoryVisible(category, subject, student)
+        );
+
+        const done = categories
+          .map((category) => ({
+            category,
+            record: dashboardData.grades.find(
+              (grade) => grade.studentId === student.id && grade.categoryId === category.id && grade.status === "done"
+            )
+          }))
+          .filter((item) => item.record);
+
+        if (!done.length) return;
+
+        const earned = done.reduce((sum, item) => sum + Number(item.record.score || 0), 0);
+        const maximum = done.reduce((sum, item) => sum + Number(item.category.maxScore || 0), 0);
+        const percent = maximum > 0 ? (earned / maximum) * 100 : 0;
+        summaries.push({ subject, percent, ...scoreToGrade(percent) });
+      });
+
+      return { visibleSubjects, summaries };
+    }
+
+    function renderStudentDashboard() {
+      const student = { id: auth.currentUser.uid, ...currentProfile };
+      const className = dashboardData.classes.find((item) => item.id === student.classId)?.name || "No class";
+      const { visibleSubjects, summaries } = studentSubjectSummaries(student);
+      const doneCount = dashboardData.grades.filter((item) => item.status === "done").length;
+      const visibleCategories = dashboardData.categories.filter((category) => {
+        const subject = dashboardData.subjects.find((item) => item.id === category.subjectId);
+        return categoryVisible(category, subject, student);
+      });
+      const notDoneCount = Math.max(0, visibleCategories.length - doneCount);
+      const overallGpa = summaries.length
+        ? summaries.reduce((sum, item) => sum + item.points, 0) / summaries.length
+        : 0;
+
+      elements.summaryGrid.innerHTML = [
+        summaryCard("Overall GPA", overallGpa.toFixed(2), summaries.length ? `${summaries.length} graded subjects` : "No completed grades", true),
+        summaryCard("Class", className, `${visibleSubjects.length} visible subjects`),
+        summaryCard("Quizzes", dashboardData.quizzes?.length || 0, `You have ${dashboardData.quizzes?.length || 0} quiz available.`),
+        summaryCard("Completed", doneCount, "Grade items marked done"),
+        summaryCard("Not done", notDoneCount, "Remaining visible grade items")
+      ].join("");
+
+      elements.quickGrid.innerHTML = [
+        quickCard("./grades.html", "📊", "My grades", "View scores, letter grades, GPA, and completion status."),
+        quickCard("./announcements.html", "📢", "My announcements", "Read messages sent to you or your class."),
+        quickCard("./events.html", "📅", "My events", "View events selected for you or your class."),
+        quickCard("./quiz.html", "📝", "My quizzes", "Complete available quizzes, timed quizzes, and see graded feedback."),
+        quickCard("./notifications.html", "🔔", "Notifications", "See new quizzes, grades, announcements, events, and retakes."),
+        quickCard("./profile.html", "👤", "My profile", "View your profile, class, points, and quiz progress."),
+        quickCard("./leaderboard.html", "🏆", "Leaderboard", "See your quiz points ranking."),
+        quickCard("./savelists.html", "💾", "My SaveList", "Create and manage your school-monitored saved notes and images."),
+        quickCard("./grades.html", "🎓", "Student portal", "Open your full class and grade information.")
+      ].join("");
+
+      elements.mainListTitle.textContent = "Latest grades";
+      elements.mainListLink.href = "./grades.html";
+      elements.mainListLink.textContent = "View all grades";
+
+      const gradeItems = dashboardData.grades
+        .map((record) => {
+          const category = dashboardData.categories.find((item) => item.id === record.categoryId);
+          const subject = category
+            ? dashboardData.subjects.find((item) => item.id === category.subjectId)
+            : null;
+          return { record, category, subject };
+        })
+        .filter((item) => item.category && item.subject)
+        .slice(0, 7);
+
+      elements.mainList.innerHTML = gradeItems.length
+        ? gradeItems.map(({ record, category, subject }) => {
+            let label = "Not done";
+            let pillClass = " warning";
+            if (record.status === "done") {
+              const percent = Math.max(0, Math.min(100, (Number(record.score || 0) / Number(category.maxScore || 1)) * 100));
+              label = scoreToGrade(percent).letter;
+              pillClass = "";
+            }
+            return `
+              <div class="list-item">
+                <div>
+                  <strong>${escapeHtml(subject.name)} · ${escapeHtml(category.name)}</strong>
+                  <small>${record.status === "done" ? `${Number(record.score).toFixed(1)} / ${Number(category.maxScore).toFixed(1)}` : "Work has not been completed"}</small>
+                </div>
+                <span class="pill${pillClass}">${escapeHtml(label)}</span>
+              </div>
+            `;
+          }).join("")
+        : '<div class="empty-state">No grade records are available yet.</div>';
+
+      if (currentProfile.savelistBanned === true) {
+        elements.banNotice.classList.remove("hidden");
+        elements.banNotice.textContent = `Your SaveList access is banned. Reason: ${currentProfile.savelistBanReason || "No reason provided."}`;
+      } else {
+        elements.banNotice.classList.add("hidden");
+      }
+
+      renderAnnouncements(dashboardData.announcements);
+    }
+
+
+    function roleLabel(role) {
+      const value = String(role || "").toLowerCase();
+      if (value === "owner") return "Owner";
+      if (value === "co-owner") return "Co-owner";
+      if (value === "admin") return "Administrator";
+      if (value === "teacher") return "Teacher";
+      if (value === "moderator") return "Moderator";
+      return value ? value.replace(/(^|[-_\s])([a-z])/g, (match) => match.toUpperCase()).replaceAll("-", " ") : "Staff";
+    }
+
+    function announcementSenderText(announcement) {
+      const role = announcement.createdByRole || announcement.authorRole || "admin";
+      const roleText = roleLabel(role);
+      const mayHide = ["owner", "co-owner"].includes(String(role).toLowerCase());
+      const hidden = announcement.hideAuthorName === true && mayHide;
+      if (hidden) return roleText;
+      const name = announcement.createdByName || announcement.authorName || "Staff";
+      return `${name} · ${roleText}`;
+    }
+
+    function renderAnnouncements(items) {
+      const sorted = [...items]
+        .sort((a, b) => timestampToMillis(b.createdAt) - timestampToMillis(a.createdAt))
+        .slice(0, 5);
+
+      elements.announcementList.innerHTML = sorted.length
+        ? sorted.map((item) => {
+            const preview = stripHtml(item.bodyHtml || item.message || item.body || "").slice(0, 110);
+            return `
+              <div class="list-item">
+                <div>
+                  <strong>${escapeHtml(item.title || "Announcement")}</strong>
+                  <p>${escapeHtml(preview || "Open the announcement to read more.")}</p>
+                  <small>${escapeHtml(formatDate(item.createdAt))} · Sent by ${escapeHtml(announcementSenderText(item))}</small>
+                </div>
+              </div>
+            `;
+          }).join("")
+        : '<div class="empty-state">No announcements are available.</div>';
+    }
+
+    async function refreshDashboard() {
+      if (!auth.currentUser || !currentProfile) return;
+
+      elements.refreshButton.disabled = true;
+      elements.mobileRefreshButton.disabled = true;
+
+      try {
+        dashboardData = ["admin", "co-owner", "owner"].includes(currentProfile.role)
+          ? await loadAdminData()
+          : await loadStudentData(auth.currentUser.uid);
+
+        renderProfile();
+        setAdminVisibility(["admin", "co-owner", "owner"].includes(currentProfile.role));
+        document.querySelectorAll(".owner-only").forEach((item) => item.classList.toggle("hidden", !["owner", "co-owner"].includes(currentProfile.role)));
+
+        if (["admin", "co-owner", "owner"].includes(currentProfile.role)) {
+          renderAdminDashboard();
+        } else {
+          renderStudentDashboard();
+        }
+      } catch (error) {
+        console.error(error);
+        alert(`Could not load the dashboard: ${error.message}`);
+      } finally {
+        elements.refreshButton.disabled = false;
+        elements.mobileRefreshButton.disabled = false;
+      }
+    }
+
+    elements.studentLoginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.studentLoginMessage.textContent = "Signing in…";
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          studentEmail(elements.studentUsername.value),
+          elements.studentPassword.value
+        );
+      } catch (error) {
+        elements.studentLoginMessage.textContent = "Incorrect username or password.";
+      }
+    });
+
+    elements.adminLoginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      elements.adminLoginMessage.textContent = "Signing in…";
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          elements.adminEmail.value.trim(),
+          elements.adminPassword.value
+        );
+      } catch (error) {
+        elements.adminLoginMessage.textContent = "Incorrect administrator email or password.";
+      }
+    });
+
+    elements.menuButton.addEventListener("click", openSidebar);
+    elements.sidebarOverlay.addEventListener("click", closeSidebar);
+    document.querySelectorAll(".nav-item").forEach((item) => item.addEventListener("click", closeSidebar));
+    elements.refreshButton.addEventListener("click", refreshDashboard);
+    elements.mobileRefreshButton.addEventListener("click", refreshDashboard);
+    elements.logoutButton.addEventListener("click", async () => signOut(auth));
+
+    onAuthStateChanged(auth, async (user) => {
+      showOnly("loading");
+      currentProfile = null;
+      dashboardData = null;
+
+      if (!user) {
+        elements.studentLoginMessage.textContent = "";
+        elements.adminLoginMessage.textContent = "";
+        showOnly("login");
+        return;
+      }
+
+      try {
+        const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+        if (!profileSnapshot.exists()) {
+          await signOut(auth);
+          alert("This account does not have a Superstar user profile.");
+          return;
+        }
+
+        currentProfile = profileSnapshot.data();
+        if (!["owner", "co-owner", "admin", "student"].includes(currentProfile.role)) {
+          await signOut(auth);
+          alert("This account has an unsupported role.");
+          return;
+        }
+
+        await refreshDashboard();
+        showOnly("app");
+      } catch (error) {
+        console.error(error);
+        await signOut(auth);
+        alert(`Could not open the dashboard: ${error.message}`);
+      }
+    });
+  </script>
+</body>
+</html>
