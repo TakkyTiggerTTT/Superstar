@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Superstar class calendar by ICT date">
   <title>Superstar Class Calendar</title>
-  <!-- SUPERSTAR CALENDAR SCHOOL EVENT UPDATE: date-only class/subcategory calendar with all-students and no-subject school event option -->
+  <!-- SUPERSTAR CALENDAR TITLE UPDATE: ICT date-only calendar with all-students, no-subject school events, and event titles -->
 
   <style>
     :root {
@@ -309,7 +309,7 @@
         <div class="eyebrow" id="ictTodayLabel">ICT date</div>
         <h1>Calendar</h1>
         <p class="subtitle">
-          Admins can choose the ICT date for each class, grade subcategory, or school event. No time is saved.
+          Admins can choose the ICT date, event title, class, grade subcategory, or school event. No time is saved.
           Students see their own class calendar items plus items sent to all students.
         </p>
       </div>
@@ -338,12 +338,17 @@
       <aside class="panel">
         <section class="admin-panel hidden" id="adminPanel">
           <h2 id="formTitle">Add calendar day</h2>
-          <p class="panel-note">Pick the ICT date, class/all students, then choose either a subject/subcategory or a school event with no subject.</p>
+          <p class="panel-note">Pick the ICT date, title, class/all students, then choose either a subject/subcategory or a school event with no subject.</p>
           <form class="form-grid" id="scheduleForm">
             <div class="field">
               <label for="scheduleDate">Date (ICT)</label>
               <input id="scheduleDate" type="date" required>
               <p class="small-note">This is stored as a date only in ICT / Bangkok time.</p>
+            </div>
+            <div class="field">
+              <label for="scheduleTitle">Event title</label>
+              <input id="scheduleTitle" type="text" maxlength="100" placeholder="Example: First day of school" required>
+              <p class="small-note">This title is what students will see on the calendar.</p>
             </div>
             <div class="field">
               <label for="scheduleClass">Class / grade</label>
@@ -427,6 +432,7 @@
       scheduleForm: document.getElementById("scheduleForm"),
       formTitle: document.getElementById("formTitle"),
       scheduleDate: document.getElementById("scheduleDate"),
+      scheduleTitle: document.getElementById("scheduleTitle"),
       scheduleClass: document.getElementById("scheduleClass"),
       schoolEventToggle: document.getElementById("schoolEventToggle"),
       subjectField: document.getElementById("subjectField"),
@@ -536,6 +542,10 @@
     function scheduleLabel(entry) {
       if (isSchoolEventEntry(entry)) return "School event";
       return `${entry.subjectName || subjectName(entry.subjectId)} · ${entry.categoryName || categoryName(entry.categoryId)}`;
+    }
+
+    function calendarTitle(entry) {
+      return String(entry?.title || "").trim() || (isSchoolEventEntry(entry) ? "School event" : scheduleLabel(entry));
     }
 
     function visibleForClass(item, classId) {
@@ -660,7 +670,7 @@
               ${key === todayKey ? '<span class="today-pill">ICT today</span>' : ''}
             </div>
             ${entries.slice(0, 3).map((entry) => `
-              <span class="entry-chip">${escapeHtml(entry.className || className(entry.classId))} · ${escapeHtml(isSchoolEventEntry(entry) ? "School event" : (entry.categoryName || categoryName(entry.categoryId)))}</span>
+              <span class="entry-chip">${escapeHtml(calendarTitle(entry))}</span>
             `).join("")}
             ${entries.length > 3 ? `<div class="entry-more">+${entries.length - 3} more</div>` : ""}
           </button>
@@ -700,9 +710,9 @@
         <article class="schedule-item">
           <div class="schedule-top">
             <div>
-              <div class="schedule-title">${escapeHtml(entry.className || className(entry.classId))}</div>
+              <div class="schedule-title">${escapeHtml(calendarTitle(entry))}</div>
               <div class="schedule-meta">
-                ${escapeHtml(scheduleLabel(entry))}
+                ${escapeHtml(entry.className || className(entry.classId))} · ${escapeHtml(scheduleLabel(entry))}
               </div>
             </div>
           </div>
@@ -753,6 +763,7 @@
       els.saveButton.textContent = "Save changes";
       els.cancelEditButton.classList.remove("hidden");
       els.scheduleDate.value = entry.date;
+      els.scheduleTitle.value = entry.title || calendarTitle(entry);
       els.scheduleClass.value = entry.classId || "";
       els.schoolEventToggle.checked = isSchoolEventEntry(entry);
       updateSubjectOptions();
@@ -783,16 +794,17 @@
       els.formMessage.className = "form-message";
 
       const date = els.scheduleDate.value;
+      const title = els.scheduleTitle.value.trim();
       const classId = els.scheduleClass.value;
       const noSubject = els.schoolEventToggle.checked;
       const subjectId = noSubject ? "__school_event__" : els.scheduleSubject.value;
       const categoryId = noSubject ? "__no_subject__" : els.scheduleCategory.value;
       const note = els.scheduleNote.value.trim();
 
-      if (!date || !classId || (!noSubject && (!subjectId || !categoryId))) {
+      if (!date || !title || !classId || (!noSubject && (!subjectId || !categoryId))) {
         els.formMessage.textContent = noSubject
-          ? "Select the date and class/all students."
-          : "Select the date, class, subject, and grade subcategory.";
+          ? "Add the title, date, and class/all students."
+          : "Add the title, date, class, subject, and grade subcategory.";
         return;
       }
 
@@ -807,6 +819,7 @@
 
       const payload = {
         date,
+        title,
         timeZone: ICT_TZ,
         isEveryone,
         classId,
