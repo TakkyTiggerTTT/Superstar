@@ -109,6 +109,20 @@
             </table>
           </div>
         </section>
+
+        <section class="panel detail">
+          <div class="section-title">
+            <h2>Attendance</h2>
+            <span class="pill blue" id="attendancePill">0 records</span>
+          </div>
+          <p class="muted">Attendance records and how much they affect grade subcategories.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Subject</th><th>Grade subcategory</th><th>Status</th><th>Grade effect</th><th>Note</th></tr></thead>
+              <tbody id="attendanceBody"></tbody>
+            </table>
+          </div>
+        </section>
       </section>
     </div>
   </main>
@@ -127,7 +141,7 @@
     let me = null;
     let selectedStudentId = "";
     let selectedSubjectId = "__all__";
-    const data = { students:[], classes:[], subjects:[], categories:[], grades:[], quizzes:[], attempts:[] };
+    const data = { students:[], classes:[], subjects:[], categories:[], grades:[], quizzes:[], attempts:[], attendance:[], attendanceSettings:[] };
 
     const staffRoles = new Set(["admin","co-owner","owner"]);
     function isStaff(role){ return staffRoles.has(String(role || "").toLowerCase()); }
@@ -161,6 +175,27 @@
     function recordResult(record, category){ if(!record || record.status !== "done" || !category) return null; const max=Number(category.maxScore||0); const earned=Number(record.score||0); const percent=max>0 ? Math.max(0, Math.min(100, earned/max*100)) : 0; return {percent, earned, max, ...scoreToGrade(percent)}; }
     function timestampToMillis(value){ if(!value) return 0; if(typeof value.toMillis === "function") return value.toMillis(); if(typeof value.seconds === "number") return value.seconds*1000; return 0; }
     function formatDate(value){ const ms=timestampToMillis(value); if(!ms) return ""; return new Date(ms).toLocaleString([], {year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"}); }
+    function formatDateKey(key){ if(!key) return ""; const [y,m,d]=String(key).split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString([], {year:"numeric", month:"short", day:"numeric"}); }
+    function attendanceValue(status){ if(status === "Present") return 1; if(status === "Late") return 0.5; if(status === "Excused") return 1; return 0; }
+    function attendanceFor(studentId){ return data.attendance.filter(a => a.studentId === studentId).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))); }
+    function attendanceImpactFor(studentId){
+      const groups = new Map();
+      attendanceFor(studentId).forEach(r => {
+        const key = `${r.classId || ""}_${r.categoryId || ""}`;
+        if(!r.categoryId) return;
+        if(!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(r);
+      });
+      return [...groups.entries()].map(([key, rows]) => {
+        const first = rows[0] || {};
+        const avg = rows.length ? rows.reduce((sum,r)=>sum+attendanceValue(r.status),0) / rows.length : 0;
+        const weight = Number(first.weightPercent ?? data.attendanceSettings.find(s => s.classId === first.classId && s.categoryId === first.categoryId)?.weightPercent ?? 100);
+        const cat = getCategory(first.categoryId) || {};
+        const max = Number(cat.maxScore || 100);
+        const points = Math.max(0, Math.min(max, avg * max * (weight / 100)));
+        return { key, rows, first, avg, weight, max, points };
+      });
+    }
 
     function quizAttemptsFor(studentId, subjectId){
       return data.attempts.filter(a => a.studentId === studentId && a.status === "graded" && String(a.subjectId||"") === String(subjectId||""));
@@ -193,6 +228,31 @@
       const max = subjectSummaries.reduce((sum,s)=>sum+s.max,0);
       const percent = max > 0 ? earned / max * 100 : 0;
       return { subjects, subjectSummaries, gpa, cats, completed, missing, earned, max, percent };
+    }
+
+    function renderAttendanceReport(student){
+      const records = attendanceFor(student.id);
+      const impacts = attendanceImpactFor(student.id);
+      $("attendancePill").textContent = `${records.length} record${records.length===1?"":"s"}`;
+      if(!records.length){
+        $("attendanceBody").innerHTML = '<tr><td colspan="6">No attendance records yet.</td></tr>';
+        return;
+      }
+      const impactText = (r) => {
+        const group = impacts.find(x => x.first.classId === r.classId && x.first.categoryId === r.categoryId);
+        if(!group) return "—";
+        return `${pct(group.avg*100)} attendance · ${group.weight}% affects grade · ${fmt(group.points)} / ${fmt(group.max)} pts`;
+      };
+      $("attendanceBody").innerHTML = records.map(r => `
+        <tr>
+          <td>${escapeHtml(formatDateKey(r.date))}</td>
+          <td>${escapeHtml(r.subjectName || "School")}</td>
+          <td>${escapeHtml(r.categoryName || "Attendance")}</td>
+          <td><span class="status ${String(r.status||"Present").toLowerCase()==="absent"?"notdone":"done"}">${escapeHtml(r.status || "Present")}</span></td>
+          <td>${escapeHtml(impactText(r))}</td>
+          <td>${escapeHtml(r.note || "")}</td>
+        </tr>
+      `).join("");
     }
 
     function renderStudentSelect(){
@@ -237,6 +297,7 @@
       $("completedCount").textContent = String(summary.completed);
       $("notCompletedCount").textContent = String(summary.missing);
       $("totalScore").textContent = pct(summary.percent);
+      renderAttendanceReport(student);
       $("summaryCount").textContent = `${subjectSummaries.length} subject${subjectSummaries.length===1?"":"s"}`;
 
       $("subjectButtons").innerHTML = summary.subjectSummaries.length ? summary.subjectSummaries.map(s => `
@@ -305,14 +366,16 @@
     }
 
     async function loadData(){
-      const [usersSnap, classesSnap, subjectsSnap, categoriesSnap, gradesSnap, quizzesSnap, attemptsSnap] = await Promise.all([
+      const [usersSnap, classesSnap, subjectsSnap, categoriesSnap, gradesSnap, quizzesSnap, attemptsSnap, attendanceSnap, attendanceSettingsSnap] = await Promise.all([
         getDocs(collection(db,"users")),
         getDocs(collection(db,"classes")),
         getDocs(collection(db,"subjects")),
         getDocs(collection(db,"categories")),
         getDocs(collection(db,"grades")),
         getDocs(collection(db,"quizzes")),
-        getDocs(collection(db,"quizAttempts"))
+        getDocs(collection(db,"quizAttempts")),
+        getDocs(collection(db,"attendance")),
+        getDocs(collection(db,"attendanceSettings"))
       ]);
       data.students = snapshotToArray(usersSnap).filter(u => String(u.role||"").toLowerCase() === "student");
       data.classes = snapshotToArray(classesSnap);
@@ -321,7 +384,12 @@
       data.grades = snapshotToArray(gradesSnap);
       data.quizzes = snapshotToArray(quizzesSnap);
       data.attempts = snapshotToArray(attemptsSnap);
-      if(!isStaff(me.role)) data.students = data.students.filter(s => s.id === me.id);
+      data.attendance = snapshotToArray(attendanceSnap);
+      data.attendanceSettings = snapshotToArray(attendanceSettingsSnap);
+      if(!isStaff(me.role)) {
+        data.students = data.students.filter(s => s.id === me.id);
+        data.attendance = data.attendance.filter(a => a.studentId === me.id);
+      }
       renderStudentSelect();
       renderReport();
     }
