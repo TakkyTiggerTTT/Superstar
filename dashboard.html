@@ -743,7 +743,7 @@
         <span>Superstar School</span>
       </div>
 
-      <a class="button secondary-button" href="./index.html">Grade Portal</a>
+      <a class="button secondary-button" href="./grades.html">Grade Portal</a>
     </div>
 
     <div class="login-hero">
@@ -820,7 +820,7 @@
           <span>Dashboard</span>
         </a>
 
-        <a class="nav-item" href="./index.html">
+        <a class="nav-item" href="./grades.html">
           <span class="nav-icon">📊</span>
           <span>Grades</span>
         </a>
@@ -906,7 +906,7 @@
           <div class="header-actions">
             <a class="button secondary-button" href="./announcements.html">📢 Announcements</a>
             <a class="button secondary-button" href="./quiz.html">📝 Quizzes</a>
-            <a class="button accent-button" href="./index.html">Open Grades</a>
+            <a class="button accent-button" href="./grades.html">Open Grades</a>
           </div>
         </div>
 
@@ -928,7 +928,7 @@
             <section class="panel">
               <div class="panel-header">
                 <h2 id="mainListTitle">Recent activity</h2>
-                <a id="mainListLink" href="./index.html">View all</a>
+                <a id="mainListLink" href="./grades.html">View all</a>
               </div>
 
               <div class="list" id="mainList"></div>
@@ -1221,7 +1221,7 @@
       ].join("");
 
       elements.quickGrid.innerHTML = [
-        quickCard("./index.html", "📊", "Grades & setup", "Manage classes, students, subjects, subcategories, and grades."),
+        quickCard("./grades.html", "📊", "Grades & setup", "Manage classes, students, subjects, subcategories, and grades."),
         quickCard("./announcements.html", "📢", "Announcements", "Send rich announcements to grades or selected students."),
         quickCard("./events.html", "📅", "Events", "Create events for entire classes and selected students."),
         quickCard("./quiz.html", "📝", "Quizzes", "Create timed quizzes, set question types, grade attempts, and view analytics."),
@@ -1234,7 +1234,7 @@
       ].join("");
 
       elements.mainListTitle.textContent = "Newest students";
-      elements.mainListLink.href = "./index.html";
+      elements.mainListLink.href = "./grades.html";
       elements.mainListLink.textContent = "Manage students";
 
       const newestStudents = [...students]
@@ -1332,7 +1332,7 @@
       ].join("");
 
       elements.quickGrid.innerHTML = [
-        quickCard("./index.html", "📊", "My grades", "View scores, letter grades, GPA, and completion status."),
+        quickCard("./grades.html", "📊", "My grades", "View scores, letter grades, GPA, and completion status."),
         quickCard("./announcements.html", "📢", "My announcements", "Read messages sent to you or your class."),
         quickCard("./events.html", "📅", "My events", "View events selected for you or your class."),
         quickCard("./quiz.html", "📝", "My quizzes", "Complete available quizzes, timed quizzes, and see graded feedback."),
@@ -1340,11 +1340,11 @@
         quickCard("./profile.html", "👤", "My profile", "View your profile, class, points, and quiz progress."),
         quickCard("./leaderboard.html", "🏆", "Leaderboard", "See your quiz points ranking."),
         quickCard("./savelists.html", "💾", "My SaveList", "Create and manage your school-monitored saved notes and images."),
-        quickCard("./index.html", "🎓", "Student portal", "Open your full class and grade information.")
+        quickCard("./grades.html", "🎓", "Student portal", "Open your full class and grade information.")
       ].join("");
 
       elements.mainListTitle.textContent = "Latest grades";
-      elements.mainListLink.href = "./index.html";
+      elements.mainListLink.href = "./grades.html";
       elements.mainListLink.textContent = "View all grades";
 
       const gradeItems = dashboardData.grades
