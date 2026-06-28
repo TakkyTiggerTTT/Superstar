@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Superstar class calendar by ICT date">
   <title>Superstar Class Calendar</title>
-  <!-- SUPERSTAR CALENDAR ALL STUDENTS UPDATE: date-only class/subcategory calendar with all-students option -->
+  <!-- SUPERSTAR CALENDAR SCHOOL EVENT UPDATE: date-only class/subcategory calendar with all-students and no-subject school event option -->
 
   <style>
     :root {
@@ -140,6 +140,26 @@
     .form-message { min-height: 22px; color: var(--danger); font-weight: 800; }
     .success-text { color: var(--success); }
     .small-note { color: var(--muted); font-size: .9rem; line-height: 1.45; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.055);
+    }
+    .checkbox-row input {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+    .checkbox-row strong { display: block; color: #fff; }
+    .checkbox-row span { display: block; margin-top: 4px; color: var(--muted); font-size: .92rem; line-height: 1.4; }
+
 
     .calendar-toolbar {
       display: flex;
@@ -289,7 +309,7 @@
         <div class="eyebrow" id="ictTodayLabel">ICT date</div>
         <h1>Calendar</h1>
         <p class="subtitle">
-          Admins can choose the ICT date for each class and grade subcategory. No time is saved.
+          Admins can choose the ICT date for each class, grade subcategory, or school event. No time is saved.
           Students see their own class calendar items plus items sent to all students.
         </p>
       </div>
@@ -318,7 +338,7 @@
       <aside class="panel">
         <section class="admin-panel hidden" id="adminPanel">
           <h2 id="formTitle">Add calendar day</h2>
-          <p class="panel-note">Pick the ICT date, class/all students, subject, and grade subcategory. There is no time field.</p>
+          <p class="panel-note">Pick the ICT date, class/all students, then choose either a subject/subcategory or a school event with no subject.</p>
           <form class="form-grid" id="scheduleForm">
             <div class="field">
               <label for="scheduleDate">Date (ICT)</label>
@@ -330,11 +350,18 @@
               <select id="scheduleClass" required></select>
               <p class="small-note">Choose <strong>All students</strong> if every student should see this calendar item.</p>
             </div>
-            <div class="field">
+            <label class="checkbox-row" for="schoolEventToggle">
+              <input id="schoolEventToggle" type="checkbox">
+              <span>
+                <strong>School event / no subject</strong>
+                <span>Use this for things like first day of school, holiday, assembly, field trip, or school-wide reminder.</span>
+              </span>
+            </label>
+            <div class="field" id="subjectField">
               <label for="scheduleSubject">Subject</label>
               <select id="scheduleSubject" required></select>
             </div>
-            <div class="field">
+            <div class="field" id="categoryField">
               <label for="scheduleCategory">Grade subcategory</label>
               <select id="scheduleCategory" required></select>
             </div>
@@ -401,6 +428,9 @@
       formTitle: document.getElementById("formTitle"),
       scheduleDate: document.getElementById("scheduleDate"),
       scheduleClass: document.getElementById("scheduleClass"),
+      schoolEventToggle: document.getElementById("schoolEventToggle"),
+      subjectField: document.getElementById("subjectField"),
+      categoryField: document.getElementById("categoryField"),
       scheduleSubject: document.getElementById("scheduleSubject"),
       scheduleCategory: document.getElementById("scheduleCategory"),
       scheduleNote: document.getElementById("scheduleNote"),
@@ -490,11 +520,22 @@
     }
 
     function subjectName(subjectId) {
+      if (subjectId === "__school_event__") return "School event";
       return data.subjects.find((item) => item.id === subjectId)?.name || "Subject";
     }
 
     function categoryName(categoryId) {
+      if (categoryId === "__no_subject__") return "No subject";
       return data.categories.find((item) => item.id === categoryId)?.name || "Grade subcategory";
+    }
+
+    function isSchoolEventEntry(entry) {
+      return entry?.subjectId === "__school_event__" || entry?.categoryId === "__no_subject__" || entry?.subjectName === "School event";
+    }
+
+    function scheduleLabel(entry) {
+      if (isSchoolEventEntry(entry)) return "School event";
+      return `${entry.subjectName || subjectName(entry.subjectId)} · ${entry.categoryName || categoryName(entry.categoryId)}`;
     }
 
     function visibleForClass(item, classId) {
@@ -519,6 +560,20 @@
       select.innerHTML = [`<option value="">${escapeHtml(placeholder)}</option>`]
         .concat(items.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(getLabel(item))}</option>`))
         .join("");
+    }
+
+    function setSubjectFieldsState() {
+      const noSubject = els.schoolEventToggle.checked;
+      els.subjectField.classList.toggle("hidden", noSubject);
+      els.categoryField.classList.toggle("hidden", noSubject);
+      els.scheduleSubject.required = !noSubject;
+      els.scheduleCategory.required = !noSubject;
+      els.scheduleSubject.disabled = noSubject;
+      els.scheduleCategory.disabled = noSubject;
+      if (noSubject) {
+        els.scheduleSubject.value = "";
+        els.scheduleCategory.value = "";
+      }
     }
 
     async function loadData() {
@@ -559,10 +614,13 @@
       if ([...els.scheduleSubject.options].some((option) => option.value === previous)) {
         els.scheduleSubject.value = previous;
       }
+      setSubjectFieldsState();
       updateCategoryOptions();
     }
 
     function updateCategoryOptions() {
+      setSubjectFieldsState();
+      if (els.schoolEventToggle.checked) return;
       const classId = els.scheduleClass.value;
       const subjectId = els.scheduleSubject.value;
       const previous = els.scheduleCategory.value;
@@ -602,7 +660,7 @@
               ${key === todayKey ? '<span class="today-pill">ICT today</span>' : ''}
             </div>
             ${entries.slice(0, 3).map((entry) => `
-              <span class="entry-chip">${escapeHtml(entry.className || className(entry.classId))} · ${escapeHtml(entry.categoryName || categoryName(entry.categoryId))}</span>
+              <span class="entry-chip">${escapeHtml(entry.className || className(entry.classId))} · ${escapeHtml(isSchoolEventEntry(entry) ? "School event" : (entry.categoryName || categoryName(entry.categoryId)))}</span>
             `).join("")}
             ${entries.length > 3 ? `<div class="entry-more">+${entries.length - 3} more</div>` : ""}
           </button>
@@ -644,7 +702,7 @@
             <div>
               <div class="schedule-title">${escapeHtml(entry.className || className(entry.classId))}</div>
               <div class="schedule-meta">
-                ${escapeHtml(entry.subjectName || subjectName(entry.subjectId))} · ${escapeHtml(entry.categoryName || categoryName(entry.categoryId))}
+                ${escapeHtml(scheduleLabel(entry))}
               </div>
             </div>
           </div>
@@ -680,6 +738,7 @@
       els.formMessage.textContent = "";
       els.formMessage.className = "form-message";
       els.scheduleForm.reset();
+      els.schoolEventToggle.checked = false;
       els.scheduleDate.value = selectedDate;
       updateSubjectOptions();
     }
@@ -695,14 +754,20 @@
       els.cancelEditButton.classList.remove("hidden");
       els.scheduleDate.value = entry.date;
       els.scheduleClass.value = entry.classId || "";
+      els.schoolEventToggle.checked = isSchoolEventEntry(entry);
       updateSubjectOptions();
-      els.scheduleSubject.value = entry.subjectId || "";
-      updateCategoryOptions();
-      els.scheduleCategory.value = entry.categoryId || "";
+      if (!els.schoolEventToggle.checked) {
+        els.scheduleSubject.value = entry.subjectId || "";
+        updateCategoryOptions();
+        els.scheduleCategory.value = entry.categoryId || "";
+      } else {
+        setSubjectFieldsState();
+      }
       els.scheduleNote.value = entry.note || "";
       els.formMessage.textContent = "Editing this calendar item.";
       els.formMessage.className = "form-message success-text";
-      renderAll();
+      renderCalendar();
+      renderSelectedDate();
     }
 
     async function deleteEntry(entryId) {
@@ -719,19 +784,22 @@
 
       const date = els.scheduleDate.value;
       const classId = els.scheduleClass.value;
-      const subjectId = els.scheduleSubject.value;
-      const categoryId = els.scheduleCategory.value;
+      const noSubject = els.schoolEventToggle.checked;
+      const subjectId = noSubject ? "__school_event__" : els.scheduleSubject.value;
+      const categoryId = noSubject ? "__no_subject__" : els.scheduleCategory.value;
       const note = els.scheduleNote.value.trim();
 
-      if (!date || !classId || !subjectId || !categoryId) {
-        els.formMessage.textContent = "Select the date, class, subject, and grade subcategory.";
+      if (!date || !classId || (!noSubject && (!subjectId || !categoryId))) {
+        els.formMessage.textContent = noSubject
+          ? "Select the date and class/all students."
+          : "Select the date, class, subject, and grade subcategory.";
         return;
       }
 
       const isEveryone = classId === "__all__";
       const selectedClass = isEveryone ? { id: "__all__", name: "All students" } : data.classes.find((item) => item.id === classId);
-      const selectedSubject = data.subjects.find((item) => item.id === subjectId);
-      const selectedCategory = data.categories.find((item) => item.id === categoryId);
+      const selectedSubject = noSubject ? { id: "__school_event__", name: "School event" } : data.subjects.find((item) => item.id === subjectId);
+      const selectedCategory = noSubject ? { id: "__no_subject__", name: "No subject" } : data.categories.find((item) => item.id === categoryId);
       if (!selectedClass || !selectedSubject || !selectedCategory) {
         els.formMessage.textContent = "One selected item is missing. Refresh and try again.";
         return;
@@ -792,6 +860,7 @@
     }
 
     els.scheduleClass.addEventListener("change", updateSubjectOptions);
+    els.schoolEventToggle.addEventListener("change", () => { setSubjectFieldsState(); updateCategoryOptions(); });
     els.scheduleSubject.addEventListener("change", updateCategoryOptions);
     els.scheduleForm.addEventListener("submit", (event) => saveEntry(event).catch((error) => {
       console.error(error);
