@@ -59,6 +59,7 @@ function navItems(role) {
     ["quiz.html", "📝", "Quizzes", true],
     ["notifications.html", "🔔", "Notifications", true],
     ["profile.html", "👤", "Profile", true],
+    ["student-report.html", "📈", "Student Reports", staff],
     ["leaderboard.html", "🏆", "Leaderboard", true],
     ["savelists.html", "💾", "SaveList", true],
     ["accounts.html", "🔑", "Student Accounts", staff],
