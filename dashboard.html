@@ -700,6 +700,113 @@
     }
   
 
+    /* DASHBOARD SIDEBAR FIX: make the dashboard sidebar match other tabs */
+    .sidebar {
+      box-sizing: border-box;
+      overflow: hidden !important;
+      min-height: 0;
+    }
+
+    .sidebar-nav {
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior: contain !important;
+      touch-action: pan-y !important;
+      padding-right: 8px !important;
+      padding-bottom: 18px !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(255, 183, 77, .9) rgba(255, 255, 255, .08) !important;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-track {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(255, 183, 77, .92);
+    }
+
+    .sidebar-spacer {
+      display: none !important;
+    }
+
+    .sidebar-footer {
+      flex: 0 0 auto !important;
+      margin-top: 12px !important;
+    }
+
+    .dashboard-sidebar-toggle {
+      position: fixed;
+      left: calc(var(--sidebar-width) - 18px);
+      top: calc(14px + env(safe-area-inset-top));
+      z-index: 60;
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .20);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(17, 24, 44, .98);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, .35);
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 950;
+    }
+
+    .dashboard-sidebar-toggle:hover {
+      color: var(--accent-dark);
+      background: var(--accent);
+    }
+
+    body.dashboard-sidebar-collapsed .app-shell {
+      grid-template-columns: 0 minmax(0, 1fr) !important;
+    }
+
+    body.dashboard-sidebar-collapsed .sidebar {
+      transform: translateX(calc(-100% - 14px)) !important;
+      pointer-events: none;
+    }
+
+    body.dashboard-sidebar-collapsed .dashboard-sidebar-toggle {
+      left: 14px;
+    }
+
+    @media (max-width: 850px) {
+      .dashboard-sidebar-toggle {
+        display: none !important;
+      }
+
+      .sidebar {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      .sidebar-nav {
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+        max-height: none !important;
+        padding-bottom: 18px !important;
+      }
+
+      .sidebar-spacer {
+        display: block !important;
+        flex: 1 0 16px !important;
+        min-height: 16px !important;
+      }
+    }
+
+
 /* Superstar star logo update */
 .logo {
   display: inline-flex;
@@ -798,6 +905,7 @@
   </section>
 
   <section class="app-shell hidden" id="appView">
+    <button class="dashboard-sidebar-toggle" id="desktopSidebarToggle" type="button" aria-label="Hide dashboard menu" title="Hide dashboard menu">⇤</button>
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <div class="brand">
@@ -853,6 +961,11 @@
         <a class="nav-item" href="./profile.html">
           <span class="nav-icon">👤</span>
           <span>Profile</span>
+        </a>
+
+        <a class="nav-item admin-only hidden" href="./student-report.html">
+          <span class="nav-icon">📈</span>
+          <span>Student Reports</span>
         </a>
 
         <a class="nav-item" href="./leaderboard.html">
@@ -1014,6 +1127,7 @@
       sidebar: document.getElementById("sidebar"),
       sidebarOverlay: document.getElementById("sidebarOverlay"),
       menuButton: document.getElementById("menuButton"),
+      desktopSidebarToggle: document.getElementById("desktopSidebarToggle"),
       refreshButton: document.getElementById("refreshButton"),
       mobileRefreshButton: document.getElementById("mobileRefreshButton"),
       logoutButton: document.getElementById("logoutButton"),
@@ -1112,6 +1226,27 @@
       document.querySelectorAll(".admin-only").forEach((item) => {
         item.classList.toggle("hidden", !isAdmin);
       });
+    }
+
+
+    function applyDashboardSidebarCollapsed() {
+      const collapsed = localStorage.getItem("superstar.dashboardSidebarCollapsed") === "1";
+      document.body.classList.toggle("dashboard-sidebar-collapsed", collapsed);
+      if (elements.desktopSidebarToggle) {
+        elements.desktopSidebarToggle.textContent = collapsed ? "☰" : "⇤";
+        elements.desktopSidebarToggle.title = collapsed ? "Show dashboard menu" : "Hide dashboard menu";
+        elements.desktopSidebarToggle.setAttribute("aria-label", collapsed ? "Show dashboard menu" : "Hide dashboard menu");
+      }
+    }
+
+    function toggleDashboardSidebarCollapsed() {
+      const collapsed = localStorage.getItem("superstar.dashboardSidebarCollapsed") === "1";
+      if (collapsed) {
+        localStorage.removeItem("superstar.dashboardSidebarCollapsed");
+      } else {
+        localStorage.setItem("superstar.dashboardSidebarCollapsed", "1");
+      }
+      applyDashboardSidebarCollapsed();
     }
 
     function openSidebar() {
@@ -1497,6 +1632,10 @@
       }
     });
 
+    applyDashboardSidebarCollapsed();
+    if (elements.desktopSidebarToggle) {
+      elements.desktopSidebarToggle.addEventListener("click", toggleDashboardSidebarCollapsed);
+    }
     elements.menuButton.addEventListener("click", openSidebar);
     elements.sidebarOverlay.addEventListener("click", closeSidebar);
     document.querySelectorAll(".nav-item").forEach((item) => item.addEventListener("click", closeSidebar));
