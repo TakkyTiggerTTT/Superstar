@@ -99,6 +99,16 @@
       </section>
 
       <section class="panel">
+        <h2>Attendance grading</h2>
+        <p class="note">Superstar automatically creates one <strong>Attendance</strong> grade subcategory for every subject. This percentage is how much attendance is worth inside each subject grade.</p>
+        <div class="field"><label for="attendanceDefaultWeight">Attendance weight of each subject (%)</label><input id="attendanceDefaultWeight" type="number" min="0" max="100" step="1" value="15"></div>
+        <button class="button accent" id="saveAttendanceDefault" type="button" style="width:100%">Save + Create Attendance Subcategories</button>
+        <button class="button secondary" id="syncAttendanceCategories" type="button" style="width:100%;margin-top:10px">Create / Repair Attendance for Every Subject</button>
+        <div class="message" id="attendanceDefaultResult"></div>
+        <p class="note" style="margin-top:10px">Example: if this is 15%, attendance becomes a 15-point grade item in every subject. Teachers only take attendance; the Attendance grade subcategories are created for them.</p>
+      </section>
+
+      <section class="panel">
         <h2>Create staff account</h2>
         <p class="note">Creates a Firebase Authentication account and a staff profile. Passwords are never stored in Firestore.</p>
         <form id="createStaffForm">
@@ -123,7 +133,7 @@
   <script type="module">
     import { initializeApp, getApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, onSnapshot, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
@@ -143,7 +153,8 @@
       wipEnabled: false,
       wipMessage: "Superstar School is being updated. Please check again later.",
       themeMode: "dark",
-      accentColor: "#ffb74d"
+      accentColor: "#ffb74d",
+      attendanceDefaultWeightPercent: 15
     };
 
     const $ = (id) => document.getElementById(id);
@@ -175,6 +186,76 @@
       $("themeMode").value = settings.themeMode || "dark";
       $("accentColor").value = settings.accentColor || "#ffb74d";
       document.documentElement.style.setProperty("--accent", settings.accentColor || "#ffb74d");
+    }
+
+    function attendanceDefaultWeight() {
+      const value = Number($("attendanceDefaultWeight")?.value ?? settings.attendanceDefaultWeightPercent ?? 15);
+      return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 15;
+    }
+
+    function renderAttendanceSettings() {
+      if ($("attendanceDefaultWeight")) {
+        $("attendanceDefaultWeight").value = String(Number(settings.attendanceDefaultWeightPercent ?? 15));
+      }
+    }
+
+    function safeDocPart(value) {
+      return String(value || "").replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 120);
+    }
+
+    async function syncAttendanceGradeSubcategories(showMessage = true) {
+      const result = $("attendanceDefaultResult");
+      const weight = attendanceDefaultWeight();
+      if (showMessage && result) {
+        result.style.color = "var(--muted)";
+        result.textContent = "Creating attendance grade subcategories…";
+      }
+
+      const [subjectsSnap, categoriesSnap] = await Promise.all([
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories"))
+      ]);
+      const subjects = subjectsSnap.docs.map((item) => ({ id: item.id, ...item.data() }));
+      const categories = categoriesSnap.docs.map((item) => ({ id: item.id, ...item.data() }));
+      const batch = writeBatch(db);
+
+      batch.set(doc(db, "settings", "site"), {
+        attendanceDefaultWeightPercent: weight,
+        attendanceUpdatedAt: serverTimestamp(),
+        attendanceUpdatedBy: auth.currentUser.uid,
+        attendanceUpdatedByName: profile.name || profile.username || profile.email || "Staff"
+      }, { merge: true });
+
+      let count = 0;
+      subjects.forEach((subject) => {
+        const existing = categories.find((category) =>
+          category.subjectId === subject.id &&
+          (category.isAttendanceCategory === true || String(category.name || "").trim().toLowerCase() === "attendance")
+        );
+        const categoryId = existing?.id || `attendance_${safeDocPart(subject.id)}`;
+        batch.set(doc(db, "categories", categoryId), {
+          subjectId: subject.id,
+          name: "Attendance",
+          maxScore: weight,
+          visibilityMode: "inherit",
+          classIds: [],
+          studentIds: [],
+          isAttendanceCategory: true,
+          attendanceAutoCreated: true,
+          attendanceWeightPercent: weight,
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser.uid,
+          updatedByName: profile.name || profile.username || profile.email || "Staff"
+        }, { merge: true });
+        count++;
+      });
+
+      await batch.commit();
+      await writeLog("Synced attendance grade subcategories", "categories/attendance", `${count} subject attendance items at ${weight}%`, { attendanceDefaultWeightPercent: weight, subjectCount: count });
+      if (showMessage && result) {
+        result.style.color = "var(--success)";
+        result.textContent = `Done. Attendance is ${weight}% and ${count} subject Attendance subcategories are ready.`;
+      }
     }
 
     async function writeLog(action, targetId = "", targetName = "", details = {}) {
@@ -318,6 +399,32 @@
       }
     });
 
+    $("saveAttendanceDefault").addEventListener("click", async () => {
+      $("saveAttendanceDefault").disabled = true;
+      try {
+        await syncAttendanceGradeSubcategories(true);
+      } catch (error) {
+        console.error(error);
+        $("attendanceDefaultResult").style.color = "var(--danger)";
+        $("attendanceDefaultResult").textContent = error.message;
+      } finally {
+        $("saveAttendanceDefault").disabled = false;
+      }
+    });
+
+    $("syncAttendanceCategories").addEventListener("click", async () => {
+      $("syncAttendanceCategories").disabled = true;
+      try {
+        await syncAttendanceGradeSubcategories(true);
+      } catch (error) {
+        console.error(error);
+        $("attendanceDefaultResult").style.color = "var(--danger)";
+        $("attendanceDefaultResult").textContent = error.message;
+      } finally {
+        $("syncAttendanceCategories").disabled = false;
+      }
+    });
+
     $("createStaffForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const button = $("createStaffButton");
@@ -401,6 +508,7 @@
       settings = snapshot.exists() ? { ...settings, ...snapshot.data() } : settings;
       renderWip();
       renderTheme();
+      renderAttendanceSettings();
     });
 
     onAuthStateChanged(auth, async (user) => {
