@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar school events">
+  <title>Superstar Events</title>
+  <link rel="stylesheet" href="./school-shell.css">
+  <script type="module" src="./school-shell.js"></script>
+  <style>
+    :root{--bg:#070a14;--panel:#11182c;--soft:rgba(255,255,255,.075);--border:rgba(255,255,255,.16);--text:#fff;--muted:#aeb9d2;--accent:#ffb74d;--accentText:#251500;--success:#79e8ad;--danger:#ff8e8e;--blue:#91aaff}
+    *{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 75% -10%,#263b73,transparent 38rem),var(--bg);font-family:Inter,Arial,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.page{width:min(1180px,100%);margin:auto;padding:42px 24px 100px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}.top h1{font-size:clamp(2.4rem,7vw,4.5rem);letter-spacing:-2px}.top p,.note{color:var(--muted);line-height:1.6}.button{display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:11px 17px;border:0;border-radius:11px;font-weight:780;text-decoration:none}.accent{color:var(--accentText);background:var(--accent)}.secondary{color:#fff;border:1px solid var(--border);background:var(--soft)}.danger{color:var(--danger);border:1px solid rgba(255,142,142,.35);background:rgba(255,142,142,.09)}.grid{display:grid;grid-template-columns:390px minmax(0,1fr);gap:20px;align-items:start}.panel{padding:23px;border:1px solid var(--border);border-radius:18px;background:rgba(17,24,44,.96);box-shadow:0 24px 70px rgba(0,0,0,.2)}.panel h2{margin-bottom:8px}.field{margin-top:16px}.field label{display:block;margin-bottom:8px;font-weight:760}.field input,.field textarea{width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:10px;outline:none;color:#fff;background:rgba(255,255,255,.065)}.field textarea{min-height:120px;resize:vertical}.field input:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(145,170,255,.13)}.selector{max-height:220px;margin-top:10px;padding:9px;overflow:auto;border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.035)}.check{display:flex;align-items:center;gap:9px;padding:9px;border-radius:8px}.check:hover{background:rgba(255,255,255,.06)}.check input{width:18px;height:18px}.event-list{display:grid;gap:15px}.event-card{padding:20px;border:1px solid var(--border);border-radius:16px;background:var(--soft)}.event-card h3{font-size:1.28rem}.meta{display:flex;flex-wrap:wrap;gap:8px;margin:11px 0}.pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(145,170,255,.14);color:#c9d4ff;font-size:.86rem;font-weight:750}.pill.upcoming{color:#07140d;background:var(--success)}.pill.past{color:#fff;background:rgba(255,255,255,.12)}.event-card p{color:#d7def0;line-height:1.65;white-space:pre-wrap}.event-image{display:block;width:100%;max-height:420px;margin-top:14px;object-fit:contain;border-radius:13px;background:#080b14}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}.empty{padding:45px 20px;color:var(--muted);text-align:center;border:1px dashed var(--border);border-radius:14px}.loading{display:grid;min-height:100vh;place-items:center;text-align:center}.login{width:min(460px,calc(100% - 32px));margin:80px auto;padding:26px;border:1px solid var(--border);border-radius:18px;background:var(--panel);text-align:center}.message{min-height:24px;margin-top:12px;color:var(--danger);font-weight:700}@media(max-width:950px){.grid{grid-template-columns:1fr}}@media(max-width:650px){.page{padding:80px 16px}.top{flex-direction:column}.top .button{width:100%}}
+  
+
+/* Superstar star logo update */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo::before {
+  content: "";
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.20);
+}
+.brand-mark {
+  overflow: hidden !important;
+  color: transparent !important;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat !important;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.22) !important;
+}
+
+  </style>
+</head>
+<body>
+  <div class="loading" id="loadingView"><div><h2>Loading Events…</h2><p class="note">Checking your account and school calendar.</p></div></div>
+  <section class="login hidden" id="loginView"><h1>Events</h1><p class="note">Sign in from the Superstar Grade Portal first.</p><a class="button accent" href="./index.html" style="margin-top:18px">Go to Login</a></section>
+  <main class="page hidden" id="appView">
+    <div class="top"><div><h1>School Events</h1><p id="subtitle">Events selected for your account.</p></div><a class="button secondary" href="./dashboard.html">🏫 Dashboard</a></div>
+    <div class="grid">
+      <section class="panel hidden" id="adminPanel">
+        <h2>Create event</h2><p class="note">Choose entire classes, individual students, or both.</p>
+        <form id="eventForm">
+          <div class="field"><label for="title">Title</label><input id="title" maxlength="120" required></div>
+          <div class="field"><label for="description">Description</label><textarea id="description" maxlength="6000" required></textarea></div>
+          <div class="field"><label for="startAt">Starts</label><input id="startAt" type="datetime-local" required></div>
+          <div class="field"><label for="endAt">Ends (optional)</label><input id="endAt" type="datetime-local"></div>
+          <div class="field"><label for="locationField">Location (optional)</label><input id="locationField" maxlength="160"></div>
+          <div class="field"><label for="imageInput">Picture (optional)</label><input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp"><p class="note" style="margin-top:7px">Compressed before it is saved.</p></div>
+          <div class="field"><label>Send to classes</label><div class="selector" id="classSelector"></div></div>
+          <div class="field"><label>Also send to individual students</label><div class="selector" id="studentSelector"></div></div>
+          <button class="button accent" id="publishButton" type="submit" style="width:100%;margin-top:18px">Publish Event</button>
+          <div class="message" id="formMessage"></div>
+        </form>
+      </section>
+      <section class="panel"><h2 id="listTitle">Your events</h2><p class="note" style="margin-bottom:18px">Upcoming events appear first.</p><div class="event-list" id="eventList"></div></section>
+    </div>
+  </main>
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, getDocs, query, where, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+    const firebaseConfig = {
+  apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+  authDomain: "donut-grade-portal.firebaseapp.com",
+  projectId: "donut-grade-portal",
+  storageBucket: "donut-grade-portal.firebasestorage.app",
+  messagingSenderId: "154823535840",
+  appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+};
+    const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+    let profile=null,classes=[],students=[],events=[],imageData="";
+    const $=id=>document.getElementById(id), loading=$("loadingView"),login=$("loginView"),appView=$("appView"),adminPanel=$("adminPanel"),eventList=$("eventList");
+    const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    const toDate=v=>v?.toDate?v.toDate():v?new Date(v):null;
+    const fmt=v=>{const d=toDate(v);return d&&!Number.isNaN(d.getTime())?d.toLocaleString([], {dateStyle:"medium",timeStyle:"short"}):"Date unavailable"};
+    const show=name=>{loading.classList.toggle("hidden",name!=="loading");login.classList.toggle("hidden",name!=="login");appView.classList.toggle("hidden",name!=="app")};
+    const isStaff=()=>["admin","co-owner","owner"].includes(profile?.role);
+    function checkList(container,items,label){container.innerHTML=items.length?items.map(i=>`<label class="check"><input type="checkbox" value="${esc(i.id)}"><span>${esc(label(i))}</span></label>`).join(""):'<div class="empty">Nothing available.</div>'}
+    function selected(container){return [...container.querySelectorAll('input:checked')].map(i=>i.value)}
+    async function compress(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",.72))};img.src=r.result};r.readAsDataURL(file)})}
+    function status(ev){const start=toDate(ev.startAt),end=toDate(ev.endAt)||start,now=new Date();if(end&&end<now)return["Past","past"];if(start&&start.toDateString()===now.toDateString())return["Today","upcoming"];return["Upcoming","upcoming"]}
+    function calendarFile(ev){const d=v=>{const x=toDate(v)||new Date();return x.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"")};const body=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Superstar School//Events//EN","BEGIN:VEVENT",`UID:${ev.id}@donut-school`,`DTSTAMP:${d(new Date())}`,`DTSTART:${d(ev.startAt)}`,`DTEND:${d(ev.endAt||ev.startAt)}`,`SUMMARY:${String(ev.title||"").replace(/\n/g," ")}`,`DESCRIPTION:${String(ev.description||"").replace(/\n/g,"\\n")}`,`LOCATION:${String(ev.location||"").replace(/\n/g," ")}`,"END:VEVENT","END:VCALENDAR"].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/calendar"}));a.download=`${(ev.title||"event").replace(/[^a-z0-9]+/gi,"-")}.ics`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+    function render(){const sorted=[...events].sort((a,b)=>(toDate(a.startAt)?.getTime()||0)-(toDate(b.startAt)?.getTime()||0));eventList.innerHTML=sorted.length?sorted.map(ev=>{const [label,cls]=status(ev);return `<article class="event-card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><h3>${esc(ev.title)}</h3><span class="pill ${cls}">${label}</span></div><div class="meta"><span class="pill">📅 ${esc(fmt(ev.startAt))}</span>${ev.endAt?`<span class="pill">Ends ${esc(fmt(ev.endAt))}</span>`:""}${ev.location?`<span class="pill">📍 ${esc(ev.location)}</span>`:""}${isStaff()?`<span class="pill">${esc(ev.targetSummary||`${ev.recipientIds?.length||0} students`)}</span>`:""}</div><p>${esc(ev.description)}</p>${ev.image?`<img class="event-image" src="${ev.image}" alt="Event picture">`:""}<div class="actions"><button class="button secondary" data-calendar="${ev.id}" type="button">Add to Calendar</button>${isStaff()?`<button class="button danger" data-delete="${ev.id}" type="button">Delete</button>`:""}</div></article>`}).join(""):'<div class="empty">No events are available.</div>'}
+    async function load(){const [c,u,e]=await Promise.all([getDocs(collection(db,"classes")),isStaff()?getDocs(collection(db,"users")):Promise.resolve(null),isStaff()?getDocs(collection(db,"events")):getDocs(query(collection(db,"events"),where("recipientIds","array-contains",auth.currentUser.uid)))]);classes=c.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||"").localeCompare(b.name||""));students=u?u.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==="student").sort((a,b)=>(a.name||"").localeCompare(b.name||"")):[];events=e.docs.map(d=>({id:d.id,...d.data()}));if(isStaff()){checkList($("classSelector"),classes,x=>x.name);checkList($("studentSelector"),students,x=>`${x.name||x.username} — ${classes.find(c=>c.id===x.classId)?.name||"No class"}`)}render()}
+    $("imageInput").addEventListener("change",async()=>{const f=$("imageInput").files[0];imageData=f?await compress(f):""});
+    $("eventForm").addEventListener("submit",async ev=>{ev.preventDefault();const classIds=selected($("classSelector")),studentIds=selected($("studentSelector")),classStudentIds=students.filter(s=>classIds.includes(s.classId)).map(s=>s.id),recipientIds=[...new Set([...classStudentIds,...studentIds])];if(!recipientIds.length){$("formMessage").textContent="Select at least one class or student.";return}const start=new Date($("startAt").value),end=$("endAt").value?new Date($("endAt").value):null;if(end&&end<start){$("formMessage").textContent="The end time must be after the start time.";return}$("publishButton").disabled=true;$("formMessage").textContent="Publishing…";try{const classNames=classes.filter(c=>classIds.includes(c.id)).map(c=>c.name),studentNames=students.filter(s=>studentIds.includes(s.id)).map(s=>s.name||s.username);await addDoc(collection(db,"events"),{title:$("title").value.trim(),description:$("description").value.trim(),startAt:Timestamp.fromDate(start),endAt:end?Timestamp.fromDate(end):null,location:$("locationField").value.trim(),image:imageData,targetClassIds:classIds,targetStudentIds:studentIds,recipientIds,targetSummary:[classNames.length?classNames.join(", "):"",studentNames.length?studentNames.join(", "):""].filter(Boolean).join(" + "),createdBy:auth.currentUser.uid,createdByName:profile.name||profile.username||"Staff",createdAt:serverTimestamp()});$("eventForm").reset();imageData="";$("formMessage").textContent="Event published.";await load()}catch(e){console.error(e);$("formMessage").textContent=e.message}finally{$("publishButton").disabled=false}});
+    eventList.addEventListener("click",async ev=>{const id=ev.target.dataset.delete||ev.target.dataset.calendar;if(!id)return;const item=events.find(x=>x.id===id);if(ev.target.dataset.calendar){calendarFile(item);return}if(confirm("Delete this event?")){await deleteDoc(doc(db,"events",id));await load()}});
+    onAuthStateChanged(auth,async user=>{show("loading");if(!user){show("login");return}const snap=await getDoc(doc(db,"users",user.uid));if(!snap.exists()){show("login");return}profile={id:user.uid,...snap.data()};adminPanel.classList.toggle("hidden",!isStaff());$("listTitle").textContent=isStaff()?"All school events":"Your events";$("subtitle").textContent=isStaff()?"Create events for entire classes and selected students.":"Events selected for your class or account.";try{await load();show("app")}catch(e){console.error(e);alert(`Could not load events: ${e.message}`);show("login")}});
+  </script>
+</body>
+</html>

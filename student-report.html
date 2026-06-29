@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar student academic report">
+  <title>Superstar Student Report</title>
+  <link rel="stylesheet" href="./school-shell.css">
+  <!-- STUDENT REPORT UPDATE: admin GPA, completed work, and subject scores -->
+
+  <style>
+    :root{
+      --bg:#070a14;--panel:rgba(255,255,255,.075);--panel2:#11182c;--panel3:#1a2136;--border:rgba(255,255,255,.16);--text:#fff;--muted:#aeb9d2;--accent:#ffb74d;--accentText:#261600;--blue:#91aaff;--green:#79e8ad;--red:#ff8e8e;--purple:#c45ab3;
+    }
+    *{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth} body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 75% -10%,#263b73,transparent 38rem),var(--bg);font-family:Inter,Arial,Helvetica,sans-serif} a{color:inherit} button,input,select{font:inherit} button{cursor:pointer}.hidden{display:none!important}
+    main{width:min(1280px,100%);margin:0 auto;padding:52px 24px 90px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:24px}.top-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px}h1{font-size:clamp(3rem,8vw,6rem);line-height:.95;letter-spacing:-4px;margin-bottom:10px}.lead{max-width:760px;color:var(--muted);font-size:1.05rem;line-height:1.65}.eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 13px;border:1px solid rgba(145,170,255,.3);border-radius:999px;color:#c6d1ff;background:rgba(145,170,255,.10);font-weight:850}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:11px 17px;border:0;border-radius:12px;font-weight:850;text-decoration:none;transition:transform .2s ease,background .2s ease}.button:hover{transform:translateY(-2px)}.secondary{color:var(--text);border:1px solid var(--border);background:var(--panel)}.accent{color:var(--accentText);background:var(--accent)}.danger{color:var(--red);border:1px solid rgba(255,142,142,.38);background:rgba(255,142,142,.09)}
+    .panel{padding:22px;border:1px solid var(--border);border-radius:18px;background:rgba(17,24,44,.94);box-shadow:0 22px 70px rgba(0,0,0,.22);backdrop-filter:blur(12px)}.panel h2{font-size:1.35rem;margin-bottom:8px}.muted{color:var(--muted);line-height:1.55}.small{font-size:.88rem;color:var(--muted);line-height:1.45}.grid{display:grid;grid-template-columns:minmax(320px,.75fr) minmax(0,1.35fr);gap:18px;align-items:start}.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 18px}.stat{padding:18px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.065)}.stat span{display:block;color:var(--muted);font-size:.9rem}.stat strong{display:block;margin-top:10px;font-size:2rem}.stat.green strong{color:var(--green)}.stat.blue strong{color:var(--blue)}.stat.purple strong{color:var(--purple)}.stat.red strong{color:var(--red)}
+    .selector{display:grid;gap:13px;margin-top:16px}.field{display:grid;gap:7px}label{font-weight:850;color:#e8edff}select,input{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;outline:0;color:var(--text);background:rgba(255,255,255,.075)}select option{color:#111}select:focus,input:focus{border-color:rgba(255,183,77,.65);box-shadow:0 0 0 4px rgba(255,183,77,.12)}
+    .student-card{text-align:center}.photo{width:150px;height:150px;border-radius:34px;margin:0 auto 16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-size:4rem;font-weight:950;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.25);overflow:hidden}.student-name{font-size:1.8rem;font-weight:950}.pill-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px}.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:rgba(255,183,77,.15);color:var(--accent);font-weight:900}.pill.green{background:rgba(121,232,173,.14);color:var(--green)}.pill.blue{background:rgba(145,170,255,.14);color:var(--blue)}.pill.red{background:rgba(255,142,142,.13);color:var(--red)}
+    .subject-list{display:grid;gap:12px}.subject-card{padding:16px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.055)}.subject-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.subject-top h3{font-size:1.22rem}.subject-score{font-size:1.45rem;font-weight:950;color:var(--green);white-space:nowrap}.mini-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.mini{padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.05)}.mini span{display:block;color:var(--muted);font-size:.78rem}.mini strong{display:block;margin-top:5px;font-size:1rem}.progress{height:9px;margin-top:12px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden}.bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--green));width:0%}
+    .detail{margin-top:16px}.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.045)}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left;vertical-align:top}th{color:#eaf0ff;background:rgba(255,255,255,.055);font-size:.86rem}tr:last-child td{border-bottom:0}.status{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:900}.done{color:#072414;background:var(--green)}.notdone{color:#2a0910;background:var(--red)}.pending{color:#101936;background:#cbd6ff}.empty{padding:18px;border:1px dashed rgba(255,255,255,.16);border-radius:14px;color:var(--muted);text-align:center;background:rgba(255,255,255,.035)}.message{margin-top:14px;color:var(--red);font-weight:850}.ok{color:var(--green)}
+    .loading{display:grid;min-height:100vh;place-items:center;padding:24px;text-align:center}.loading .panel{max-width:520px}.loading h1{font-size:2rem;letter-spacing:0}.stack{display:grid;gap:18px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.section-title h2{margin:0}.subject-button{width:100%;text-align:left;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.055);color:var(--text);padding:13px;transition:.18s}.subject-button:hover,.subject-button.active{border-color:var(--accent);background:rgba(255,183,77,.12)}
+    @media(max-width:1050px){.grid,.two{grid-template-columns:1fr}.stat-grid,.mini-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.top{flex-direction:column}h1{letter-spacing:-2px}}@media(max-width:560px){main{padding:84px 14px 70px}.stat-grid,.mini-stats{grid-template-columns:1fr}table{min-width:680px}.photo{width:124px;height:124px;border-radius:26px;font-size:3.2rem}}
+  @media print{.donut-shell-sidebar,.donut-shell-menu-button,.donut-shell-collapse-button,.top-actions,.selector,#adminSelectorPanel{display:none!important}body{background:#fff!important;color:#000!important}main{padding:20px!important;width:100%!important}.panel,.stat,.subject-card,.table-wrap{box-shadow:none!important;background:#fff!important;color:#000!important;border-color:#ccc!important}.muted,.small{color:#333!important}th{background:#eee!important;color:#000!important}td,th{border-color:#ddd!important}.grid{display:block!important}}
+  </style>
+</head>
+<body>
+  <section class="loading" id="loadingView"><div class="panel"><h1>Loading reports…</h1><p class="muted">Checking login and reading student scores.</p></div></section>
+
+  <main id="appView" class="hidden">
+    <div class="top">
+      <div>
+        <div class="eyebrow">📈 Admin student reports</div>
+        <h1>Student Reports</h1>
+        <p class="lead">Admins can view each student’s GPA, completed grade items, missing work, and scores by subject. This uses ICT/current school data already saved in Firestore.</p>
+      </div>
+      <div class="top-actions">
+        <a class="button secondary" href="./dashboard.html">🏫 Dashboard</a>
+        <a class="button secondary" href="./grades.html">📊 Grades</a>
+        <button class="button secondary" id="printReportBtn" type="button">🖨️ Print / Save PDF</button>
+        <button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat green"><span>Overall GPA</span><strong id="overallGpa">0.00</strong></div>
+      <div class="stat blue"><span>Completed</span><strong id="completedCount">0</strong></div>
+      <div class="stat red"><span>Not completed</span><strong id="notCompletedCount">0</strong></div>
+      <div class="stat purple"><span>Total score</span><strong id="totalScore">0%</strong></div>
+    </div>
+
+    <div class="grid">
+      <aside class="stack">
+        <section class="panel student-card">
+          <div class="photo" id="studentPhoto">S</div>
+          <div class="student-name" id="studentName">Select student</div>
+          <p class="muted" id="studentClass">Class</p>
+          <div class="pill-row">
+            <span class="pill blue" id="studentRole">Student</span>
+            <span class="pill green" id="studentDonePill">0 done</span>
+            <span class="pill red" id="studentMissingPill">0 missing</span>
+          </div>
+        </section>
+
+        <section class="panel" id="adminSelectorPanel">
+          <h2>Select student</h2>
+          <p class="muted">Choose the student you want to inspect.</p>
+          <div class="selector">
+            <div class="field">
+              <label for="studentSelect">Student</label>
+              <select id="studentSelect"></select>
+            </div>
+            <div class="field">
+              <label for="subjectSelect">Subject filter</label>
+              <select id="subjectSelect"><option value="__all__">All subjects</option></select>
+            </div>
+          </div>
+          <p class="message" id="selectMessage"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Subjects</h2>
+          <p class="muted">Click a subject to see completed work, scores, and quiz attempts.</p>
+          <div class="subject-list" id="subjectButtons"></div>
+        </section>
+      </aside>
+
+      <section class="stack">
+        <section class="panel">
+          <div class="section-title">
+            <h2>Subject score summary</h2>
+            <span class="pill blue" id="summaryCount">0 subjects</span>
+          </div>
+          <div class="subject-list" id="subjectSummary"></div>
+        </section>
+
+        <section class="panel detail">
+          <div class="section-title">
+            <h2 id="detailTitle">Subject details</h2>
+            <span class="pill" id="detailPill">Select subject</span>
+          </div>
+          <p class="muted" id="detailLead">Select a subject to see each grade subcategory and quiz score.</p>
+          <div class="table-wrap" id="detailTableWrap">
+            <table>
+              <thead><tr><th>Type</th><th>Item</th><th>Status</th><th>Score</th><th>Grade / feedback</th></tr></thead>
+              <tbody id="detailBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel detail">
+          <div class="section-title">
+            <h2>Attendance</h2>
+            <span class="pill blue" id="attendancePill">0 records</span>
+          </div>
+          <p class="muted">Attendance records and how much they affect grade subcategories.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Subject</th><th>Grade subcategory</th><th>Status</th><th>Grade effect</th><th>Note</th></tr></thead>
+              <tbody id="attendanceBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey:"AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk", authDomain:"donut-grade-portal.firebaseapp.com", projectId:"donut-grade-portal", storageBucket:"donut-grade-portal.firebasestorage.app", messagingSenderId:"154823535840", appId:"1:154823535840:web:b25deb1c1f3cb9405cb485" };
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const $ = (id) => document.getElementById(id);
+
+    let me = null;
+    let selectedStudentId = "";
+    let selectedSubjectId = "__all__";
+    const data = { students:[], classes:[], subjects:[], categories:[], grades:[], quizzes:[], attempts:[], attendance:[], attendanceSettings:[] };
+
+    const staffRoles = new Set(["admin","co-owner","owner"]);
+    function isStaff(role){ return staffRoles.has(String(role || "").toLowerCase()); }
+    function escapeHtml(value){ return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
+    function show(id){ ["loadingView","appView"].forEach(v => $(v).classList.toggle("hidden", v !== id)); }
+    function snapshotToArray(snap){ return snap.docs.map(d => ({ id:d.id, ...d.data() })); }
+    function nameOf(user){ return user?.name || user?.username || "Student"; }
+    function className(id){ return data.classes.find(c => c.id === id)?.name || "No class"; }
+    function roleLabel(role){ const r=String(role||"").toLowerCase(); if(r==="owner")return"Owner"; if(r==="co-owner")return"Co-owner"; if(r==="admin")return"Administrator"; return"Student"; }
+    function dataImage(value){ return typeof value === "string" && value.startsWith("data:image/") ? value : ""; }
+    function setPhoto(el,user){ const photo=dataImage(user?.photoDataUrl) || (typeof user?.photoUrl === "string" ? user.photoUrl : ""); el.style.backgroundImage = photo ? `url("${photo.replaceAll('"','%22')}")` : ""; el.textContent = photo ? "" : (nameOf(user).trim()[0] || "S").toUpperCase(); }
+    function fmt(n, digits=1){ const x=Number(n); return Number.isFinite(x) ? x.toFixed(digits).replace(/\.0$/,"") : "0"; }
+    function pct(n){ const x=Number(n); return Number.isFinite(x) ? `${x.toFixed(1)}%` : "0%"; }
+    function normalizeIds(value){ return Array.isArray(value) ? value.filter(v => typeof v === "string") : []; }
+    function scoreToGrade(percent){ if(percent>=80)return{letter:"A",points:4}; if(percent>=75)return{letter:"B+",points:3.5}; if(percent>=70)return{letter:"B",points:3}; if(percent>=65)return{letter:"C+",points:2.5}; if(percent>=60)return{letter:"C",points:2}; if(percent>=55)return{letter:"D+",points:1.5}; if(percent>=50)return{letter:"D",points:1}; return{letter:"F",points:0}; }
+
+    function getStudent(id){ return data.students.find(s => s.id === id); }
+    function getSubject(id){ return data.subjects.find(s => s.id === id); }
+    function getCategory(id){ return data.categories.find(c => c.id === id); }
+    function audienceMatchesStudent(item, student, defaultMode="all"){
+      if(!item || !student) return false;
+      const mode = item.visibilityMode || defaultMode;
+      if(mode !== "selected") return true;
+      return normalizeIds(item.classIds).includes(student.classId) || normalizeIds(item.studentIds).includes(student.id);
+    }
+    function isSubjectVisible(subject, student){ return audienceMatchesStudent(subject, student, "all"); }
+    function isCategoryVisible(category, student){ const subject=getSubject(category?.subjectId); return !!subject && isSubjectVisible(subject, student) && audienceMatchesStudent(category, student, "inherit"); }
+    function visibleSubjects(student){ return data.subjects.filter(subject => isSubjectVisible(subject, student)); }
+    function visibleCategories(student){ return data.categories.filter(cat => isCategoryVisible(cat, student)); }
+    function gradeRecord(studentId, categoryId){ return data.grades.find(g => g.studentId === studentId && g.categoryId === categoryId); }
+    function recordResult(record, category){ if(!record || record.status !== "done" || !category) return null; const max=Number(category.maxScore||0); const earned=Number(record.score||0); const percent=max>0 ? Math.max(0, Math.min(100, earned/max*100)) : 0; return {percent, earned, max, ...scoreToGrade(percent)}; }
+    function timestampToMillis(value){ if(!value) return 0; if(typeof value.toMillis === "function") return value.toMillis(); if(typeof value.seconds === "number") return value.seconds*1000; return 0; }
+    function formatDate(value){ const ms=timestampToMillis(value); if(!ms) return ""; return new Date(ms).toLocaleString([], {year:"numeric", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"}); }
+    function formatDateKey(key){ if(!key) return ""; const [y,m,d]=String(key).split("-").map(Number); return new Date(y,m-1,d).toLocaleDateString([], {year:"numeric", month:"short", day:"numeric"}); }
+    function attendanceValue(status){ if(status === "Present") return 1; if(status === "Late") return 0.5; if(status === "Excused") return 1; return 0; }
+    function attendanceFor(studentId){ return data.attendance.filter(a => a.studentId === studentId).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))); }
+    function attendanceImpactFor(studentId){
+      const groups = new Map();
+      attendanceFor(studentId).forEach(r => {
+        const key = `${r.classId || ""}_${r.categoryId || ""}`;
+        if(!r.categoryId) return;
+        if(!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(r);
+      });
+      return [...groups.entries()].map(([key, rows]) => {
+        const first = rows[0] || {};
+        const avg = rows.length ? rows.reduce((sum,r)=>sum+attendanceValue(r.status),0) / rows.length : 0;
+        const weight = Number(first.weightPercent ?? data.attendanceSettings.find(s => s.classId === first.classId && s.categoryId === first.categoryId)?.weightPercent ?? 100);
+        const cat = getCategory(first.categoryId) || {};
+        const max = Number(cat.maxScore || 100);
+        const points = Math.max(0, Math.min(max, avg * max * (weight / 100)));
+        return { key, rows, first, avg, weight, max, points };
+      });
+    }
+
+    function quizAttemptsFor(studentId, subjectId){
+      return data.attempts.filter(a => a.studentId === studentId && a.status === "graded" && String(a.subjectId||"") === String(subjectId||""));
+    }
+
+    function makeSubjectSummary(student, subject){
+      const cats = visibleCategories(student).filter(c => c.subjectId === subject.id);
+      const rows = cats.map(category => ({ category, record: gradeRecord(student.id, category.id) }));
+      const doneRows = rows.filter(row => row.record?.status === "done");
+      const earned = doneRows.reduce((sum,row)=>sum+Number(row.record.score||0),0);
+      const max = doneRows.reduce((sum,row)=>sum+Number(row.category.maxScore||0),0);
+      const assignedMax = cats.reduce((sum,c)=>sum+Number(c.maxScore||0),0);
+      const percent = max > 0 ? earned / max * 100 : 0;
+      const grade = max > 0 ? scoreToGrade(percent) : {letter:"—", points:0};
+      const quizAttempts = quizAttemptsFor(student.id, subject.id);
+      const quizScore = quizAttempts.reduce((sum,a)=>sum+Number(a.score||0),0);
+      const quizMax = quizAttempts.reduce((sum,a)=>sum+Number(a.maxPoints||0),0);
+      return { subject, rows, cats, doneRows, earned, max, assignedMax, percent, grade, quizAttempts, quizScore, quizMax };
+    }
+
+    function makeStudentSummary(student){
+      const subjects = visibleSubjects(student);
+      const subjectSummaries = subjects.map(subject => makeSubjectSummary(student, subject));
+      const completeSubjects = subjectSummaries.filter(s => s.max > 0);
+      const gpa = completeSubjects.length ? completeSubjects.reduce((sum,s)=>sum+s.grade.points,0) / completeSubjects.length : 0;
+      const cats = visibleCategories(student);
+      const completed = cats.filter(c => gradeRecord(student.id,c.id)?.status === "done").length;
+      const missing = Math.max(0, cats.length - completed);
+      const earned = subjectSummaries.reduce((sum,s)=>sum+s.earned,0);
+      const max = subjectSummaries.reduce((sum,s)=>sum+s.max,0);
+      const percent = max > 0 ? earned / max * 100 : 0;
+      return { subjects, subjectSummaries, gpa, cats, completed, missing, earned, max, percent };
+    }
+
+    function renderAttendanceReport(student){
+      const records = attendanceFor(student.id);
+      const impacts = attendanceImpactFor(student.id);
+      $("attendancePill").textContent = `${records.length} record${records.length===1?"":"s"}`;
+      if(!records.length){
+        $("attendanceBody").innerHTML = '<tr><td colspan="6">No attendance records yet.</td></tr>';
+        return;
+      }
+      const impactText = (r) => {
+        const group = impacts.find(x => x.first.classId === r.classId && x.first.categoryId === r.categoryId);
+        if(!group) return "—";
+        return `${pct(group.avg*100)} attendance · ${group.weight}% affects grade · ${fmt(group.points)} / ${fmt(group.max)} pts`;
+      };
+      $("attendanceBody").innerHTML = records.map(r => `
+        <tr>
+          <td>${escapeHtml(formatDateKey(r.date))}</td>
+          <td>${escapeHtml(r.subjectName || "School")}</td>
+          <td>${escapeHtml(r.categoryName || "Attendance")}</td>
+          <td><span class="status ${String(r.status||"Present").toLowerCase()==="absent"?"notdone":"done"}">${escapeHtml(r.status || "Present")}</span></td>
+          <td>${escapeHtml(impactText(r))}</td>
+          <td>${escapeHtml(r.note || "")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderStudentSelect(){
+      if(!isStaff(me.role)){
+        $("adminSelectorPanel").classList.add("hidden");
+        selectedStudentId = me.id;
+        return;
+      }
+      if(!data.students.length){
+        $("studentSelect").innerHTML = '<option value="">No students found</option>';
+        return;
+      }
+      data.students.sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+      $("studentSelect").innerHTML = data.students.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(nameOf(s))} · ${escapeHtml(className(s.classId))}</option>`).join("");
+      if(!selectedStudentId || !getStudent(selectedStudentId)) selectedStudentId = data.students[0].id;
+      $("studentSelect").value = selectedStudentId;
+    }
+
+    function renderSubjectFilter(student){
+      const subjects = visibleSubjects(student);
+      $("subjectSelect").innerHTML = '<option value="__all__">All subjects</option>' + subjects.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || "Subject")}</option>`).join("");
+      if(selectedSubjectId !== "__all__" && !subjects.some(s => s.id === selectedSubjectId)) selectedSubjectId = "__all__";
+      $("subjectSelect").value = selectedSubjectId;
+    }
+
+    function renderReport(){
+      const student = getStudent(selectedStudentId);
+      if(!student){
+        $("subjectSummary").innerHTML = '<div class="empty">No student selected.</div>';
+        return;
+      }
+      renderSubjectFilter(student);
+      const summary = makeStudentSummary(student);
+      const subjectSummaries = summary.subjectSummaries.filter(s => selectedSubjectId === "__all__" || s.subject.id === selectedSubjectId);
+      setPhoto($("studentPhoto"), student);
+      $("studentName").textContent = nameOf(student);
+      $("studentClass").textContent = className(student.classId);
+      $("studentRole").textContent = roleLabel(student.role);
+      $("studentDonePill").textContent = `${summary.completed} done`;
+      $("studentMissingPill").textContent = `${summary.missing} missing`;
+      $("overallGpa").textContent = summary.gpa.toFixed(2);
+      $("completedCount").textContent = String(summary.completed);
+      $("notCompletedCount").textContent = String(summary.missing);
+      $("totalScore").textContent = pct(summary.percent);
+      renderAttendanceReport(student);
+      $("summaryCount").textContent = `${subjectSummaries.length} subject${subjectSummaries.length===1?"":"s"}`;
+
+      $("subjectButtons").innerHTML = summary.subjectSummaries.length ? summary.subjectSummaries.map(s => `
+        <button type="button" class="subject-button ${selectedSubjectId === s.subject.id ? "active" : ""}" data-subject="${escapeHtml(s.subject.id)}">
+          <strong>${escapeHtml(s.subject.name || "Subject")}</strong><br>
+          <span class="small">${s.doneRows.length}/${s.cats.length} completed · GPA ${s.max ? s.grade.points.toFixed(2) : "—"} · ${s.max ? pct(s.percent) : "No score"}</span>
+        </button>
+      `).join("") : '<div class="empty">No subjects are assigned to this student.</div>';
+
+      $("subjectSummary").innerHTML = subjectSummaries.length ? subjectSummaries.map(s => `
+        <article class="subject-card">
+          <div class="subject-top">
+            <div><h3>${escapeHtml(s.subject.name || "Subject")}</h3><p class="muted">${s.doneRows.length} completed · ${Math.max(0, s.cats.length - s.doneRows.length)} not completed · ${s.quizAttempts.length} graded quiz attempt${s.quizAttempts.length===1?"":"s"}</p></div>
+            <div class="subject-score">${s.max ? pct(s.percent) : "—"}</div>
+          </div>
+          <div class="mini-stats">
+            <div class="mini"><span>GPA points</span><strong>${s.max ? s.grade.points.toFixed(2) : "—"}</strong></div>
+            <div class="mini"><span>Letter</span><strong>${escapeHtml(s.max ? s.grade.letter : "—")}</strong></div>
+            <div class="mini"><span>Gradebook score</span><strong>${fmt(s.earned)} / ${fmt(s.max)}</strong></div>
+            <div class="mini"><span>Quiz score</span><strong>${fmt(s.quizScore)} / ${fmt(s.quizMax)}</strong></div>
+          </div>
+          <div class="progress"><div class="bar" style="width:${Math.max(0,Math.min(100,s.percent))}%"></div></div>
+        </article>
+      `).join("") : '<div class="empty">No subjects match this filter.</div>';
+
+      const detailSubject = selectedSubjectId === "__all__" ? subjectSummaries[0] : subjectSummaries.find(s => s.subject.id === selectedSubjectId);
+      renderDetails(detailSubject || null);
+    }
+
+    function renderDetails(summary){
+      if(!summary){
+        $("detailTitle").textContent = "Subject details";
+        $("detailPill").textContent = "Select subject";
+        $("detailLead").textContent = "Select a subject to see each grade subcategory and quiz score.";
+        $("detailBody").innerHTML = '<tr><td colspan="5">No details available.</td></tr>';
+        return;
+      }
+      $("detailTitle").textContent = summary.subject.name || "Subject details";
+      $("detailPill").textContent = summary.max ? `GPA ${summary.grade.points.toFixed(2)}` : "No GPA yet";
+      $("detailLead").textContent = `${summary.doneRows.length}/${summary.cats.length} grade subcategories completed. Quiz attempts below are graded attempts only.`;
+      const gradeRows = summary.rows.map(({category, record}) => {
+        const result = recordResult(record, category);
+        const done = record?.status === "done";
+        return `<tr>
+          <td>Grade subcategory</td>
+          <td><strong>${escapeHtml(category.name || "Grade item")}</strong></td>
+          <td><span class="status ${done ? "done" : "notdone"}">${done ? "Completed" : "Not completed"}</span></td>
+          <td>${done && result ? `${fmt(result.earned)} / ${fmt(result.max)} · ${pct(result.percent)}` : "—"}</td>
+          <td>${result ? `${escapeHtml(result.letter)} · GPA ${result.points.toFixed(2)}` : "No score yet"}</td>
+        </tr>`;
+      });
+      const quizRows = summary.quizAttempts.sort((a,b)=>timestampToMillis(b.gradedAt || b.updatedAt || b.submittedAt)-timestampToMillis(a.gradedAt || a.updatedAt || a.submittedAt)).map(attempt => {
+        const quiz = data.quizzes.find(q => q.id === attempt.quizId);
+        const title = attempt.quizTitle || quiz?.title || "Quiz attempt";
+        const percent = Number(attempt.maxPoints||0)>0 ? Number(attempt.score||0)/Number(attempt.maxPoints||0)*100 : 0;
+        return `<tr>
+          <td>Quiz</td>
+          <td><strong>${escapeHtml(title)}</strong><br><span class="small">${escapeHtml(attempt.categoryName || getCategory(attempt.categoryId)?.name || "")}${formatDate(attempt.gradedAt || attempt.updatedAt || attempt.submittedAt) ? " · " + escapeHtml(formatDate(attempt.gradedAt || attempt.updatedAt || attempt.submittedAt)) : ""}</span></td>
+          <td><span class="status done">Graded</span></td>
+          <td>${fmt(attempt.score)} / ${fmt(attempt.maxPoints)} · ${pct(percent)}</td>
+          <td>${escapeHtml(attempt.feedback || attempt.teacherFeedback || "No overall feedback")}</td>
+        </tr>`;
+      });
+      const rows = [...gradeRows, ...quizRows];
+      $("detailBody").innerHTML = rows.length ? rows.join("") : '<tr><td colspan="5">No grade items or quiz attempts found.</td></tr>';
+    }
+
+    async function loadData(){
+      const [usersSnap, classesSnap, subjectsSnap, categoriesSnap, gradesSnap, quizzesSnap, attemptsSnap, attendanceSnap, attendanceSettingsSnap] = await Promise.all([
+        getDocs(collection(db,"users")),
+        getDocs(collection(db,"classes")),
+        getDocs(collection(db,"subjects")),
+        getDocs(collection(db,"categories")),
+        getDocs(collection(db,"grades")),
+        getDocs(collection(db,"quizzes")),
+        getDocs(collection(db,"quizAttempts")),
+        getDocs(collection(db,"attendance")),
+        getDocs(collection(db,"attendanceSettings"))
+      ]);
+      data.students = snapshotToArray(usersSnap).filter(u => String(u.role||"").toLowerCase() === "student");
+      data.classes = snapshotToArray(classesSnap);
+      data.subjects = snapshotToArray(subjectsSnap);
+      data.categories = snapshotToArray(categoriesSnap);
+      data.grades = snapshotToArray(gradesSnap);
+      data.quizzes = snapshotToArray(quizzesSnap);
+      data.attempts = snapshotToArray(attemptsSnap);
+      data.attendance = snapshotToArray(attendanceSnap);
+      data.attendanceSettings = snapshotToArray(attendanceSettingsSnap);
+      if(!isStaff(me.role)) {
+        data.students = data.students.filter(s => s.id === me.id);
+        data.attendance = data.attendance.filter(a => a.studentId === me.id);
+      }
+      renderStudentSelect();
+      renderReport();
+    }
+
+    $("refreshBtn").addEventListener("click", () => location.reload());
+    $("printReportBtn")?.addEventListener("click", () => window.print());
+    $("studentSelect").addEventListener("change", () => { selectedStudentId = $("studentSelect").value; selectedSubjectId = "__all__"; renderReport(); });
+    $("subjectSelect").addEventListener("change", () => { selectedSubjectId = $("subjectSelect").value; renderReport(); });
+    $("subjectButtons").addEventListener("click", (e) => { const btn=e.target.closest("[data-subject]"); if(!btn) return; selectedSubjectId = btn.dataset.subject; renderReport(); });
+
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){ location.replace("./index.html"); return; }
+      try{
+        const profileSnap = await getDoc(doc(db,"users",user.uid));
+        if(!profileSnap.exists()){ location.replace("./index.html"); return; }
+        me = { id:user.uid, ...profileSnap.data() };
+        if(!isStaff(me.role) && String(me.role||"").toLowerCase() !== "student") { location.replace("./dashboard.html"); return; }
+        selectedStudentId = isStaff(me.role) ? selectedStudentId : me.id;
+        await loadData();
+        show("appView");
+      } catch(error){
+        $("loadingView").innerHTML = `<div class="panel"><h1>Could not load reports</h1><p class="message">${escapeHtml(error.message || String(error))}</p><p class="muted">Make sure Firestore rules are published and your account is admin, co-owner, or owner.</p></div>`;
+      }
+    });
+  </script>
+  <script type="module" src="./school-shell.js"></script>
+</body>
+</html>

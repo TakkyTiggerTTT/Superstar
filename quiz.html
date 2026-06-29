@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar School quiz portal">
+  <title>Superstar Quizzes</title>
+  <link rel="stylesheet" href="./school-shell.css">
+  <style>
+    :root {
+      --bg: #070a14;
+      --bg-soft: #11182c;
+      --panel: rgba(255,255,255,.075);
+      --panel-solid: #11182c;
+      --border: rgba(255,255,255,.16);
+      --text: #fff;
+      --muted: #aeb9d2;
+      --accent: #ffb74d;
+      --accent-text: #261600;
+      --success: #79e8ad;
+      --danger: #ff8e8e;
+      --blue: #91aaff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 0%, #263b73, transparent 38rem),
+        var(--bg);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .6; }
+    .hidden { display: none !important; }
+
+    main {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 48px 24px 100px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 7vw, 4.5rem);
+      line-height: .95;
+      letter-spacing: -2px;
+      margin-bottom: 10px;
+    }
+    .lead { color: var(--muted); line-height: 1.65; max-width: 760px; }
+    .badge {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 7px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: #bdcaff;
+      background: var(--panel);
+      font-weight: 750;
+    }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .primary { color: #091021; background: #fff; }
+    .accent { color: var(--accent-text); background: var(--accent); }
+    .secondary { color: var(--text); border: 1px solid var(--border); background: var(--panel); }
+    .danger { color: var(--danger); border: 1px solid rgba(255,142,142,.35); background: rgba(255,142,142,.09); }
+    .success { color: #07140d; background: var(--success); }
+    .full { width: 100%; }
+
+    .grid { display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 20px; align-items: start; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin: 20px 0; }
+    .card, .panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(17,24,44,.92);
+      box-shadow: 0 22px 70px rgba(0,0,0,.2);
+      backdrop-filter: blur(12px);
+    }
+    .card { padding: 20px; }
+    .panel { padding: 24px; margin-bottom: 18px; }
+    .label { color: var(--muted); font-size: .92rem; margin-bottom: 7px; }
+    .value { font-size: 2rem; font-weight: 900; }
+    .panel h2, .panel h3 { margin-bottom: 9px; }
+    .note { color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+
+    .field { margin-bottom: 15px; }
+    .field label { display: block; margin-bottom: 8px; color: #dce4f7; font-weight: 800; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255,255,255,.065);
+    }
+    .field textarea { min-height: 100px; resize: vertical; line-height: 1.55; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(145,170,255,.13);
+    }
+    .field select option { color: #111; }
+    .check-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; max-height: 230px; overflow: auto; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.035); }
+    .check-item { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 8px; color: #dce4f7; }
+    .check-item:hover { background: rgba(255,255,255,.06); }
+    .check-item input { width: auto; }
+
+    .question-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      margin-bottom: 12px;
+    }
+    .question-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .question-head strong { color: var(--accent); }
+    .option-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .option-row input { width: 100%; }
+    .choice-preview { display: grid; gap: 8px; margin-top: 8px; }
+    .choice-preview label { display: flex; gap: 8px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.045); }
+    .choice-preview input { width: auto; }
+    .question-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .question-image { max-width: 100%; border-radius: 14px; border: 1px solid var(--border); margin: 10px 0 14px; display:block; }
+    .timer-box { margin: 12px 0; padding: 12px 14px; border: 1px solid rgba(255,183,77,.35); border-radius: 13px; background: rgba(255,183,77,.1); color: var(--accent); font-weight: 900; }
+
+    .tabbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+    .tab {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      background: var(--panel);
+      font-weight: 800;
+    }
+    .tab.active { color: var(--accent-text); background: var(--accent); border-color: transparent; }
+    .tabpage { display: none; }
+    .tabpage.active { display: block; }
+
+    .list { display: grid; gap: 12px; }
+    .item {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.055);
+    }
+    .item-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .item h3 { margin-bottom: 6px; }
+    .meta { color: var(--muted); font-size: .92rem; line-height: 1.55; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .pill.open { color: #07140d; background: var(--success); }
+    .pill.submitted { color: #1b1405; background: var(--accent); }
+    .pill.graded { color: #091021; background: #fff; }
+    .pill.forced { color: #fff; background: rgba(255, 143, 143, .22); border: 1px solid rgba(255,143,143,.45); }
+
+    .empty {
+      padding: 34px 18px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
+    table { width: 100%; min-width: 850px; border-collapse: collapse; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { color: #dce4f7; background: rgba(255,255,255,.055); font-size: .9rem; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .answer-box { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,.18); }
+    .correct { color: var(--success); }
+    .wrong { color: var(--danger); }
+    .grade-control-grid { display: grid; grid-template-columns: auto 140px; gap: 12px; align-items: center; margin-top: 12px; }
+    .grade-control-grid input[type='checkbox'] { width: auto; transform: scale(1.15); }
+    .grade-feedback { margin-top: 12px; }
+    .score-preview { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,183,77,.09); color: var(--accent); font-weight: 850; }
+    .message { min-height: 24px; margin-top: 12px; font-weight: 800; }
+    .message.ok { color: var(--success); }
+    .message.err { color: var(--danger); }
+
+    @media (max-width: 980px) {
+      .grid, .cards { grid-template-columns: 1fr; }
+      .check-grid { grid-template-columns: 1fr; }
+      .topbar, .item-head, .question-head { flex-direction: column; }
+      main { padding: 78px 16px 80px; }
+    }
+  
+
+/* Superstar star logo update */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo::before {
+  content: "";
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.20);
+}
+.brand-mark {
+  overflow: hidden !important;
+  color: transparent !important;
+  background: #061f5f url("./star-logo.png") center / cover no-repeat !important;
+  box-shadow: 0 12px 32px rgba(255, 210, 60, 0.22) !important;
+}
+
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="badge">📝 Superstar Quizzes</div>
+        <h1>Quizzes</h1>
+        <p class="lead" id="pageLead">Loading quiz portal...</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="button secondary" href="./dashboard.html">🏫 Dashboard</a>
+        <button class="button secondary" id="refreshButton" type="button">↻ Refresh</button>
+      </div>
+    </div>
+
+    <section id="loadingView" class="panel">
+      <h2>Loading...</h2>
+      <p class="note">Checking your Superstar account and quiz access.</p>
+    </section>
+
+    <section id="signedOutView" class="panel hidden">
+      <h2>Sign in required</h2>
+      <p class="note">Please sign in from the main portal before opening quizzes.</p>
+      <a class="button accent" href="./index.html">Go to Login</a>
+    </section>
+
+    <section id="adminView" class="hidden">
+      <div class="cards">
+        <div class="card"><div class="label">Published quizzes</div><div class="value" id="quizCount">0</div></div>
+        <div class="card"><div class="label">Submitted attempts</div><div class="value" id="submittedCount">0</div></div>
+        <div class="card"><div class="label">Graded attempts</div><div class="value" id="gradedCount">0</div></div>
+        <div class="card"><div class="label">Open attempts</div><div class="value" id="openAttemptCount">0</div></div>
+      </div>
+
+      <div class="tabbar">
+        <button class="tab active" type="button" data-tab="createTab">Create Quiz</button>
+        <button class="tab" type="button" data-tab="quizzesTab">Quizzes</button>
+        <button class="tab" type="button" data-tab="attemptsTab">Attempts</button>
+        <button class="tab" type="button" data-tab="analyticsTab">Analytics</button>
+      </div>
+
+      <section class="tabpage active" id="createTab">
+        <div class="grid">
+          <section class="panel">
+            <h2>Create quiz</h2>
+            <p class="note">Students only see the questions. Admins manually grade submitted answers later.</p>
+            <form id="quizForm">
+              <div class="field">
+                <label for="quizTitle">Quiz title</label>
+                <input id="quizTitle" type="text" maxlength="120" placeholder="Example: Science Chapter 1 Quiz" required>
+              </div>
+              <div class="field">
+                <label for="quizSubject">Subject</label>
+                <select id="quizSubject" required></select>
+              </div>
+              <div class="field">
+                <label for="quizCategory">Subcategory</label>
+                <select id="quizCategory" required></select>
+              </div>
+              <div class="answer-box">
+                <strong>Subcategory total:</strong>
+                <span id="categoryPointInfo">Select a subcategory to see its total points.</span>
+              </div>
+              <div class="field">
+                <label for="quizInstructions">Instructions</label>
+                <textarea id="quizInstructions" maxlength="1200" placeholder="Students will see this before starting."></textarea>
+              </div>
+              <div class="field">
+                <label class="check-item">
+                  <input id="allowRetakes" type="checkbox" checked>
+                  <span>Allow students to retake this quiz</span>
+                </label>
+                <p class="note">If enabled, students can submit this quiz again. Each retake is saved as a new attempt.</p>
+              </div>
+              <div class="field">
+                <label for="timeLimitMinutes">Quiz timer</label>
+                <input id="timeLimitMinutes" type="number" min="0" max="240" step="1" value="0" placeholder="0 = no timer">
+                <p class="note">Enter minutes. Use 0 for no timer. When time ends, the quiz submits automatically.</p>
+              </div>
+
+              <div class="field">
+                <label>Target classes / grades</label>
+                <div class="check-grid" id="classTargets"></div>
+              </div>
+              <div class="field">
+                <label>Target individual students</label>
+                <div class="check-grid" id="studentTargets"></div>
+              </div>
+              <div class="message" id="createMessage" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="item-head">
+              <div>
+                <h2>Questions</h2>
+                <p class="note">Each question can be written answer, multiple choice, or true/false. There is no stored correct answer. After a student submits, admins mark correct/wrong and choose how many points the student earns.</p>
+              </div>
+              <button class="button secondary" id="addQuestionButton" type="button">+ Add question</button>
+            </div>
+            <div id="questionBuilder"></div>
+            <button class="button accent full" id="publishQuizButton" type="button">Publish quiz</button>
+          </section>
+        </div>
+      </section>
+
+      <section class="tabpage" id="quizzesTab">
+        <section class="panel">
+          <div class="item-head">
+            <div>
+              <h2>Published quizzes</h2>
+              <p class="note">Delete quizzes from here. This also removes all attempts for that quiz.</p>
+            </div>
+          </div>
+          <div class="list" id="adminQuizList"></div>
+        </section>
+      </section>
+
+      <section class="tabpage" id="attemptsTab">
+        <section class="panel">
+          <h2>Student attempts</h2>
+          <p class="note">Use Grade Attempt to review student answers. Mark each question correct or wrong and set the points earned. Use Force retake when a student must complete the quiz again; the student will simply see it as not completed.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Quiz</th>
+                  <th>Status</th>
+                  <th>Score</th>
+                  <th>Submitted answers</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="attemptTable"></tbody>
+            </table>
+          </div>
+          <div class="empty hidden" id="attemptEmpty">No attempts have been submitted yet.</div>
+        </section>
+
+        <section class="panel hidden" id="manualGradePanel">
+          <div class="item-head">
+            <div>
+              <h2 id="manualGradeTitle">Grade attempt</h2>
+              <p class="note" id="manualGradeMeta"></p>
+            </div>
+            <button class="button secondary" id="cancelManualGradeButton" type="button">Cancel grading</button>
+          </div>
+          <form id="manualGradeForm">
+            <div id="manualGradeQuestions"></div>
+            <div class="score-preview">Total score: <span id="manualGradeTotal">0</span></div>
+            <button class="button accent full" type="submit">Save graded result</button>
+            <div class="message" id="manualGradeMessage" aria-live="polite"></div>
+          </form>
+        </section>
+      </section>
+
+      <section class="tabpage" id="analyticsTab">
+        <section class="panel">
+          <h2>Quiz analytics</h2>
+          <p class="note">See completion, average score, highest score, lowest score, and the question most students got wrong.</p>
+          <div class="list" id="analyticsList"></div>
+        </section>
+      </section>
+    </section>
+
+    <section id="studentView" class="hidden">
+      <div class="cards">
+        <div class="card"><div class="label">Available quizzes</div><div class="value" id="studentAvailableCount">0</div></div>
+        <div class="card"><div class="label">Submitted</div><div class="value" id="studentSubmittedCount">0</div></div>
+        <div class="card"><div class="label">Graded</div><div class="value" id="studentGradedCount">0</div></div>
+        <div class="card"><div class="label">Total quiz points</div><div class="value" id="studentPointCount">0</div></div>
+      </div>
+
+      <section class="panel" id="availablePanel">
+        <h2 id="availableHeading">You have 0 quiz available.</h2>
+        <p class="note">You cannot see the answers before completing the quiz.</p>
+        <div class="list" id="studentQuizList"></div>
+      </section>
+
+      <section class="panel hidden" id="takeQuizPanel">
+        <div class="item-head">
+          <div>
+            <h2 id="takeQuizTitle">Take quiz</h2>
+            <p class="note" id="takeQuizMeta"></p>
+          </div>
+          <button class="button secondary" id="cancelTakeButton" type="button">Cancel</button>
+        </div>
+        <div class="timer-box hidden" id="quizTimerBox">No timer</div>
+        <form id="takeQuizForm">
+          <div id="takeQuestions"></div>
+          <button class="button accent full" type="submit">Submit quiz</button>
+          <div class="message" id="takeMessage" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>My completed quizzes</h2>
+        <p class="note">Submitted quizzes stay here. After grading, you can see which answers were marked correct or wrong and how many points you earned. No answer key is stored or shown.</p>
+        <div class="list" id="studentAttemptList"></div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./school-shell.js"></script>
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+      deleteDoc, query, where, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const els = {
+      loadingView: document.getElementById("loadingView"),
+      signedOutView: document.getElementById("signedOutView"),
+      adminView: document.getElementById("adminView"),
+      studentView: document.getElementById("studentView"),
+      pageLead: document.getElementById("pageLead"),
+      refreshButton: document.getElementById("refreshButton"),
+      quizCount: document.getElementById("quizCount"),
+      submittedCount: document.getElementById("submittedCount"),
+      gradedCount: document.getElementById("gradedCount"),
+      openAttemptCount: document.getElementById("openAttemptCount"),
+      quizForm: document.getElementById("quizForm"),
+      quizTitle: document.getElementById("quizTitle"),
+      quizSubject: document.getElementById("quizSubject"),
+      quizCategory: document.getElementById("quizCategory"),
+      categoryPointInfo: document.getElementById("categoryPointInfo"),
+      quizInstructions: document.getElementById("quizInstructions"),
+      allowRetakes: document.getElementById("allowRetakes"),
+      timeLimitMinutes: document.getElementById("timeLimitMinutes"),
+      classTargets: document.getElementById("classTargets"),
+      studentTargets: document.getElementById("studentTargets"),
+      createMessage: document.getElementById("createMessage"),
+      addQuestionButton: document.getElementById("addQuestionButton"),
+      questionBuilder: document.getElementById("questionBuilder"),
+      publishQuizButton: document.getElementById("publishQuizButton"),
+      adminQuizList: document.getElementById("adminQuizList"),
+      attemptTable: document.getElementById("attemptTable"),
+      attemptEmpty: document.getElementById("attemptEmpty"),
+      analyticsList: document.getElementById("analyticsList"),
+      manualGradePanel: document.getElementById("manualGradePanel"),
+      manualGradeTitle: document.getElementById("manualGradeTitle"),
+      manualGradeMeta: document.getElementById("manualGradeMeta"),
+      manualGradeQuestions: document.getElementById("manualGradeQuestions"),
+      manualGradeForm: document.getElementById("manualGradeForm"),
+      manualGradeTotal: document.getElementById("manualGradeTotal"),
+      manualGradeMessage: document.getElementById("manualGradeMessage"),
+      cancelManualGradeButton: document.getElementById("cancelManualGradeButton"),
+      studentAvailableCount: document.getElementById("studentAvailableCount"),
+      studentSubmittedCount: document.getElementById("studentSubmittedCount"),
+      studentGradedCount: document.getElementById("studentGradedCount"),
+      studentPointCount: document.getElementById("studentPointCount"),
+      availableHeading: document.getElementById("availableHeading"),
+      studentQuizList: document.getElementById("studentQuizList"),
+      availablePanel: document.getElementById("availablePanel"),
+      takeQuizPanel: document.getElementById("takeQuizPanel"),
+      takeQuizTitle: document.getElementById("takeQuizTitle"),
+      takeQuizMeta: document.getElementById("takeQuizMeta"),
+      quizTimerBox: document.getElementById("quizTimerBox"),
+      takeQuestions: document.getElementById("takeQuestions"),
+      takeQuizForm: document.getElementById("takeQuizForm"),
+      takeMessage: document.getElementById("takeMessage"),
+      cancelTakeButton: document.getElementById("cancelTakeButton"),
+      studentAttemptList: document.getElementById("studentAttemptList")
+    };
+
+    let profile = null;
+    let data = {
+      users: [], classes: [], subjects: [], categories: [], quizzes: [], attempts: []
+    };
+    let questions = [];
+    let activeQuiz = null;
+    let activeGradeAttempt = null;
+    let quizTimerInterval = null;
+    let quizDeadline = 0;
+
+    function isAdminRole(role) {
+      return role === "admin" || role === "co-owner" || role === "owner";
+    }
+
+    function showOnly(view) {
+      for (const key of ["loadingView", "signedOutView", "adminView", "studentView"]) {
+        els[key].classList.toggle("hidden", key !== view);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function snapshotToArray(snapshot) {
+      return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+    }
+
+    function getSubject(id) { return data.subjects.find((item) => item.id === id); }
+    function getCategory(id) { return data.categories.find((item) => item.id === id); }
+    function getClass(id) { return data.classes.find((item) => item.id === id); }
+    function getUser(id) { return data.users.find((item) => item.id === id); }
+    function getAttemptForQuiz(quizId, studentId) {
+      return data.attempts.find((attempt) => attempt.quizId === quizId && attempt.studentId === studentId);
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const date = value.toDate ? value.toDate() : new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function pointsTotal(quiz) {
+      return (quiz.questions || []).reduce((sum, question) => sum + Number(question.points || 0), 0);
+    }
+
+    function selectedValues(container) {
+      return [...container.querySelectorAll("input[type='checkbox']:checked")].map((box) => box.value);
+    }
+
+    function fillSelect(select, items, placeholder, labeler) {
+      const current = select.value;
+      select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+      for (const item of items) {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = labeler(item);
+        select.appendChild(option);
+      }
+      if (items.some((item) => item.id === current)) select.value = current;
+    }
+
+    function renderTargetChecks() {
+      els.classTargets.innerHTML = data.classes.length
+        ? data.classes.map((item) => `
+          <label class="check-item">
+            <input type="checkbox" value="${escapeHtml(item.id)}">
+            <span>${escapeHtml(item.name)}</span>
+          </label>
+        `).join("")
+        : `<div class="empty">No classes yet.</div>`;
+
+      const students = data.users.filter((item) => item.role === "student");
+      els.studentTargets.innerHTML = students.length
+        ? students.map((item) => `
+          <label class="check-item">
+            <input type="checkbox" value="${escapeHtml(item.id)}">
+            <span>${escapeHtml(item.name || item.username || item.email)}<br><small class="meta">${escapeHtml(getClass(item.classId)?.name || "No class")}</small></span>
+          </label>
+        `).join("")
+        : `<div class="empty">No students yet.</div>`;
+    }
+
+    function syncQuizSelects() {
+      fillSelect(els.quizSubject, data.subjects, "Select subject", (item) => item.name || "Unnamed subject");
+      const categories = data.categories.filter((item) => item.subjectId === els.quizSubject.value);
+      fillSelect(els.quizCategory, categories, "Select subcategory", (item) => item.name || "Unnamed item");
+      updateCategoryPointInfo();
+    }
+
+    function currentQuestionTotalFromDom() {
+      return [...document.querySelectorAll("[data-question-points]")]
+        .reduce((sum, input) => sum + Number(input.value || 0), 0);
+    }
+
+    function normalizeQuestionType(value) {
+      return value === "choice" || value === "truefalse" ? value : "text";
+    }
+
+    function choicesForQuestion(question) {
+      const type = normalizeQuestionType(question?.type);
+      if (type === "truefalse") return ["True", "False"];
+      if (type === "choice") return Array.isArray(question?.options) ? question.options : [];
+      return [];
+    }
+
+    function updateCategoryPointInfo() {
+      if (!els.categoryPointInfo) return;
+      const category = getCategory(els.quizCategory.value);
+      const quizTotal = currentQuestionTotalFromDom();
+      if (!category) {
+        els.categoryPointInfo.textContent = `Select a subcategory to see its total points. Current quiz total: ${quizTotal.toFixed(1).replace(/\.0$/, "")} points.`;
+        return;
+      }
+      const maxScore = Number(category.maxScore || category.points || 0);
+      els.categoryPointInfo.textContent = `This subcategory total is ${Number.isFinite(maxScore) && maxScore > 0 ? maxScore.toFixed(1).replace(/\.0$/, "") : "not set"} points. Current quiz question total: ${quizTotal.toFixed(1).replace(/\.0$/, "")} points.`;
+    }
+
+    function renderQuestionBuilder() {
+      if (questions.length === 0) {
+        questions.push({ id: uid(), text: "", points: 1, type: "text", options: [] });
+      }
+
+      els.questionBuilder.innerHTML = questions.map((question, index) => {
+        const type = normalizeQuestionType(question.type);
+        const options = type === "choice"
+          ? [...(Array.isArray(question.options) ? question.options : []), "", ""].slice(0, Math.max(2, (question.options || []).length))
+          : [];
+        const optionBuilder = type === "choice" ? `
+          <div class="field">
+            <label>Answer choices</label>
+            <div data-options-for="${escapeHtml(question.id)}">
+              ${options.map((option, optionIndex) => `
+                <div class="option-row">
+                  <input data-question-option="${escapeHtml(question.id)}" data-option-index="${optionIndex}" type="text" maxlength="180" value="${escapeHtml(option)}" placeholder="Choice ${optionIndex + 1}">
+                  <button class="button danger" type="button" data-remove-option-question="${escapeHtml(question.id)}" data-remove-option-index="${optionIndex}">Remove</button>
+                </div>
+              `).join("")}
+            </div>
+            <button class="button secondary" type="button" data-add-option="${escapeHtml(question.id)}">+ Add choice</button>
+            <p class="note">No correct answer is saved. The admin grades the selected choice manually after submission.</p>
+          </div>
+        ` : type === "truefalse" ? `
+          <div class="field">
+            <label>Answer choices</label>
+            <div class="choice-preview">
+              <label><input type="radio" disabled> <span>True</span></label>
+              <label><input type="radio" disabled> <span>False</span></label>
+            </div>
+            <p class="note">Students choose True or False. No correct answer is saved; the admin grades it manually after submission.</p>
+          </div>
+        ` : "";
+
+        return `
+          <div class="question-card" data-question-id="${escapeHtml(question.id)}">
+            <div class="question-head">
+              <strong>Question ${index + 1}</strong>
+              <div class="question-actions">
+                <button class="button secondary" type="button" data-move-question-up="${escapeHtml(question.id)}">↑</button>
+                <button class="button secondary" type="button" data-move-question-down="${escapeHtml(question.id)}">↓</button>
+                <button class="button secondary" type="button" data-duplicate-question="${escapeHtml(question.id)}">Duplicate</button>
+                <button class="button danger remove-question" type="button" data-remove-question="${escapeHtml(question.id)}">Remove</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Question type</label>
+              <select data-question-type="${escapeHtml(question.id)}">
+                <option value="text" ${type === "text" ? "selected" : ""}>Written answer</option>
+                <option value="choice" ${type === "choice" ? "selected" : ""}>Multiple choice</option>
+                <option value="truefalse" ${type === "truefalse" ? "selected" : ""}>True / False</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Question text</label>
+              <textarea data-question-text="${escapeHtml(question.id)}" maxlength="1200" required>${escapeHtml(question.text)}</textarea>
+            </div>
+            <div class="field">
+              <label>Points</label>
+              <input data-question-points="${escapeHtml(question.id)}" type="number" min="0.5" max="100" step="0.5" value="${escapeHtml(question.points)}" required>
+            </div>
+            <div class="field">
+              <label>Question image URL (optional)</label>
+              <input data-question-image="${escapeHtml(question.id)}" type="url" maxlength="800" value="${escapeHtml(question.imageUrl || "")}" placeholder="https://example.com/image.png">
+            </div>
+            ${optionBuilder}
+          </div>
+        `;
+      }).join("");
+      updateCategoryPointInfo();
+    }
+
+    function collectQuestionsFromDom() {
+      questions = questions.map((question) => {
+        const text = document.querySelector(`[data-question-text="${CSS.escape(question.id)}"]`)?.value.trim() || "";
+        const points = Number(document.querySelector(`[data-question-points="${CSS.escape(question.id)}"]`)?.value || 0);
+        const type = normalizeQuestionType(document.querySelector(`[data-question-type="${CSS.escape(question.id)}"]`)?.value);
+        const imageUrl = document.querySelector(`[data-question-image="${CSS.escape(question.id)}"]`)?.value.trim() || "";
+        const options = type === "choice"
+          ? [...document.querySelectorAll(`[data-question-option="${CSS.escape(question.id)}"]`)].map((input) => input.value.trim())
+          : [];
+        return { ...question, text, points, type, options, imageUrl };
+      });
+    }
+
+    function normalizeAnswer(value) {
+      return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+    }
+
+    function clearQuizTimer() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      quizTimerInterval = null;
+      quizDeadline = 0;
+      if (els.quizTimerBox) els.quizTimerBox.classList.add("hidden");
+    }
+
+    function startQuizTimer(minutes) {
+      clearQuizTimer();
+      const total = Number(minutes || 0);
+      if (!Number.isFinite(total) || total <= 0) return;
+      quizDeadline = Date.now() + total * 60 * 1000;
+      els.quizTimerBox.classList.remove("hidden");
+      const tick = () => {
+        const remaining = Math.max(0, quizDeadline - Date.now());
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        els.quizTimerBox.textContent = `Time left: ${mins}:${String(secs).padStart(2, "0")}`;
+        if (remaining <= 0) {
+          clearQuizTimer();
+          submitQuiz(null, true);
+        }
+      };
+      tick();
+      quizTimerInterval = setInterval(tick, 1000);
+    }
+
+    async function writeLog(action, targetId = "", targetName = "") {
+      await addDoc(collection(db, "activityLogs"), {
+        action, targetId, targetName,
+        actorId: auth.currentUser.uid,
+        actorName: profile.name || profile.username || "Staff",
+        actorRole: profile.role || "admin",
+        createdAt: serverTimestamp()
+      }).catch(() => {});
+    }
+
+    async function loadAdminData() {
+      const [usersSnap, classesSnap, subjectsSnap, categoriesSnap, quizzesSnap, attemptsSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "classes")),
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(collection(db, "quizzes")),
+        getDocs(collection(db, "quizAttempts"))
+      ]);
+      data.users = snapshotToArray(usersSnap);
+      data.classes = snapshotToArray(classesSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.subjects = snapshotToArray(subjectsSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.categories = snapshotToArray(categoriesSnap).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      data.quizzes = snapshotToArray(quizzesSnap).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      data.attempts = snapshotToArray(attemptsSnap).sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      renderAdmin();
+    }
+
+    async function loadStudentData() {
+      const [subjectsSnap, categoriesSnap, quizzesSnap, attemptsSnap] = await Promise.all([
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(query(collection(db, "quizzes"), where("recipientIds", "array-contains", profile.id))),
+        getDocs(query(collection(db, "quizAttempts"), where("studentId", "==", profile.id)))
+      ]);
+      data.subjects = snapshotToArray(subjectsSnap);
+      data.categories = snapshotToArray(categoriesSnap);
+      data.quizzes = snapshotToArray(quizzesSnap).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      data.attempts = snapshotToArray(attemptsSnap).sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      renderStudent();
+    }
+
+    async function loadEverything() {
+      if (!auth.currentUser || !profile) return;
+      showOnly(isAdminRole(profile.role) ? "adminView" : "studentView");
+      if (isAdminRole(profile.role)) {
+        els.pageLead.textContent = "Create quizzes for classes or selected students, then grade submitted attempts.";
+        await loadAdminData();
+      } else {
+        els.pageLead.textContent = "View available quizzes, complete them once, and check your graded results.";
+        await loadStudentData();
+      }
+    }
+
+    function renderAdmin() {
+      els.quizCount.textContent = String(data.quizzes.length);
+      const submitted = data.attempts.filter((a) => a.status === "submitted").length;
+      const graded = data.attempts.filter((a) => a.status === "graded").length;
+      els.submittedCount.textContent = String(submitted);
+      els.gradedCount.textContent = String(graded);
+      els.openAttemptCount.textContent = String(submitted);
+      syncQuizSelects();
+      renderTargetChecks();
+      renderQuestionBuilder();
+      renderAdminQuizzes();
+      renderAttemptTable();
+      renderAnalytics();
+    }
+
+    function renderAdminQuizzes() {
+      if (data.quizzes.length === 0) {
+        els.adminQuizList.innerHTML = `<div class="empty">No quizzes have been published yet.</div>`;
+        return;
+      }
+      els.adminQuizList.innerHTML = data.quizzes.map((quiz) => {
+        const subject = getSubject(quiz.subjectId)?.name || quiz.subjectName || "Subject";
+        const category = getCategory(quiz.categoryId)?.name || quiz.categoryName || "Category";
+        const attempts = data.attempts.filter((attempt) => attempt.quizId === quiz.id);
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(quiz.title)}</h3>
+                <div class="meta">${escapeHtml(subject)} → ${escapeHtml(category)} · ${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${attempts.length} attempts · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
+                <div class="meta">Recipients: ${escapeHtml((quiz.recipientNames || []).join(", ") || "Selected students")}</div>
+              </div>
+              <button class="button danger" data-delete-quiz="${escapeHtml(quiz.id)}" type="button">Delete</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function statusLabel(status) {
+      if (status === "graded") return "Graded";
+      if (status === "force_retake") return "Force retake";
+      return "Submitted";
+    }
+
+    function statusClass(status) {
+      if (status === "graded") return "graded";
+      if (status === "force_retake") return "forced";
+      return "submitted";
+    }
+
+    function activeStudentAttempts(studentId = profile?.id) {
+      return data.attempts.filter((attempt) =>
+        attempt.studentId === studentId &&
+        attempt.status !== "force_retake" &&
+        attempt.forcedRetake !== true
+      );
+    }
+
+    function renderAttemptTable() {
+      els.attemptEmpty.classList.toggle("hidden", data.attempts.length !== 0);
+      els.attemptTable.innerHTML = data.attempts.map((attempt) => {
+        const quiz = data.quizzes.find((item) => item.id === attempt.quizId);
+        const student = getUser(attempt.studentId);
+        const answers = (attempt.answers || []).map((answer, index) => `
+          <div class="answer-box">
+            <strong>Q${index + 1}:</strong> ${escapeHtml(answer.questionText || "Question")}<br>
+            <span class="meta">Student answer:</span> ${escapeHtml(answer.answer || "No answer")}
+          </div>
+        `).join("");
+        const status = attempt.status || "submitted";
+        const scoreText = status === "graded"
+          ? `${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}`
+          : status === "force_retake"
+            ? "Reset for retake"
+            : "Not graded";
+        const actionButtons = status === "force_retake"
+          ? `<span class="meta">Student must retake</span>`
+          : `
+              ${status === "graded"
+                ? `<button class="button secondary" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Regrade</button>`
+                : `<button class="button accent" data-grade-attempt="${escapeHtml(attempt.id)}" type="button">Grade Attempt</button>`}
+              <button class="button secondary" data-force-retake="${escapeHtml(attempt.id)}" type="button">Force retake</button>
+            `;
+        return `
+          <tr>
+            <td>${escapeHtml(student?.name || attempt.studentName || "Student")}</td>
+            <td>${escapeHtml(quiz?.title || attempt.quizTitle || "Quiz")}</td>
+            <td>
+              <span class="pill ${statusClass(status)}">${statusLabel(status)}</span><br>
+              <small class="meta">${status === "force_retake" ? `Reset: ${formatDate(attempt.forcedAt || attempt.submittedAt)}` : formatDate(attempt.submittedAt)}</small>
+            </td>
+            <td>${scoreText}</td>
+            <td>${answers}</td>
+            <td>${actionButtons}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderAnalytics() {
+      if (!els.analyticsList) return;
+      if (data.quizzes.length === 0) {
+        els.analyticsList.innerHTML = `<div class="empty">No quizzes to analyze yet.</div>`;
+        return;
+      }
+      els.analyticsList.innerHTML = data.quizzes.map((quiz) => {
+        const attempts = data.attempts.filter((a) => a.quizId === quiz.id && a.status !== "force_retake" && a.forcedRetake !== true);
+        const graded = attempts.filter((a) => a.status === "graded");
+        const assigned = Array.isArray(quiz.recipientIds) ? quiz.recipientIds.length : 0;
+        const completedStudentIds = new Set(attempts.map((a) => a.studentId));
+        const scores = graded.map((a) => Number(a.score || 0));
+        const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+        const high = scores.length ? Math.max(...scores) : 0;
+        const low = scores.length ? Math.min(...scores) : 0;
+        const wrongCounts = new Map();
+        for (const attempt of graded) {
+          for (const g of attempt.gradedQuestions || []) {
+            if (g.markedCorrect === false || Number(g.awardedPoints || 0) < Number(g.maxPoints || 0)) {
+              wrongCounts.set(g.questionId, (wrongCounts.get(g.questionId) || 0) + 1);
+            }
+          }
+        }
+        let worst = "Not enough graded data";
+        if (wrongCounts.size) {
+          const [qid, count] = [...wrongCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+          const q = (quiz.questions || []).find((item) => item.id === qid);
+          worst = `Q${q?.number || "?"}: ${q?.text || "Question"} (${count} missed)`;
+        }
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(quiz.title || "Quiz")}</h3>
+                <div class="meta">Completed: ${completedStudentIds.size}/${assigned} · Attempts: ${attempts.length} · Graded: ${graded.length}</div>
+                <div class="meta">Average: ${avg.toFixed(1)} · Highest: ${high.toFixed(1)} · Lowest: ${low.toFixed(1)}</div>
+                <div class="meta">Most missed: ${escapeHtml(worst)}</div>
+              </div>
+            </div>
+          </article>`;
+      }).join("");
+    }
+
+    function renderStudent() {
+      const visibleAttempts = activeStudentAttempts();
+      const available = data.quizzes.filter((quiz) => {
+        const attemptsForQuiz = visibleAttempts.filter((attempt) => attempt.quizId === quiz.id);
+        return quiz.allowRetakes !== false || attemptsForQuiz.length === 0;
+      });
+      const submitted = visibleAttempts.filter((attempt) => attempt.status === "submitted");
+      const graded = visibleAttempts.filter((attempt) => attempt.status === "graded");
+      const earnedPoints = graded.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
+      els.studentAvailableCount.textContent = String(available.length);
+      els.studentSubmittedCount.textContent = String(submitted.length);
+      els.studentGradedCount.textContent = String(graded.length);
+      els.studentPointCount.textContent = earnedPoints.toFixed(1).replace(/\.0$/, "");
+      els.availableHeading.textContent = `You have ${available.length} quiz${available.length === 1 ? "" : "zes"} available.`;
+      renderStudentQuizzes(available);
+      renderStudentAttempts();
+    }
+
+    function renderStudentQuizzes(available) {
+      if (available.length === 0) {
+        els.studentQuizList.innerHTML = `<div class="empty">No available quizzes right now.</div>`;
+        return;
+      }
+      els.studentQuizList.innerHTML = available.map((quiz) => {
+        const attemptsForQuiz = activeStudentAttempts().filter((attempt) => attempt.quizId === quiz.id);
+        const isRetake = attemptsForQuiz.length > 0;
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(quiz.title)}</h3>
+                <div class="meta">${escapeHtml(quiz.subjectName || getSubject(quiz.subjectId)?.name || "Subject")} → ${escapeHtml(quiz.categoryName || getCategory(quiz.categoryId)?.name || "Category")}</div>
+                <div class="meta">${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
+                ${isRetake ? `<div class="meta">You already submitted ${attemptsForQuiz.length} attempt${attemptsForQuiz.length === 1 ? "" : "s"}. This will create a new retake.</div>` : ""}
+              </div>
+              <button class="button accent" data-start-quiz="${escapeHtml(quiz.id)}" type="button">${isRetake ? "Retake" : "Start"}</button>
+            </div>
+            ${quiz.instructions ? `<p class="note">${escapeHtml(quiz.instructions)}</p>` : ""}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderStudentAttempts() {
+      const visibleAttempts = activeStudentAttempts();
+      if (visibleAttempts.length === 0) {
+        els.studentAttemptList.innerHTML = `<div class="empty">You have not completed any quizzes yet.</div>`;
+        return;
+      }
+      els.studentAttemptList.innerHTML = visibleAttempts.map((attempt) => {
+        const answers = (attempt.answers || []).map((answer, index) => {
+          const graded = (attempt.gradedQuestions || []).find((item) => item.questionId === answer.questionId);
+          return `
+            <div class="answer-box">
+              <strong>Q${index + 1}:</strong> ${escapeHtml(answer.questionText || "Question")}<br>
+              <span class="meta">Your answer:</span> ${escapeHtml(answer.answer || "No answer")}
+              ${attempt.status === "graded" && graded ? `<br><span class="${graded.markedCorrect ? "correct" : "wrong"}">${graded.markedCorrect ? "Marked correct" : "Marked wrong"}</span><br><span class="meta">Points:</span> ${Number(graded.awardedPoints || 0).toFixed(1)} / ${Number(answer.points || 0).toFixed(1)}${graded.feedback ? `<br><span class="meta">Admin feedback:</span> ${escapeHtml(graded.feedback)}` : ""}` : ""}
+            </div>
+          `;
+        }).join("");
+        return `
+          <article class="item">
+            <div class="item-head">
+              <div>
+                <h3>${escapeHtml(attempt.quizTitle || "Quiz")}</h3>
+                <div class="meta">Submitted: ${formatDate(attempt.submittedAt)}</div>
+              </div>
+              <span class="pill ${attempt.status === "graded" ? "graded" : "submitted"}">${attempt.status === "graded" ? `Score ${Number(attempt.score || 0).toFixed(1)} / ${Number(attempt.maxPoints || 0).toFixed(1)}` : "Waiting for grade"}</span>
+            </div>
+            ${answers}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function publishQuiz() {
+      collectQuestionsFromDom();
+      els.createMessage.className = "message";
+      els.createMessage.textContent = "";
+
+      const title = els.quizTitle.value.trim();
+      const subject = getSubject(els.quizSubject.value);
+      const category = getCategory(els.quizCategory.value);
+      const classIds = selectedValues(els.classTargets);
+      const directStudentIds = selectedValues(els.studentTargets);
+      const classStudents = data.users.filter((user) => user.role === "student" && classIds.includes(user.classId));
+      const directStudents = data.users.filter((user) => directStudentIds.includes(user.id));
+      const recipientsMap = new Map();
+      for (const student of [...classStudents, ...directStudents]) recipientsMap.set(student.id, student);
+      const recipients = [...recipientsMap.values()];
+
+      if (!title || !subject || !category) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Enter a title, subject, and subcategory.";
+        return;
+      }
+      if (recipients.length === 0) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Select at least one class or student.";
+        return;
+      }
+      if (questions.length === 0 || questions.some((q) => !q.text || !Number.isFinite(Number(q.points)) || Number(q.points) <= 0)) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Every question needs question text and points.";
+        return;
+      }
+      if (questions.some((q) => q.type === "choice" && (!Array.isArray(q.options) || q.options.filter(Boolean).length < 2))) {
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = "Every multiple choice question needs at least two answer choices.";
+        return;
+      }
+
+      els.publishQuizButton.disabled = true;
+      try {
+        const safeQuestions = questions.map((question, index) => {
+          const type = normalizeQuestionType(question.type);
+          return {
+            id: question.id,
+            number: index + 1,
+            type,
+            text: question.text,
+            points: Number(question.points),
+            options: type === "choice" ? question.options.filter(Boolean) : choicesForQuestion({ type }),
+            imageUrl: String(question.imageUrl || "").trim()
+          };
+        });
+        const totalPoints = safeQuestions.reduce((sum, question) => sum + question.points, 0);
+        const quizRef = await addDoc(collection(db, "quizzes"), {
+          title,
+          subjectId: subject.id,
+          subjectName: subject.name || "Subject",
+          categoryId: category.id,
+          categoryName: category.name || "Category",
+          instructions: els.quizInstructions.value.trim(),
+          allowRetakes: els.allowRetakes ? els.allowRetakes.checked : true,
+          timeLimitMinutes: Math.max(0, Number(els.timeLimitMinutes?.value || 0)),
+          questions: safeQuestions,
+          questionCount: safeQuestions.length,
+          totalPoints,
+          classIds,
+          classNames: classIds.map((id) => getClass(id)?.name || id),
+          recipientIds: recipients.map((student) => student.id),
+          recipientNames: recipients.map((student) => student.name || student.username || student.email),
+          createdBy: auth.currentUser.uid,
+          createdByName: profile.name || profile.username || "Admin",
+          createdAt: serverTimestamp()
+        });
+        await writeLog("Published quiz", quizRef.id, title);
+        els.createMessage.className = "message ok";
+        els.createMessage.textContent = "Quiz published.";
+        els.quizForm.reset();
+        if (els.allowRetakes) els.allowRetakes.checked = true;
+        if (els.timeLimitMinutes) els.timeLimitMinutes.value = "0";
+        questions = [{ id: uid(), text: "", points: 1, type: "text", options: [] }];
+        await loadAdminData();
+      } catch (error) {
+        console.error(error);
+        els.createMessage.className = "message err";
+        els.createMessage.textContent = error.message || "Could not publish quiz.";
+      } finally {
+        els.publishQuizButton.disabled = false;
+      }
+    }
+
+    function startQuiz(quizId) {
+      const quiz = data.quizzes.find((item) => item.id === quizId);
+      if (!quiz) return;
+      const previousAttempts = activeStudentAttempts().filter((attempt) => attempt.quizId === quiz.id);
+      if (quiz.allowRetakes === false && previousAttempts.length > 0) {
+        alert("You have already submitted this quiz. Retakes are not enabled for this quiz.");
+        return;
+      }
+      activeQuiz = quiz;
+      els.takeQuizTitle.textContent = previousAttempts.length > 0 ? `${quiz.title} — Retake ${previousAttempts.length + 1}` : quiz.title;
+      els.takeQuizMeta.textContent = `${quiz.subjectName || "Subject"} → ${quiz.categoryName || "Category"} · ${quiz.totalPoints || pointsTotal(quiz)} points${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} minutes` : ""}${previousAttempts.length > 0 ? ` · Retake ${previousAttempts.length + 1}` : ""}`;
+      els.takeQuestions.innerHTML = (quiz.questions || []).map((question, index) => {
+        const type = normalizeQuestionType(question.type);
+        const answerChoices = choicesForQuestion(question);
+        const answerInput = type === "choice" || type === "truefalse"
+          ? `
+            <div class="field">
+              <label>${type === "truefalse" ? "Select True or False" : "Select one answer"}</label>
+              <div class="choice-preview">
+                ${answerChoices.map((option, optionIndex) => `
+                  <label>
+                    <input type="radio" name="student-answer-${escapeHtml(question.id)}" data-student-answer-choice="${escapeHtml(question.id)}" value="${escapeHtml(option)}" required>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `).join("")}
+              </div>
+            </div>
+          `
+          : `
+            <div class="field">
+              <label>Your answer</label>
+              <textarea data-student-answer="${escapeHtml(question.id)}" required></textarea>
+            </div>
+          `;
+        return `
+          <div class="question-card">
+            <div class="question-head">
+              <strong>Question ${index + 1}</strong>
+              <span class="pill open">${Number(question.points || 0).toFixed(1)} pts</span>
+            </div>
+            <p style="line-height:1.6;margin-bottom:12px">${escapeHtml(question.text)}</p>
+            ${question.imageUrl ? `<img class="question-image" src="${escapeHtml(question.imageUrl)}" alt="Question image">` : ""}
+            ${answerInput}
+          </div>
+        `;
+      }).join("");
+      els.takeMessage.textContent = "";
+      els.takeQuizPanel.classList.remove("hidden");
+      els.availablePanel.classList.add("hidden");
+      startQuizTimer(quiz.timeLimitMinutes || 0);
+      els.takeQuizPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function submitQuiz(event, autoSubmit = false) {
+      event?.preventDefault?.();
+      if (els.takeQuizForm.dataset.submitting === "true") return;
+      els.takeQuizForm.dataset.submitting = "true";
+      if (!activeQuiz || !profile?.id) { els.takeQuizForm.dataset.submitting = "false"; return; }
+
+      const submitButton = els.takeQuizForm.querySelector("button[type='submit']");
+      if (submitButton) submitButton.disabled = true;
+
+      const existingAttempts = activeStudentAttempts().filter((attempt) => attempt.quizId === activeQuiz.id);
+      if (activeQuiz.allowRetakes === false && existingAttempts.length > 0) {
+        els.takeMessage.className = "message err";
+        els.takeMessage.textContent = "You already submitted this quiz and retakes are not enabled.";
+        if (submitButton) submitButton.disabled = false;
+        els.takeQuizForm.dataset.submitting = "false";
+        return;
+      }
+
+      const retakeNumber = existingAttempts.length + 1;
+      const attemptId = `${String(activeQuiz.id)}_${String(profile.id)}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+      try {
+        // Each submission uses a new document ID so retakes can be saved as separate attempts.
+
+        const answers = (activeQuiz.questions || []).map((question) => {
+          const questionId = String(question.id || uid());
+          const type = normalizeQuestionType(question.type);
+          const input = type === "choice" || type === "truefalse"
+            ? document.querySelector(`[data-student-answer-choice="${CSS.escape(questionId)}"]:checked`)
+            : document.querySelector(`[data-student-answer="${CSS.escape(questionId)}"]`);
+
+          return {
+            questionId,
+            questionText: String(question.text || "Question"),
+            questionType: type,
+            choices: choicesForQuestion(question).map((option) => String(option)),
+            imageUrl: String(question.imageUrl || ""),
+            points: Number(question.points || 0),
+            answer: String(input?.value || "").trim()
+          };
+        });
+
+        if (!autoSubmit && (answers.length === 0 || answers.some((answer) => !answer.answer))) {
+          els.takeMessage.className = "message err";
+          els.takeMessage.textContent = "Answer every question before submitting.";
+          return;
+        }
+
+        const payload = {
+          quizId: String(activeQuiz.id),
+          quizTitle: String(activeQuiz.title || "Quiz"),
+          subjectId: String(activeQuiz.subjectId || ""),
+          subjectName: String(activeQuiz.subjectName || "Subject"),
+          categoryId: String(activeQuiz.categoryId || ""),
+          categoryName: String(activeQuiz.categoryName || "Subcategory"),
+          studentId: String(profile.id),
+          studentName: String(profile.name || profile.username || profile.email || "Student"),
+          attemptNumber: retakeNumber,
+          retake: retakeNumber > 1,
+          answers,
+          status: "submitted",
+          autoSubmitted: autoSubmit === true,
+          maxPoints: Number(activeQuiz.totalPoints || pointsTotal(activeQuiz) || 0),
+          submittedAt: serverTimestamp()
+        };
+
+        await setDoc(doc(db, "quizAttempts", attemptId), payload);
+
+        clearQuizTimer();
+        activeQuiz = null;
+        els.takeQuizPanel.classList.add("hidden");
+        els.availablePanel.classList.remove("hidden");
+        await loadStudentData();
+      } catch (error) {
+        console.error(error);
+        els.takeMessage.className = "message err";
+        const text = String(error?.message || "");
+        els.takeMessage.textContent = text.toLowerCase().includes("permission")
+          ? "Could not submit quiz because Firestore rules are blocking the submission. Publish the latest quiz rules."
+          : text || "Could not submit quiz.";
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+        els.takeQuizForm.dataset.submitting = "false";
+      }
+    }
+
+    function startManualGrade(attemptId) {
+      const attempt = data.attempts.find((item) => item.id === attemptId);
+      if (!attempt) return;
+      activeGradeAttempt = attempt;
+      const quiz = data.quizzes.find((item) => item.id === attempt.quizId);
+      const student = getUser(attempt.studentId);
+      const category = getCategory(attempt.categoryId);
+      els.manualGradeTitle.textContent = `Grade: ${attempt.quizTitle || quiz?.title || "Quiz"}`;
+      els.manualGradeMeta.textContent = `${student?.name || attempt.studentName || "Student"} · ${attempt.subjectName || quiz?.subjectName || "Subject"} → ${attempt.categoryName || quiz?.categoryName || "Subcategory"} · Quiz total ${Number(attempt.maxPoints || quiz?.totalPoints || 0).toFixed(1)} · Subcategory total ${category?.maxScore || "not set"}`;
+      els.manualGradeMessage.textContent = "";
+
+      els.manualGradeQuestions.innerHTML = (attempt.answers || []).map((answer, index) => {
+        const previous = (attempt.gradedQuestions || []).find((item) => item.questionId === answer.questionId);
+        const max = Number(answer.points || 0);
+        const points = Number(previous?.awardedPoints ?? 0);
+        const markedCorrect = previous?.markedCorrect === true || points >= max;
+        return `
+          <div class="question-card" data-grade-question="${escapeHtml(answer.questionId)}">
+            <div class="question-head">
+              <strong>Question ${index + 1}</strong>
+              <span class="pill open">Max ${max.toFixed(1)} pts</span>
+            </div>
+            <p style="line-height:1.6;margin-bottom:12px">${escapeHtml(answer.questionText || "Question")}</p>
+            ${answer.imageUrl ? `<img class="question-image" src="${escapeHtml(answer.imageUrl)}" alt="Question image">` : ""}
+            <div class="answer-box">
+              <span class="meta">Student answer:</span><br>
+              ${escapeHtml(answer.answer || "No answer")}
+            </div>
+            <div class="grade-control-grid">
+              <label class="check-item">
+                <input type="checkbox" data-grade-correct="${escapeHtml(answer.questionId)}" data-max-points="${max}" ${markedCorrect ? "checked" : ""}>
+                <span>Mark correct</span>
+              </label>
+              <label>
+                Points earned
+                <input type="number" min="0" max="${max}" step="0.1" data-grade-points="${escapeHtml(answer.questionId)}" value="${Math.min(max, Math.max(0, points)).toFixed(1)}">
+              </label>
+            </div>
+            <p class="note">Checking correct fills full points. You can still set any score from 0 to ${max.toFixed(1)}.</p>
+            <div class="field grade-feedback">
+              <label>Optional feedback</label>
+              <textarea data-grade-feedback="${escapeHtml(answer.questionId)}" maxlength="600">${escapeHtml(previous?.feedback || "")}</textarea>
+            </div>
+          </div>
+        `;
+      }).join("");
+      updateManualGradeTotal();
+      els.manualGradePanel.classList.remove("hidden");
+      els.manualGradePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function updateManualGradeTotal(event) {
+      if (event?.target?.matches?.("[data-grade-correct]")) {
+        const questionId = event.target.dataset.gradeCorrect;
+        const max = Number(event.target.dataset.maxPoints || 0);
+        const pointsInput = els.manualGradeQuestions.querySelector(`[data-grade-points="${CSS.escape(questionId)}"]`);
+        if (pointsInput) pointsInput.value = event.target.checked ? max.toFixed(1) : "0";
+      }
+      const total = [...els.manualGradeQuestions.querySelectorAll("[data-grade-points]")]
+        .reduce((sum, input) => sum + Number(input.value || 0), 0);
+      const max = Number(activeGradeAttempt?.maxPoints || 0);
+      els.manualGradeTotal.textContent = `${total.toFixed(1)} / ${max.toFixed(1)}`;
+    }
+
+    async function saveManualGrade(event) {
+      event.preventDefault();
+      if (!activeGradeAttempt) return;
+      let score = 0;
+      const gradedQuestions = (activeGradeAttempt.answers || []).map((answer) => {
+        const max = Number(answer.points || 0);
+        const correctInput = els.manualGradeQuestions.querySelector(`[data-grade-correct="${CSS.escape(answer.questionId)}"]`);
+        const pointsInput = els.manualGradeQuestions.querySelector(`[data-grade-points="${CSS.escape(answer.questionId)}"]`);
+        const feedbackInput = els.manualGradeQuestions.querySelector(`[data-grade-feedback="${CSS.escape(answer.questionId)}"]`);
+        const markedCorrect = correctInput?.checked === true;
+        const awardedPoints = Math.min(max, Math.max(0, Number(pointsInput?.value || 0)));
+        score += awardedPoints;
+        return {
+          questionId: answer.questionId,
+          awardedPoints,
+          maxPoints: max,
+          markedCorrect,
+          feedback: feedbackInput?.value.trim() || ""
+        };
+      });
+      await updateDoc(doc(db, "quizAttempts", activeGradeAttempt.id), {
+        status: "graded",
+        score,
+        gradedQuestions,
+        gradedBy: auth.currentUser.uid,
+        gradedByName: profile.name || profile.username || "Admin",
+        gradedAt: serverTimestamp()
+      });
+      await writeLog("Graded quiz attempt", activeGradeAttempt.id, `${activeGradeAttempt.studentName || "Student"} · ${activeGradeAttempt.quizTitle || "Quiz"}`);
+      activeGradeAttempt = null;
+      els.manualGradePanel.classList.add("hidden");
+      await loadAdminData();
+    }
+
+    async function forceRetakeAttempt(attemptId) {
+      const attempt = data.attempts.find((item) => item.id === attemptId);
+      if (!attempt) return;
+      const student = getUser(attempt.studentId);
+      const confirmed = confirm(`Force ${student?.name || attempt.studentName || "this student"} to retake ${attempt.quizTitle || "this quiz"}? The student will not see a special message; the quiz will simply appear as not completed.`);
+      if (!confirmed) return;
+      await updateDoc(doc(db, "quizAttempts", attempt.id), {
+        status: "force_retake",
+        forcedRetake: true,
+        forcedBy: auth.currentUser.uid,
+        forcedByName: profile.name || profile.username || "Admin",
+        forcedAt: serverTimestamp()
+      });
+      await writeLog("Forced quiz retake", attempt.id, `${student?.name || attempt.studentName || "Student"} · ${attempt.quizTitle || "Quiz"}`);
+      await loadAdminData();
+    }
+
+    async function deleteQuiz(quizId) {
+      const confirmed = confirm("Delete this quiz and all attempts for it?");
+      if (!confirmed) return;
+      const attempts = data.attempts.filter((attempt) => attempt.quizId === quizId);
+      const quiz = data.quizzes.find((item) => item.id === quizId);
+      await Promise.all([
+        deleteDoc(doc(db, "quizzes", quizId)),
+        ...attempts.map((attempt) => deleteDoc(doc(db, "quizAttempts", attempt.id)))
+      ]);
+      await writeLog("Deleted quiz", quizId, quiz?.title || "Quiz");
+      await loadAdminData();
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => item.classList.remove("active"));
+        document.querySelectorAll(".tabpage").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.tab)?.classList.add("active");
+      });
+    });
+
+    els.quizSubject.addEventListener("change", syncQuizSelects);
+    els.quizCategory.addEventListener("change", updateCategoryPointInfo);
+    els.addQuestionButton.addEventListener("click", () => {
+      collectQuestionsFromDom();
+      questions.push({ id: uid(), text: "", points: 1, type: "text", options: [] });
+      renderQuestionBuilder();
+    });
+    els.questionBuilder.addEventListener("click", (event) => {
+      const removeId = event.target.dataset.removeQuestion;
+      const duplicateId = event.target.dataset.duplicateQuestion;
+      const moveUpId = event.target.dataset.moveQuestionUp;
+      const moveDownId = event.target.dataset.moveQuestionDown;
+      const addOptionId = event.target.dataset.addOption;
+      const removeOptionQuestion = event.target.dataset.removeOptionQuestion;
+      const removeOptionIndex = event.target.dataset.removeOptionIndex;
+
+      if (!removeId && !duplicateId && !moveUpId && !moveDownId && !addOptionId && !removeOptionQuestion) return;
+
+      collectQuestionsFromDom();
+
+      if (removeId) {
+        questions = questions.filter((question) => question.id !== removeId);
+      }
+
+      if (duplicateId) {
+        const index = questions.findIndex((question) => question.id === duplicateId);
+        if (index >= 0) {
+          const copy = { ...questions[index], id: uid(), text: `${questions[index].text || ""} copy` };
+          questions.splice(index + 1, 0, copy);
+        }
+      }
+
+      if (moveUpId || moveDownId) {
+        const id = moveUpId || moveDownId;
+        const index = questions.findIndex((question) => question.id === id);
+        const next = moveUpId ? index - 1 : index + 1;
+        if (index >= 0 && next >= 0 && next < questions.length) {
+          const [item] = questions.splice(index, 1);
+          questions.splice(next, 0, item);
+        }
+      }
+
+      if (addOptionId) {
+        questions = questions.map((question) => {
+          if (question.id !== addOptionId) return question;
+          return { ...question, type: "choice", options: [...(question.options || []), ""] };
+        });
+      }
+
+      if (removeOptionQuestion) {
+        const index = Number(removeOptionIndex);
+        questions = questions.map((question) => {
+          if (question.id !== removeOptionQuestion) return question;
+          const options = [...(question.options || [])];
+          if (options.length > 2) options.splice(index, 1);
+          return { ...question, type: "choice", options };
+        });
+      }
+
+      renderQuestionBuilder();
+    });
+    els.questionBuilder.addEventListener("change", (event) => {
+      if (event.target.matches("[data-question-type]")) {
+        collectQuestionsFromDom();
+        renderQuestionBuilder();
+      }
+    });
+    els.questionBuilder.addEventListener("input", updateCategoryPointInfo);
+    els.publishQuizButton.addEventListener("click", publishQuiz);
+    els.refreshButton.addEventListener("click", loadEverything);
+    els.adminQuizList.addEventListener("click", (event) => {
+      const id = event.target.dataset.deleteQuiz;
+      if (id) deleteQuiz(id);
+    });
+    els.attemptTable.addEventListener("click", (event) => {
+      const gradeId = event.target.dataset.gradeAttempt;
+      const forceId = event.target.dataset.forceRetake;
+      if (gradeId) startManualGrade(gradeId);
+      if (forceId) forceRetakeAttempt(forceId);
+    });
+    els.studentQuizList.addEventListener("click", (event) => {
+      const id = event.target.dataset.startQuiz;
+      if (id) startQuiz(id);
+    });
+    els.cancelTakeButton.addEventListener("click", () => {
+      clearQuizTimer();
+      activeQuiz = null;
+      els.takeQuizPanel.classList.add("hidden");
+      els.availablePanel.classList.remove("hidden");
+    });
+    els.manualGradeQuestions.addEventListener("input", updateManualGradeTotal);
+    els.manualGradeQuestions.addEventListener("change", updateManualGradeTotal);
+    els.manualGradeForm.addEventListener("submit", saveManualGrade);
+    els.cancelManualGradeButton.addEventListener("click", () => {
+      activeGradeAttempt = null;
+      els.manualGradePanel.classList.add("hidden");
+    });
+    els.takeQuizForm.addEventListener("submit", submitQuiz);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        profile = null;
+        showOnly("signedOutView");
+        els.pageLead.textContent = "Sign in to access Superstar quizzes.";
+        return;
+      }
+      showOnly("loadingView");
+      const profileSnap = await getDoc(doc(db, "users", user.uid));
+      if (!profileSnap.exists()) {
+        showOnly("signedOutView");
+        els.pageLead.textContent = "Your account profile was not found.";
+        return;
+      }
+      profile = { id: user.uid, ...profileSnap.data() };
+      await loadEverything();
+    });
+  </script>
+</body>
+</html>

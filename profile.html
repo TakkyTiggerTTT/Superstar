@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Superstar School · Profile</title>
+  <link rel="stylesheet" href="./school-shell.css" />
+  <style>
+    /* PROFILE NO EMAIL V4 - email hidden from profile page */
+    :root{
+      --bg:#070a14;--panel:#11182c;--panel2:#18223b;--border:rgba(255,255,255,.16);--soft:rgba(255,255,255,.07);
+      --text:#fff;--muted:#aeb9d2;--accent:#ffb74d;--accentText:#231400;--green:#79e8ad;--red:#ff8e8e;--blue:#91aaff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;background:radial-gradient(circle at 70% -10%,#263b73,transparent 38rem),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+    button,input,select{font:inherit}.hidden{display:none!important}
+    .page{width:min(1240px,100%);margin:auto;padding:48px 24px 100px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+    .top h1{font-size:clamp(2.5rem,7vw,4.9rem);letter-spacing:-2px;line-height:.95}.lead,.muted{color:var(--muted);line-height:1.55}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:13px;padding:11px 16px;font-weight:900;text-decoration:none;cursor:pointer;white-space:nowrap}
+    .accent{background:var(--accent);color:var(--accentText)}.secondary{background:var(--soft);color:#fff;border:1px solid var(--border)}.danger{background:rgba(255,142,142,.1);color:var(--red);border:1px solid rgba(255,142,142,.35)}
+    .panel{border:1px solid var(--border);border-radius:22px;background:rgba(17,24,44,.94);box-shadow:0 24px 70px rgba(0,0,0,.22);padding:22px;margin-bottom:18px}.panel h2{margin-bottom:8px}
+    .grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .stat{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.055);padding:17px}.stat .label{font-size:.9rem;color:var(--muted);font-weight:800}.stat .num{font-size:2rem;font-weight:950;margin-top:4px}
+    .photo{width:170px;height:170px;border-radius:34px;margin:0 auto 16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-size:4.6rem;font-weight:950;background-size:cover;background-position:center;overflow:hidden;border:1px solid rgba(255,255,255,.28)}
+    .tiny{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ff7f7f);color:var(--accentText);font-weight:950;background-size:cover;background-position:center;flex:0 0 auto;overflow:hidden}.icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);flex:0 0 auto}
+    .profile-card{text-align:center;position:relative;top:auto;z-index:1}.name{font-size:1.8rem;font-weight:950;word-break:break-word}.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;background:rgba(255,183,77,.15);color:var(--accent);font-weight:900;margin-top:8px}.pill.green{background:rgba(121,232,173,.13);color:var(--green)}.pill.red{background:rgba(255,142,142,.13);color:var(--red)}.pill.blue{background:rgba(145,170,255,.14);color:var(--blue)}
+    .field{margin-top:14px}.field label{display:block;margin-bottom:7px;font-weight:900}.field input,.field select{width:100%;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.07);color:#fff;padding:12px 13px;outline:none}.field select option{color:#111;background:#fff}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.tab{border:1px solid var(--border);border-radius:999px;background:var(--soft);color:#fff;padding:9px 13px;font-weight:900;cursor:pointer}.tab.active{background:var(--accent);color:var(--accentText);border-color:transparent}
+    .list{display:grid;gap:10px}.row{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.045);padding:13px}.row-main{display:flex;gap:12px;min-width:0}.row strong{display:block;word-break:break-word}.small{font-size:.9rem;color:var(--muted);line-height:1.45}.empty{border:1px dashed var(--border);border-radius:16px;padding:18px;color:var(--muted);background:rgba(255,255,255,.03)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.msg{min-height:24px;margin-top:12px;font-weight:900}.ok{color:var(--green)}.err{color:var(--red)}.error{white-space:pre-wrap;border:1px solid rgba(255,142,142,.45);background:rgba(255,142,142,.1);border-radius:16px;padding:14px;margin-bottom:18px;color:#ffd2d2}.debug{font-size:.82rem;color:#9aa6c2;margin-top:10px;white-space:pre-wrap;word-break:break-word}.student-list{max-height:520px;overflow:auto;padding-right:5px}
+    @media(max-width:980px){.page{padding:78px 16px}.top,.row{flex-direction:column}.grid,.stats,.two{grid-template-columns:1fr}.profile-card{position:relative;top:auto}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="top">
+      <div>
+        <h1>Profile</h1>
+        <p class="lead" id="pageLead">Loading your Superstar School profile…</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="button secondary" href="./dashboard.html">🏫 Dashboard</a>
+        <button class="button secondary" id="refreshBtn" type="button">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div id="errorBox" class="error hidden"></div>
+
+    <section id="loadingView" class="panel">
+      <h2>Loading…</h2>
+      <p class="muted">Checking Firebase login and profile data.</p>
+      <div class="debug" id="debugText">Starting profile page V2…</div>
+    </section>
+
+    <section id="signedOutView" class="panel hidden">
+      <h2>Sign in required</h2>
+      <p class="muted">Please sign in first.</p>
+      <a class="button accent" href="./index.html" style="margin-top:14px">Go to Login</a>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="grid">
+        <aside>
+          <section class="panel profile-card">
+            <div id="profilePhoto" class="photo">S</div>
+            <div id="profileName" class="name">Student</div>
+            <div id="profileClass" class="muted">Class</div>
+            <div id="profileRole" class="pill">Student</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+              <span id="profileRank" class="pill blue">Rank: —</span>
+              <span id="profilePoints" class="pill green">0 points</span>
+            </div>
+          </section>
+
+          <section id="adminTools" class="panel hidden">
+            <h2>Student picture</h2>
+            <p class="muted">Choose a student and save a profile picture. The picture is compressed before saving.</p>
+            <div class="field">
+              <label for="studentSelect">Student</label>
+              <select id="studentSelect"></select>
+            </div>
+            <div class="field">
+              <label for="photoInput">Picture</label>
+              <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" />
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+              <button class="button accent" id="savePhotoBtn" type="button">Save picture</button>
+              <button class="button danger" id="removePhotoBtn" type="button">Remove</button>
+            </div>
+            <div id="photoMessage" class="msg"></div>
+          </section>
+        </aside>
+
+        <section>
+          <div class="stats">
+            <div class="stat"><div class="label">Quiz points</div><div class="num" id="pointsStat">0</div></div>
+            <div class="stat"><div class="label">Completed</div><div class="num" id="completedStat">0</div></div>
+            <div class="stat"><div class="label">Pending</div><div class="num" id="pendingStat">0</div></div>
+            <div class="stat"><div class="label">Needs retake</div><div class="num" id="retakeStat">0</div></div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="overview" type="button">Overview</button>
+            <button class="tab" data-tab="quizzes" type="button">Quizzes</button>
+            <button class="tab" data-tab="announcements" type="button">Announcements</button>
+            <button class="tab" data-tab="events" type="button">Events</button>
+            <button class="tab" data-tab="saves" type="button">SaveList</button>
+            <button id="studentsTab" class="tab hidden" data-tab="students" type="button">Students</button>
+          </div>
+
+          <section id="tab-overview" class="tabPanel">
+            <div class="two">
+              <section class="panel"><h2>Details</h2><div id="detailsList" class="list"></div></section>
+              <section class="panel"><h2>Latest activity</h2><div id="latestList" class="list"></div></section>
+            </div>
+          </section>
+
+          <section id="tab-quizzes" class="panel tabPanel hidden"><h2>Quiz history</h2><div id="quizList" class="list"></div></section>
+          <section id="tab-announcements" class="panel tabPanel hidden"><h2>Announcements received</h2><div id="announcementList" class="list"></div></section>
+          <section id="tab-events" class="panel tabPanel hidden"><h2>Events assigned</h2><div id="eventList" class="list"></div></section>
+          <section id="tab-saves" class="panel tabPanel hidden"><h2>SaveList items</h2><div id="saveList" class="list"></div></section>
+          <section id="tab-students" class="panel tabPanel hidden">
+            <h2>Student profiles</h2>
+            <div class="field"><input id="studentSearch" placeholder="Search students…" /></div>
+            <div id="studentList" class="student-list list" style="margin-top:12px"></div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./school-shell.js"></script>
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, addDoc, serverTimestamp, query, where, limit } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const $ = (id) => document.getElementById(id);
+
+    let me = null;
+    let selected = null;
+    let users = [];
+    let classes = [];
+    let attempts = [];
+    let announcements = [];
+    let events = [];
+    let saves = [];
+    let ranks = new Map();
+
+    const adminRoles = ["owner", "co-owner", "admin"];
+    const isAdmin = (role) => adminRoles.includes(role);
+    const labelRole = (role) => role === "owner" ? "Owner" : role === "co-owner" ? "Co-owner" : role === "admin" ? "Administrator" : "Student";
+    const esc = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    const docs = (snap) => snap.docs.map((d) => ({ id:d.id, ...d.data() }));
+    const n = (v) => Number(v || 0);
+    const fmt = (v) => n(v).toFixed(1).replace(/\.0$/, "");
+    const stamp = (v) => !v ? 0 : typeof v.toMillis === "function" ? v.toMillis() : typeof v.seconds === "number" ? v.seconds * 1000 : (Date.parse(v) || 0);
+    const date = (v) => stamp(v) ? new Date(stamp(v)).toLocaleString([], {dateStyle:"medium", timeStyle:"short"}) : "No date";
+    const dataImage = (v) => typeof v === "string" && /^data:image\/(jpeg|png|webp);base64,/i.test(v) ? v : "";
+
+    function debug(text){ $("debugText").textContent = text; }
+    function showOnly(id){ ["loadingView","signedOutView","appView"].forEach((x)=>$(x).classList.toggle("hidden", x !== id)); }
+    function error(text){ $("errorBox").textContent = text; $("errorBox").classList.remove("hidden"); }
+    function clearError(){ $("errorBox").classList.add("hidden"); $("errorBox").textContent = ""; }
+    function className(id){ return classes.find((c)=>c.id === id)?.name || classes.find((c)=>c.name === id)?.name || id || "No class"; }
+    function nameOf(u){ return u?.name || u?.username || "Student"; }
+
+    window.addEventListener("error", (event) => error("Profile page JavaScript error:\n" + (event.message || event.error || "Unknown error")));
+    window.addEventListener("unhandledrejection", (event) => error("Profile page promise error:\n" + (event.reason?.message || event.reason || "Unknown error")));
+
+    async function safeLoad(label, fn){
+      try { return await fn(); }
+      catch(e){
+        console.warn(label, e);
+        error(`Could not load ${label}. The page will still show what it can.\n${e.message || e}`);
+        return [];
+      }
+    }
+
+    function setPhoto(el, user){
+      const photo = dataImage(user?.photoDataUrl) || (typeof user?.photoUrl === "string" ? user.photoUrl : "");
+      el.style.backgroundImage = photo ? `url("${photo.replaceAll('"', "%22")}")` : "";
+      el.textContent = photo ? "" : (nameOf(user).trim()[0] || "S").toUpperCase();
+    }
+
+    function attemptsFor(userId){ return attempts.filter((a)=>a.studentId === userId).sort((a,b)=>stamp(b.gradedAt||b.submittedAt||b.createdAt)-stamp(a.gradedAt||a.submittedAt||a.createdAt)); }
+    function statsFor(user){
+      const all = attemptsFor(user.id);
+      const retake = all.filter((a)=>a.status === "force_retake" || a.status === "reset" || a.needsRetake || a.forcedRetake);
+      const active = all.filter((a)=>!retake.includes(a));
+      const graded = active.filter((a)=>a.status === "graded");
+      const pending = active.filter((a)=>a.status !== "graded");
+      const points = graded.reduce((sum,a)=>sum+n(a.score ?? a.totalScore ?? a.points),0);
+      return { all, graded, pending, retake, points };
+    }
+    function buildRanks(){
+      ranks = new Map();
+      const rows = users.filter((u)=>u.role === "student").map((u)=>({id:u.id, points:statsFor(u).points})).sort((a,b)=>b.points-a.points);
+      let rank = 0, prev = null;
+      rows.forEach((r,i)=>{ if(prev === null || r.points !== prev) rank = i + 1; prev = r.points; ranks.set(r.id, rank); });
+    }
+    function announcementsFor(userId){ return announcements.filter((a)=>Array.isArray(a.recipientIds)&&a.recipientIds.includes(userId)).sort((a,b)=>stamp(b.publishAt||b.createdAt)-stamp(a.publishAt||a.createdAt)); }
+    function eventsFor(userId){ return events.filter((e)=>Array.isArray(e.recipientIds)&&e.recipientIds.includes(userId)).sort((a,b)=>stamp(a.startAt||a.startTime||a.createdAt)-stamp(b.startAt||b.startTime||b.createdAt)); }
+    function savesFor(userId){ return saves.filter((s)=>s.ownerId === userId).sort((a,b)=>stamp(b.updatedAt||b.createdAt)-stamp(a.updatedAt||a.createdAt)); }
+
+    function row(icon,title,small,right=""){
+      return `<div class="row"><div class="row-main"><div class="icon">${icon}</div><div><strong>${esc(title)}</strong><div class="small">${small}</div></div></div>${right}</div>`;
+    }
+
+    function render(user){
+      selected = user;
+      const st = statsFor(user);
+      setPhoto($("profilePhoto"), user);
+      $("profileName").textContent = nameOf(user);
+      $("profileClass").textContent = className(user.classId);
+      $("profileRole").textContent = labelRole(user.role);
+      $("pointsStat").textContent = fmt(st.points);
+      $("completedStat").textContent = String(st.graded.length);
+      $("pendingStat").textContent = String(st.pending.length);
+      $("retakeStat").textContent = String(st.retake.length);
+      $("profilePoints").textContent = `${fmt(st.points)} points`;
+      $("profileRank").textContent = ranks.has(user.id) ? `Rank: #${ranks.get(user.id)}` : "Rank: —";
+
+      $("detailsList").innerHTML = [
+        row("👤","Name",esc(nameOf(user))),
+        row("🎓","Class",esc(className(user.classId))),
+        row("🔐","Role",esc(labelRole(user.role))),
+        row("🏆","Leaderboard rank",ranks.has(user.id) ? `#${ranks.get(user.id)}` : "No rank yet")
+      ].join("");
+
+      const latest = [];
+      st.all.slice(0,3).forEach((a)=>latest.push(row("📝", a.quizTitle || a.title || "Quiz", `${a.status === "graded" ? fmt(a.score ?? a.totalScore ?? 0) + " points" : "Pending / retake"} · ${date(a.gradedAt||a.submittedAt||a.createdAt)}`)));
+      announcementsFor(user.id).slice(0,2).forEach((a)=>latest.push(row("📣", a.title || "Announcement", date(a.publishAt||a.createdAt))));
+      eventsFor(user.id).slice(0,2).forEach((e)=>latest.push(row("📅", e.title || "Event", date(e.startAt||e.startTime||e.createdAt))));
+      $("latestList").innerHTML = latest.length ? latest.join("") : `<div class="empty">No activity yet.</div>`;
+
+      $("quizList").innerHTML = st.all.length ? st.all.map((a)=>{
+        const status = a.status === "graded" ? "Graded" : (a.status === "force_retake" || a.status === "reset" || a.needsRetake || a.forcedRetake ? "Needs retake" : "Pending grading");
+        const right = a.status === "graded" ? `<div class="pill green">${fmt(a.score ?? a.totalScore ?? 0)}${a.maxPoints ? "/"+fmt(a.maxPoints) : ""}</div>` : `<div class="pill red">${esc(status)}</div>`;
+        return row("📝", a.quizTitle || a.title || "Quiz", `${esc(status)} · ${esc(a.subjectName || "Subject")} · ${date(a.gradedAt||a.submittedAt||a.createdAt)}`, right);
+      }).join("") : `<div class="empty">No quiz attempts yet.</div>`;
+
+      const anns = announcementsFor(user.id);
+      $("announcementList").innerHTML = anns.length ? anns.map((a)=>row("📣", a.title || "Announcement", `${esc(a.senderRoleLabel || labelRole(a.senderRole) || "Staff")} · ${date(a.publishAt||a.createdAt)}`, `<a class="button secondary" href="./announcements.html">View</a>`)).join("") : `<div class="empty">No announcements assigned.</div>`;
+
+      const evs = eventsFor(user.id);
+      $("eventList").innerHTML = evs.length ? evs.map((e)=>row("📅", e.title || "Event", `${esc(e.location || "No location")} · ${date(e.startAt||e.startTime||e.createdAt)}`, `<a class="button secondary" href="./events.html">View</a>`)).join("") : `<div class="empty">No events assigned.</div>`;
+
+      const sv = savesFor(user.id);
+      $("saveList").innerHTML = sv.length ? sv.map((s)=>row("💾", s.title || "Saved item", `Updated ${date(s.updatedAt||s.createdAt)}`, `<a class="button secondary" href="./savelists.html">Open</a>`)).join("") : `<div class="empty">No SaveList items yet.</div>`;
+    }
+
+    function renderStudents(){
+      const canAdmin = isAdmin(me?.role);
+      $("studentsTab").classList.toggle("hidden", !canAdmin);
+      $("adminTools").classList.toggle("hidden", !canAdmin);
+      if(!canAdmin) return;
+
+      const students = users.filter((u)=>u.role === "student").sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+      $("studentSelect").innerHTML = students.length ? students.map((s)=>`<option value="${esc(s.id)}">${esc(nameOf(s))} — ${esc(className(s.classId))}</option>`).join("") : `<option value="">No students</option>`;
+
+      const term = ($("studentSearch").value || "").toLowerCase().trim();
+      const visible = students.filter((s)=>!term || `${nameOf(s)} ${s.username||""} ${className(s.classId)}`.toLowerCase().includes(term));
+      $("studentList").innerHTML = "";
+      if(!visible.length){ $("studentList").innerHTML = `<div class="empty">No students found.</div>`; return; }
+      visible.forEach((s)=>{
+        const st = statsFor(s);
+        const card = document.createElement("div");
+        card.className = "row";
+        card.innerHTML = `<div class="row-main"><div class="tiny"></div><div><strong>${esc(nameOf(s))}</strong><div class="small">${esc(className(s.classId))} · ${fmt(st.points)} points · ${ranks.has(s.id) ? "Rank #"+ranks.get(s.id) : "No rank"}</div></div></div><button class="button secondary" type="button">Open</button>`;
+        setPhoto(card.querySelector(".tiny"), s);
+        card.querySelector("button").addEventListener("click", ()=>{ $("studentSelect").value = s.id; render(s); tab("overview"); window.scrollTo({top:0,behavior:"smooth"}); });
+        $("studentList").appendChild(card);
+      });
+    }
+
+    function tab(name){
+      document.querySelectorAll(".tab").forEach((b)=>b.classList.toggle("active", b.dataset.tab === name));
+      document.querySelectorAll(".tabPanel").forEach((p)=>p.classList.toggle("hidden", p.id !== `tab-${name}`));
+    }
+
+    async function loadAll(){
+      clearError();
+      if(!auth.currentUser || !me) return;
+      debug("Loading Firestore data…");
+
+      if(isAdmin(me.role)){
+        users = await safeLoad("users", async()=>docs(await getDocs(collection(db,"users"))));
+        classes = await safeLoad("classes", async()=>docs(await getDocs(collection(db,"classes"))));
+        attempts = await safeLoad("quiz attempts", async()=>docs(await getDocs(collection(db,"quizAttempts"))));
+        announcements = await safeLoad("announcements", async()=>docs(await getDocs(collection(db,"announcements"))));
+        events = await safeLoad("events", async()=>docs(await getDocs(collection(db,"events"))));
+        saves = await safeLoad("SaveList", async()=>docs(await getDocs(collection(db,"savelists"))));
+      } else {
+        users = [me];
+        classes = await safeLoad("class", async()=> me.classId ? docs(await getDocs(query(collection(db,"classes"), limit(100)))) : []);
+        attempts = await safeLoad("your quiz attempts", async()=>docs(await getDocs(query(collection(db,"quizAttempts"), where("studentId","==",me.id)))));
+        announcements = await safeLoad("your announcements", async()=>docs(await getDocs(query(collection(db,"announcements"), where("recipientIds","array-contains",me.id)))));
+        events = await safeLoad("your events", async()=>docs(await getDocs(query(collection(db,"events"), where("recipientIds","array-contains",me.id)))));
+        saves = await safeLoad("your SaveList", async()=>docs(await getDocs(query(collection(db,"savelists"), where("ownerId","==",me.id)))));
+      }
+
+      if(!users.find((u)=>u.id === me.id)) users.push(me);
+      buildRanks();
+      renderStudents();
+
+      let target = me;
+      if(isAdmin(me.role)){
+        const students = users.filter((u)=>u.role === "student");
+        if(selected && users.find((u)=>u.id === selected.id)) target = users.find((u)=>u.id === selected.id);
+        else target = students[0] || me;
+      }
+      $("pageLead").textContent = isAdmin(me.role) ? "View student profiles and add student pictures." : "View your student profile, quiz results, announcements, events, and SaveList.";
+      render(target);
+      showOnly("appView");
+      debug("Loaded.");
+    }
+
+    async function compressImage(file){
+      return new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        const img = new Image();
+        reader.onload = ()=>{ img.onload = ()=>{
+          const max = 320;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", .72));
+        }; img.onerror = reject; img.src = String(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function log(action, target){
+      try{ await addDoc(collection(db,"activityLogs"), { action, targetId: target.id, targetName: nameOf(target), actorId: auth.currentUser.uid, actorName: nameOf(me), actorRole: me.role, createdAt: serverTimestamp() }); }
+      catch(e){ console.warn("activity log failed", e); }
+    }
+
+    document.querySelectorAll(".tab").forEach((b)=>b.addEventListener("click", ()=>tab(b.dataset.tab)));
+    $("refreshBtn").addEventListener("click", loadAll);
+    $("studentSearch").addEventListener("input", renderStudents);
+    $("studentSelect").addEventListener("change", ()=>{ const s = users.find((u)=>u.id === $("studentSelect").value); if(s) render(s); });
+
+    $("savePhotoBtn").addEventListener("click", async()=>{
+      const file = $("photoInput").files[0];
+      if(!selected || selected.role !== "student"){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a student first."; return; }
+      if(!file){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a picture first."; return; }
+      try{
+        $("photoMessage").className="msg"; $("photoMessage").textContent="Compressing picture…";
+        const data = await compressImage(file);
+        $("photoMessage").textContent="Saving picture…";
+        await updateDoc(doc(db,"users",selected.id), { photoDataUrl:data, photoUpdatedAt:serverTimestamp(), photoUpdatedBy:auth.currentUser.uid });
+        await log("Updated student picture", selected);
+        $("photoMessage").className="msg ok"; $("photoMessage").textContent="Picture saved.";
+        await loadAll();
+      } catch(e){ $("photoMessage").className="msg err"; $("photoMessage").textContent=e.message || String(e); }
+    });
+
+    $("removePhotoBtn").addEventListener("click", async()=>{
+      if(!selected || selected.role !== "student"){ $("photoMessage").className="msg err"; $("photoMessage").textContent="Choose a student first."; return; }
+      try{
+        await updateDoc(doc(db,"users",selected.id), { photoDataUrl:"", photoUpdatedAt:serverTimestamp(), photoUpdatedBy:auth.currentUser.uid });
+        await log("Removed student picture", selected);
+        $("photoMessage").className="msg ok"; $("photoMessage").textContent="Picture removed.";
+        await loadAll();
+      } catch(e){ $("photoMessage").className="msg err"; $("photoMessage").textContent=e.message || String(e); }
+    });
+
+    onAuthStateChanged(auth, async(user)=>{
+      clearError();
+      if(!user){ showOnly("signedOutView"); return; }
+      showOnly("loadingView");
+      try{
+        debug("Reading users/" + user.uid + " …");
+        const mySnap = await getDoc(doc(db,"users",user.uid));
+        if(!mySnap.exists()){
+          error("Your Authentication account exists, but Firestore users/" + user.uid + " does not exist.");
+          showOnly("signedOutView");
+          return;
+        }
+        me = { id:user.uid, ...mySnap.data() };
+        await loadAll();
+      } catch(e){
+        error(e.message || String(e));
+        showOnly("signedOutView");
+      }
+    });
+  </script>
+</body>
+</html>

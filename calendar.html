@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Superstar class calendar by ICT date">
+  <title>Superstar Class Calendar</title>
+  <!-- SUPERSTAR CALENDAR TITLE UPDATE: ICT date-only calendar with all-students, no-subject school events, and event titles -->
+
+  <style>
+    :root {
+      --bg: #070a14;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel-solid: #11182c;
+      --panel-soft: #1b2238;
+      --panel-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --muted: #aeb9d2;
+      --accent: #ffb74d;
+      --accent-text: #261600;
+      --blue: #91aaff;
+      --success: #79e8ad;
+      --danger: #ff8e8e;
+      --purple: #c45ab3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background: radial-gradient(circle at 70% -10%, #263b73, transparent 38rem), var(--bg);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .6; transform: none !important; }
+    a { color: inherit; }
+    .hidden { display: none !important; }
+
+    main {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+      padding: 50px 24px 90px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 8px 13px;
+      border: 1px solid rgba(145, 170, 255, .3);
+      border-radius: 999px;
+      color: #c6d1ff;
+      background: rgba(145, 170, 255, .10);
+      font-weight: 800;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: .95;
+      letter-spacing: -4px;
+    }
+
+    .subtitle {
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 11px 17px;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 850;
+      text-decoration: none;
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .secondary-button { color: var(--text); border: 1px solid var(--border); background: var(--panel); }
+    .accent-button { color: var(--accent-text); background: var(--accent); }
+    .danger-button { color: var(--danger); border: 1px solid rgba(255,142,142,.35); background: rgba(255,142,142,.09); }
+    .blue-button { color: #091021; background: #cbd6ff; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(330px, .9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(17, 24, 44, .94);
+      box-shadow: 0 22px 70px rgba(0,0,0,.22);
+      backdrop-filter: blur(12px);
+    }
+    .panel h2 { margin-bottom: 8px; font-size: 1.45rem; }
+    .panel-note { margin-bottom: 18px; color: var(--muted); line-height: 1.55; }
+
+    .form-grid { display: grid; gap: 14px; }
+    .field { display: grid; gap: 7px; }
+    label { color: #e8edff; font-weight: 850; }
+    input, select, textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255,255,255,.075);
+    }
+    select option { color: #111; }
+    textarea { min-height: 84px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(255,183,77,.65);
+      box-shadow: 0 0 0 4px rgba(255,183,77,.12);
+    }
+    .form-message { min-height: 22px; color: var(--danger); font-weight: 800; }
+    .success-text { color: var(--success); }
+    .small-note { color: var(--muted); font-size: .9rem; line-height: 1.45; }
+    .label-chip {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin: 0 0 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: #101936;
+      background: #cbd6ff;
+      font-size: .78rem;
+      font-weight: 950;
+    }
+    .label-chip.exam { background: #ff8e8e; color:#2a0910; }
+    .label-chip.homework { background: #ffb74d; color:#261600; }
+    .label-chip.holiday { background: #79e8ad; color:#052315; }
+    .label-chip.activity { background: #c45ab3; color:#fff; }
+    .label-chip.deadline { background: #cbd6ff; color:#101936; }
+
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.055);
+    }
+    .checkbox-row input {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+    .checkbox-row strong { display: block; color: #fff; }
+    .checkbox-row span { display: block; margin-top: 4px; color: var(--muted); font-size: .92rem; line-height: 1.4; }
+
+
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .month-title { font-size: 1.35rem; font-weight: 900; }
+    .toolbar-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+    .weekday-grid,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .weekday {
+      padding: 0 4px 8px;
+      color: var(--muted);
+      font-size: .85rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .day-card {
+      min-height: 118px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 16px;
+      color: var(--text);
+      background: rgba(255,255,255,.055);
+      text-align: left;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .day-card:hover { transform: translateY(-2px); border-color: rgba(255,183,77,.45); background: rgba(255,255,255,.09); }
+    .day-card.other-month { opacity: .42; }
+    .day-card.today { border-color: rgba(255,183,77,.75); box-shadow: 0 0 0 2px rgba(255,183,77,.10) inset; }
+    .day-card.selected { background: rgba(255,183,77,.16); border-color: var(--accent); }
+    .day-number { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; font-weight: 950; }
+    .today-pill { padding: 2px 7px; border-radius: 999px; color: var(--accent-text); background: var(--accent); font-size: .68rem; font-weight: 950; }
+    .entry-chip {
+      display: block;
+      overflow: hidden;
+      max-width: 100%;
+      margin-top: 5px;
+      padding: 6px 7px;
+      border-radius: 9px;
+      color: #e9efff;
+      background: rgba(145,170,255,.16);
+      font-size: .76rem;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .entry-more { margin-top: 5px; color: var(--muted); font-size: .78rem; font-weight: 800; }
+
+    .selected-list { display: grid; gap: 10px; }
+    .schedule-item {
+      display: grid;
+      gap: 9px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(255,255,255,.06);
+    }
+    .schedule-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .schedule-title { font-weight: 950; }
+    .schedule-meta { color: var(--muted); line-height: 1.45; }
+    .schedule-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mini-button {
+      padding: 8px 10px;
+      border-radius: 9px;
+      font-size: .85rem;
+      font-weight: 850;
+    }
+    .empty-box {
+      padding: 24px;
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 15px;
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .loading-screen {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .loading-card {
+      width: min(440px, 100%);
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(17,24,44,.96);
+    }
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 16px;
+      border: 4px solid rgba(255,255,255,.14);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 980px) {
+      .topbar { flex-direction: column; }
+      .top-actions { justify-content: flex-start; }
+      .layout { grid-template-columns: 1fr; }
+      .day-card { min-height: 104px; }
+    }
+    @media (max-width: 680px) {
+      main { padding: 70px 14px 80px; }
+      h1 { letter-spacing: -2px; }
+      .weekday-grid, .calendar-grid { gap: 5px; }
+      .weekday { font-size: .72rem; }
+      .day-card { min-height: 88px; padding: 7px; border-radius: 12px; }
+      .entry-chip { font-size: .68rem; padding: 5px 6px; }
+    }
+  </style>
+  <link rel="stylesheet" href="./school-shell.css">
+  <script type="module" src="./school-shell.js"></script>
+</head>
+<body>
+  <section class="loading-screen" id="loadingView">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h2>Opening Calendar</h2>
+      <p class="panel-note">Loading ICT dates and class schedules…</p>
+    </div>
+  </section>
+
+  <main class="hidden" id="appView">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow" id="ictTodayLabel">ICT date</div>
+        <h1>Calendar</h1>
+        <p class="subtitle">
+          Admins can choose the ICT date, event title, class, grade subcategory, or school event. No time is saved.
+          Students see their own class calendar items plus items sent to all students.
+        </p>
+      </div>
+      <div class="top-actions">
+        <a class="button secondary-button" href="./dashboard.html">🏫 Dashboard</a>
+        <button class="button secondary-button" id="refreshButton" type="button">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="calendar-toolbar">
+          <div class="month-title" id="monthTitle">Month</div>
+          <div class="toolbar-buttons">
+            <button class="button secondary-button" id="prevMonthButton" type="button">← Prev</button>
+            <button class="button accent-button" id="todayButton" type="button">Today ICT</button>
+            <button class="button secondary-button" id="nextMonthButton" type="button">Next →</button>
+          </div>
+        </div>
+        <div class="weekday-grid" aria-hidden="true">
+          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <aside class="panel">
+        <section class="admin-panel hidden" id="adminPanel">
+          <h2 id="formTitle">Add calendar day</h2>
+          <p class="panel-note">Pick the ICT date, title, class/all students, then choose either a subject/subcategory or a school event with no subject.</p>
+          <form class="form-grid" id="scheduleForm">
+            <div class="field">
+              <label for="scheduleDate">Date (ICT)</label>
+              <input id="scheduleDate" type="date" required>
+              <p class="small-note">This is stored as a date only in ICT / Bangkok time.</p>
+            </div>
+            <div class="field">
+              <label for="scheduleTitle">Event title</label>
+              <input id="scheduleTitle" type="text" maxlength="100" placeholder="Example: First day of school" required>
+              <p class="small-note">This title is what students will see on the calendar.</p>
+            </div>
+            <div class="field">
+              <label for="eventTypeLabel">Color label</label>
+              <select id="eventTypeLabel">
+                <option value="Class">Class</option>
+                <option value="Exam">Exam</option>
+                <option value="Homework">Homework</option>
+                <option value="School event">School event</option>
+                <option value="Holiday">Holiday</option>
+                <option value="Activity">Activity</option>
+                <option value="Deadline">Deadline</option>
+              </select>
+              <p class="small-note">This adds a colored label to the calendar item.</p>
+            </div>
+            <div class="field">
+              <label for="scheduleClass">Class / grade</label>
+              <select id="scheduleClass" required></select>
+              <p class="small-note">Choose <strong>All students</strong> if every student should see this calendar item.</p>
+            </div>
+            <label class="checkbox-row" for="schoolEventToggle">
+              <input id="schoolEventToggle" type="checkbox">
+              <span>
+                <strong>School event / no subject</strong>
+                <span>Use this for things like first day of school, holiday, assembly, field trip, or school-wide reminder.</span>
+              </span>
+            </label>
+            <div class="field" id="subjectField">
+              <label for="scheduleSubject">Subject</label>
+              <select id="scheduleSubject" required></select>
+            </div>
+            <div class="field" id="categoryField">
+              <label for="scheduleCategory">Grade subcategory</label>
+              <select id="scheduleCategory" required></select>
+            </div>
+            <div class="field">
+              <label for="scheduleNote">Note (optional)</label>
+              <textarea id="scheduleNote" maxlength="300" placeholder="Example: Review before quiz, bring workbook, project day"></textarea>
+            </div>
+            <button class="button accent-button" type="submit" id="saveButton">Save calendar day</button>
+            <button class="button secondary-button hidden" type="button" id="cancelEditButton">Cancel edit</button>
+            <div class="form-message" id="formMessage" aria-live="polite"></div>
+          </form>
+          <hr style="margin:22px 0;border:0;border-top:1px solid rgba(255,255,255,.13);">
+        </section>
+
+        <section>
+          <h2 id="selectedDateTitle">Selected day</h2>
+          <p class="panel-note" id="selectedDateNote">Choose a day on the calendar.</p>
+          <div class="selected-list" id="selectedList"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      getDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const ICT_TZ = "Asia/Bangkok";
+    const els = {
+      loadingView: document.getElementById("loadingView"),
+      appView: document.getElementById("appView"),
+      ictTodayLabel: document.getElementById("ictTodayLabel"),
+      monthTitle: document.getElementById("monthTitle"),
+      calendarGrid: document.getElementById("calendarGrid"),
+      selectedDateTitle: document.getElementById("selectedDateTitle"),
+      selectedDateNote: document.getElementById("selectedDateNote"),
+      selectedList: document.getElementById("selectedList"),
+      adminPanel: document.getElementById("adminPanel"),
+      scheduleForm: document.getElementById("scheduleForm"),
+      formTitle: document.getElementById("formTitle"),
+      scheduleDate: document.getElementById("scheduleDate"),
+      scheduleTitle: document.getElementById("scheduleTitle"),
+      eventTypeLabel: document.getElementById("eventTypeLabel"),
+      scheduleClass: document.getElementById("scheduleClass"),
+      schoolEventToggle: document.getElementById("schoolEventToggle"),
+      subjectField: document.getElementById("subjectField"),
+      categoryField: document.getElementById("categoryField"),
+      scheduleSubject: document.getElementById("scheduleSubject"),
+      scheduleCategory: document.getElementById("scheduleCategory"),
+      scheduleNote: document.getElementById("scheduleNote"),
+      saveButton: document.getElementById("saveButton"),
+      cancelEditButton: document.getElementById("cancelEditButton"),
+      formMessage: document.getElementById("formMessage"),
+      prevMonthButton: document.getElementById("prevMonthButton"),
+      nextMonthButton: document.getElementById("nextMonthButton"),
+      todayButton: document.getElementById("todayButton"),
+      refreshButton: document.getElementById("refreshButton")
+    };
+
+    let profile = null;
+    let data = { classes: [], subjects: [], categories: [], entries: [] };
+    let monthCursor = dateFromKey(ictDateKey());
+    let selectedDate = ictDateKey();
+    let editingId = null;
+
+    function show(id) {
+      els.loadingView.classList.toggle("hidden", id !== "loading");
+      els.appView.classList.toggle("hidden", id !== "app");
+    }
+
+    function isStaff(role = profile?.role) {
+      return role === "admin" || role === "co-owner" || role === "owner";
+    }
+
+    function pad(num) { return String(num).padStart(2, "0"); }
+
+    function ictDateKey(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: ICT_TZ,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(date).reduce((acc, part) => {
+        acc[part.type] = part.value;
+        return acc;
+      }, {});
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+
+    function dateFromKey(key) {
+      const [year, month, day] = String(key).split("-").map(Number);
+      return new Date(year || 2000, (month || 1) - 1, day || 1);
+    }
+
+    function keyFromDate(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function formatDate(key) {
+      const date = dateFromKey(key);
+      return date.toLocaleDateString("en-GB", {
+        weekday: "long",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        timeZone: ICT_TZ
+      });
+    }
+
+    function monthLabel(date) {
+      return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function snapshotToArray(snapshot) {
+      return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    }
+
+    function sortByName(items) {
+      return [...items].sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+    }
+
+    function className(classId) {
+      if (classId === "__all__") return "All students";
+      return data.classes.find((item) => item.id === classId)?.name || "Class";
+    }
+
+    function subjectName(subjectId) {
+      if (subjectId === "__school_event__") return "School event";
+      return data.subjects.find((item) => item.id === subjectId)?.name || "Subject";
+    }
+
+    function categoryName(categoryId) {
+      if (categoryId === "__no_subject__") return "No subject";
+      return data.categories.find((item) => item.id === categoryId)?.name || "Grade subcategory";
+    }
+
+    function isSchoolEventEntry(entry) {
+      return entry?.subjectId === "__school_event__" || entry?.categoryId === "__no_subject__" || entry?.subjectName === "School event";
+    }
+
+    function scheduleLabel(entry) {
+      if (isSchoolEventEntry(entry)) return "School event";
+      return `${entry.subjectName || subjectName(entry.subjectId)} · ${entry.categoryName || categoryName(entry.categoryId)}`;
+    }
+
+    function calendarTitle(entry) {
+      return String(entry?.title || "").trim() || (isSchoolEventEntry(entry) ? "School event" : scheduleLabel(entry));
+    }
+
+    function entryLabelText(entry) {
+      return String(entry?.label || (isSchoolEventEntry(entry) ? "School event" : "Class")).trim() || "Class";
+    }
+
+    function labelClass(entry) {
+      return entryLabelText(entry).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+
+    function visibleForClass(item, classId) {
+      const mode = item.visibilityMode || "all";
+      if (!classId || classId === "__all__") return true;
+      if (mode === "all" || mode === "inherit") return true;
+      return Array.isArray(item.classIds) && item.classIds.includes(classId);
+    }
+
+    function subjectOptionsForClass(classId) {
+      return data.subjects.filter((subject) => visibleForClass(subject, classId));
+    }
+
+    function categoryOptionsForSubjectAndClass(subjectId, classId) {
+      return data.categories.filter((category) => {
+        if (category.subjectId !== subjectId) return false;
+        return visibleForClass(category, classId);
+      });
+    }
+
+    function fillSelect(select, items, placeholder, getLabel = (item) => item.name) {
+      select.innerHTML = [`<option value="">${escapeHtml(placeholder)}</option>`]
+        .concat(items.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(getLabel(item))}</option>`))
+        .join("");
+    }
+
+    function setSubjectFieldsState() {
+      const noSubject = els.schoolEventToggle.checked;
+      els.subjectField.classList.toggle("hidden", noSubject);
+      els.categoryField.classList.toggle("hidden", noSubject);
+      els.scheduleSubject.required = !noSubject;
+      els.scheduleCategory.required = !noSubject;
+      els.scheduleSubject.disabled = noSubject;
+      els.scheduleCategory.disabled = noSubject;
+      if (noSubject) {
+        els.scheduleSubject.value = "";
+        els.scheduleCategory.value = "";
+      }
+    }
+
+    async function loadData() {
+      const [classesSnap, subjectsSnap, categoriesSnap, entriesSnap] = await Promise.all([
+        getDocs(collection(db, "classes")),
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(collection(db, "classCalendar"))
+      ]);
+
+      const allEntries = snapshotToArray(entriesSnap)
+        .filter((entry) => entry.date)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.className).localeCompare(String(b.className)));
+
+      data = {
+        classes: sortByName(snapshotToArray(classesSnap)),
+        subjects: sortByName(snapshotToArray(subjectsSnap)),
+        categories: sortByName(snapshotToArray(categoriesSnap)),
+        entries: isStaff() ? allEntries : allEntries.filter((entry) => entry.isEveryone === true || entry.classId === profile.classId)
+      };
+    }
+
+    function renderAdminForm() {
+      if (!isStaff()) {
+        els.adminPanel.classList.add("hidden");
+        return;
+      }
+      els.adminPanel.classList.remove("hidden");
+      fillSelect(els.scheduleClass, [{ id: "__all__", name: "All students" }, ...data.classes], "Select class / grade");
+      els.scheduleDate.value = selectedDate;
+      updateSubjectOptions();
+    }
+
+    function updateSubjectOptions() {
+      const classId = els.scheduleClass.value;
+      const previous = els.scheduleSubject.value;
+      fillSelect(els.scheduleSubject, subjectOptionsForClass(classId), "Select subject");
+      if ([...els.scheduleSubject.options].some((option) => option.value === previous)) {
+        els.scheduleSubject.value = previous;
+      }
+      setSubjectFieldsState();
+      updateCategoryOptions();
+    }
+
+    function updateCategoryOptions() {
+      setSubjectFieldsState();
+      if (els.schoolEventToggle.checked) return;
+      const classId = els.scheduleClass.value;
+      const subjectId = els.scheduleSubject.value;
+      const previous = els.scheduleCategory.value;
+      fillSelect(els.scheduleCategory, subjectId ? categoryOptionsForSubjectAndClass(subjectId, classId) : [], "Select grade subcategory");
+      if ([...els.scheduleCategory.options].some((option) => option.value === previous)) {
+        els.scheduleCategory.value = previous;
+      }
+    }
+
+    function renderCalendar() {
+      const todayKey = ictDateKey();
+      els.ictTodayLabel.textContent = `Today in ICT: ${formatDate(todayKey)}`;
+      els.monthTitle.textContent = monthLabel(monthCursor);
+
+      const year = monthCursor.getFullYear();
+      const month = monthCursor.getMonth();
+      const first = new Date(year, month, 1);
+      const start = new Date(year, month, 1 - first.getDay());
+      const cards = [];
+
+      for (let i = 0; i < 42; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const key = keyFromDate(date);
+        const entries = entriesForDate(key);
+        const classes = [
+          "day-card",
+          date.getMonth() !== month ? "other-month" : "",
+          key === todayKey ? "today" : "",
+          key === selectedDate ? "selected" : ""
+        ].filter(Boolean).join(" ");
+
+        cards.push(`
+          <button class="${classes}" type="button" data-date="${key}" aria-label="${escapeHtml(formatDate(key))}">
+            <div class="day-number">
+              <span>${date.getDate()}</span>
+              ${key === todayKey ? '<span class="today-pill">ICT today</span>' : ''}
+            </div>
+            ${entries.slice(0, 3).map((entry) => `
+              <span class="entry-chip">${escapeHtml(calendarTitle(entry))}</span>
+            `).join("")}
+            ${entries.length > 3 ? `<div class="entry-more">+${entries.length - 3} more</div>` : ""}
+          </button>
+        `);
+      }
+
+      els.calendarGrid.innerHTML = cards.join("");
+      els.calendarGrid.querySelectorAll(".day-card").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedDate = button.dataset.date;
+          els.scheduleDate.value = selectedDate;
+          if (dateFromKey(selectedDate).getMonth() !== monthCursor.getMonth()) {
+            monthCursor = dateFromKey(selectedDate);
+          }
+          renderAll();
+        });
+      });
+    }
+
+    function entriesForDate(dateKey) {
+      return data.entries.filter((entry) => entry.date === dateKey);
+    }
+
+    function renderSelectedDate() {
+      const entries = entriesForDate(selectedDate);
+      els.selectedDateTitle.textContent = formatDate(selectedDate);
+      els.selectedDateNote.textContent = entries.length
+        ? `${entries.length} calendar item${entries.length === 1 ? "" : "s"}. No times are saved.`
+        : "No class calendar items for this ICT date.";
+
+      if (!entries.length) {
+        els.selectedList.innerHTML = '<div class="empty-box">Nothing scheduled for this date.</div>';
+        return;
+      }
+
+      els.selectedList.innerHTML = entries.map((entry) => `
+        <article class="schedule-item">
+          <span class="label-chip ${escapeHtml(labelClass(entry))}">${escapeHtml(entryLabelText(entry))}</span>
+          <div class="schedule-top">
+            <div>
+              <div class="schedule-title">${escapeHtml(calendarTitle(entry))}</div>
+              <div class="schedule-meta">
+                ${escapeHtml(entry.className || className(entry.classId))} · ${escapeHtml(scheduleLabel(entry))}
+              </div>
+            </div>
+          </div>
+          ${entry.note ? `<div class="schedule-meta">${escapeHtml(entry.note)}</div>` : ""}
+          ${isStaff() ? `
+            <div class="schedule-actions">
+              <button class="button secondary-button mini-button" type="button" data-edit="${entry.id}">Edit</button>
+              <button class="button danger-button mini-button" type="button" data-delete="${entry.id}">Delete</button>
+            </div>
+          ` : ""}
+        </article>
+      `).join("");
+
+      els.selectedList.querySelectorAll("[data-edit]").forEach((button) => {
+        button.addEventListener("click", () => startEdit(button.dataset.edit));
+      });
+      els.selectedList.querySelectorAll("[data-delete]").forEach((button) => {
+        button.addEventListener("click", () => deleteEntry(button.dataset.delete));
+      });
+    }
+
+    function renderAll() {
+      renderAdminForm();
+      renderCalendar();
+      renderSelectedDate();
+    }
+
+    function resetForm() {
+      editingId = null;
+      els.formTitle.textContent = "Add calendar day";
+      els.saveButton.textContent = "Save calendar day";
+      els.cancelEditButton.classList.add("hidden");
+      els.formMessage.textContent = "";
+      els.formMessage.className = "form-message";
+      els.scheduleForm.reset();
+      els.schoolEventToggle.checked = false;
+      if (els.eventTypeLabel) els.eventTypeLabel.value = "Class";
+      els.scheduleDate.value = selectedDate;
+      updateSubjectOptions();
+    }
+
+    function startEdit(entryId) {
+      const entry = data.entries.find((item) => item.id === entryId);
+      if (!entry) return;
+      editingId = entryId;
+      selectedDate = entry.date;
+      monthCursor = dateFromKey(entry.date);
+      els.formTitle.textContent = "Edit calendar day";
+      els.saveButton.textContent = "Save changes";
+      els.cancelEditButton.classList.remove("hidden");
+      els.scheduleDate.value = entry.date;
+      els.scheduleTitle.value = entry.title || calendarTitle(entry);
+        if (els.eventTypeLabel) els.eventTypeLabel.value = entry.label || (isSchoolEventEntry(entry) ? "School event" : "Class");
+      els.scheduleClass.value = entry.classId || "";
+      els.schoolEventToggle.checked = isSchoolEventEntry(entry);
+      updateSubjectOptions();
+      if (!els.schoolEventToggle.checked) {
+        els.scheduleSubject.value = entry.subjectId || "";
+        updateCategoryOptions();
+        els.scheduleCategory.value = entry.categoryId || "";
+      } else {
+        setSubjectFieldsState();
+      }
+      els.scheduleNote.value = entry.note || "";
+      els.formMessage.textContent = "Editing this calendar item.";
+      els.formMessage.className = "form-message success-text";
+      renderCalendar();
+      renderSelectedDate();
+    }
+
+    async function deleteEntry(entryId) {
+      if (!confirm("Delete this calendar item?")) return;
+      await deleteDoc(doc(db, "classCalendar", entryId));
+      await loadData();
+      renderAll();
+    }
+
+    async function saveEntry(event) {
+      event.preventDefault();
+      els.formMessage.textContent = "Saving...";
+      els.formMessage.className = "form-message";
+
+      const date = els.scheduleDate.value;
+      const title = els.scheduleTitle.value.trim();
+      const classId = els.scheduleClass.value;
+      const noSubject = els.schoolEventToggle.checked;
+      const label = els.eventTypeLabel?.value || (noSubject ? "School event" : "Class");
+      const subjectId = noSubject ? "__school_event__" : els.scheduleSubject.value;
+      const categoryId = noSubject ? "__no_subject__" : els.scheduleCategory.value;
+      const note = els.scheduleNote.value.trim();
+
+      if (!date || !title || !classId || (!noSubject && (!subjectId || !categoryId))) {
+        els.formMessage.textContent = noSubject
+          ? "Add the title, date, and class/all students."
+          : "Add the title, date, class, subject, and grade subcategory.";
+        return;
+      }
+
+      const isEveryone = classId === "__all__";
+      const selectedClass = isEveryone ? { id: "__all__", name: "All students" } : data.classes.find((item) => item.id === classId);
+      const selectedSubject = noSubject ? { id: "__school_event__", name: "School event" } : data.subjects.find((item) => item.id === subjectId);
+      const selectedCategory = noSubject ? { id: "__no_subject__", name: "No subject" } : data.categories.find((item) => item.id === categoryId);
+      if (!selectedClass || !selectedSubject || !selectedCategory) {
+        els.formMessage.textContent = "One selected item is missing. Refresh and try again.";
+        return;
+      }
+
+      const payload = {
+        date,
+        title,
+        label,
+        timeZone: ICT_TZ,
+        isEveryone,
+        classId,
+        className: selectedClass.name || (isEveryone ? "All students" : "Class"),
+        subjectId,
+        subjectName: selectedSubject.name || "Subject",
+        categoryId,
+        categoryName: selectedCategory.name || "Grade subcategory",
+        note,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid,
+        updatedByName: profile.name || profile.username || "Staff"
+      };
+
+      if (editingId) {
+        await updateDoc(doc(db, "classCalendar", editingId), payload);
+      } else {
+        await addDoc(collection(db, "classCalendar"), {
+          ...payload,
+          createdAt: serverTimestamp(),
+          createdBy: auth.currentUser.uid,
+          createdByName: profile.name || profile.username || "Staff"
+        });
+      }
+
+      selectedDate = date;
+      monthCursor = dateFromKey(date);
+      resetForm();
+      await loadData();
+      renderAll();
+      els.formMessage.textContent = "Saved.";
+      els.formMessage.className = "form-message success-text";
+    }
+
+    async function init(user) {
+      if (!user) {
+        location.replace("./index.html");
+        return;
+      }
+
+      const profileSnap = await getDoc(doc(db, "users", user.uid));
+      if (!profileSnap.exists()) {
+        location.replace("./index.html");
+        return;
+      }
+      profile = { id: user.uid, ...profileSnap.data() };
+
+      await loadData();
+      renderAll();
+      show("app");
+    }
+
+    els.scheduleClass.addEventListener("change", updateSubjectOptions);
+    els.schoolEventToggle.addEventListener("change", () => { setSubjectFieldsState(); updateCategoryOptions(); });
+    els.scheduleSubject.addEventListener("change", updateCategoryOptions);
+    els.scheduleForm.addEventListener("submit", (event) => saveEntry(event).catch((error) => {
+      console.error(error);
+      els.formMessage.textContent = error?.code === "permission-denied"
+        ? "Firestore rules blocked this calendar action. Publish the calendar rules update."
+        : (error?.message || "Could not save calendar item.");
+    }));
+    els.cancelEditButton.addEventListener("click", resetForm);
+    els.prevMonthButton.addEventListener("click", () => { monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1); renderAll(); });
+    els.nextMonthButton.addEventListener("click", () => { monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1); renderAll(); });
+    els.todayButton.addEventListener("click", () => { selectedDate = ictDateKey(); monthCursor = dateFromKey(selectedDate); renderAll(); });
+    els.refreshButton.addEventListener("click", () => location.reload());
+
+    onAuthStateChanged(auth, (user) => {
+      init(user).catch((error) => {
+        console.error(error);
+        alert(error?.code === "permission-denied"
+          ? "Firestore rules blocked the calendar. Publish the calendar rules update."
+          : (error?.message || "Could not open calendar."));
+      });
+    });
+  </script>
+</body>
+</html>
