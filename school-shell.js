@@ -129,6 +129,12 @@ function redirectToMaintenance() {
 function enforceAccess() {
   dispatchSettings();
 
+  // Owner page must never be redirected by the shared shell.
+  // owner.html has its own permission check and login screen.
+  // This prevents the shell from sending owners/co-owners back to dashboard
+  // while the user profile is still loading.
+  if (isOwnerPage) return;
+
   if (currentSettings.wipEnabled) {
     if (!authResolved) return;
 
@@ -152,16 +158,7 @@ function enforceAccess() {
     return;
   }
 
-  // Signed-out users must be able to open owner.html so they can log in.
-  // Signed-in non-owner users should not access owner.html.
-  if (
-    isOwnerPage &&
-    authResolved &&
-    auth.currentUser &&
-    !isManagementRole(currentProfile?.role)
-  ) {
-    location.replace("./dashboard.html");
-  }
+  // Owner page access is handled inside owner.html, not here.
 }
 
 function removeShell() {
