@@ -115,7 +115,7 @@ async function removeAttendanceRecordById(recordId){
   if(!ok) return;
   try{
     $('adminMessage').className='message';
-    $('adminMessage').textContent='Removing one attendance record…';
+    $('adminMessage').textContent='Removing one attendance record (this is the quickest i can do please wait)';
     const batch=writeBatch(db);
     batch.delete(doc(db,'attendance',existing.id));
     const remaining=data.attendance.filter(a=>a.id!==existing.id);
@@ -150,8 +150,8 @@ async function clearAllAttendanceData(){
   if(!staff(me.role)) return;
   const ok=confirm('Clear ALL attendance data for every class and student? This also removes attendance-generated grade points. Attendance subcategories and the Owner attendance percentage will stay.');
   if(!ok) return;
-  const typed=prompt('Type CLEAR ATTENDANCE to confirm.');
-  if(typed!=='CLEAR ATTENDANCE'){ $('adminMessage').className='message'; $('adminMessage').textContent='Clear attendance cancelled.'; return; }
+  const typed=prompt('Type donut farted to confirm.');
+  if(typed!=='donut farted'){ $('adminMessage').className='message'; $('adminMessage').textContent='Clear attendance cancelled.'; return; }
   try{
     $('adminMessage').className='message';
     $('adminMessage').textContent='Clearing attendance data…';
