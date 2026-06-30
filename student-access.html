@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Owner and co-owner student account access">
+  <title>Superstar Student Access</title>
+  <link rel="stylesheet" href="./school-shell.css">
+  <script type="module" src="./school-shell.js"></script>
+  <style>
+    :root{--bg:#070a14;--panel:#11182c;--soft:rgba(255,255,255,.075);--border:rgba(255,255,255,.16);--text:#fff;--muted:#aeb9d2;--accent:#ffb74d;--accentText:#251500;--success:#79e8ad;--danger:#ff8e8e;--blue:#91aaff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 75% -10%,#263b73,transparent 38rem),var(--bg);font-family:Inter,Arial,sans-serif}
+    button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+    .page{width:min(1220px,100%);margin:auto;padding:42px 24px 100px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}
+    .top h1{font-size:clamp(2.4rem,7vw,4.6rem);letter-spacing:-2px;line-height:.95}
+    .top p,.note{color:var(--muted);line-height:1.6}
+    .button{display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:11px 17px;border:0;border-radius:11px;font-weight:780;text-decoration:none}
+    .accent{color:var(--accentText);background:var(--accent)}.secondary{color:#fff;border:1px solid var(--border);background:var(--soft)}
+    .danger{color:var(--danger);border:1px solid rgba(255,142,142,.35);background:rgba(255,142,142,.09)}
+    .layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start}
+    .panel{padding:22px;border:1px solid var(--border);border-radius:18px;background:rgba(17,24,44,.96);box-shadow:0 24px 70px rgba(0,0,0,.2)}
+    .panel h2{margin-bottom:8px}
+    .field{margin-top:16px}.field label{display:block;margin-bottom:8px;font-weight:760}
+    .field input{width:100%;padding:12px 13px;border:1px solid var(--border);border-radius:10px;outline:none;color:#fff;background:rgba(255,255,255,.065)}
+    .field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(145,170,255,.13)}
+    .student-list{display:grid;gap:8px;max-height:620px;margin-top:16px;overflow:auto;padding-right:4px}
+    .student-button{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;color:#fff;background:rgba(255,255,255,.045);text-align:left}
+    .student-button.active{border-color:rgba(255,183,77,.75);background:rgba(255,183,77,.13)}
+    .student-button strong{display:block}.student-button span{display:block;margin-top:4px;color:var(--muted);font-size:.9rem}
+    .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px}
+    .summary-card{padding:17px;border:1px solid var(--border);border-radius:15px;background:var(--soft)}
+    .summary-card span{display:block;color:var(--muted);font-size:.9rem}.summary-card strong{display:block;margin-top:8px;font-size:1.85rem}
+    .profile-card{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+    .avatar{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;color:#251500;background:var(--accent);font-weight:950;font-size:1.5rem}
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}
+    .tab{padding:9px 12px;border:1px solid var(--border);border-radius:999px;color:#fff;background:rgba(255,255,255,.055);font-weight:760}
+    .tab.active{color:var(--accentText);border-color:transparent;background:var(--accent)}
+    .tab-page{display:none}.tab-page.active{display:block}
+    .list{display:grid;gap:10px}.item{padding:15px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.05)}
+    .item-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.item h3{font-size:1.05rem}.item p{margin-top:7px;color:#d7def0;line-height:1.55;white-space:pre-wrap}
+    .meta{margin-top:7px;color:var(--muted);font-size:.9rem}.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:rgba(145,170,255,.14);color:#cbd5ff;font-size:.84rem;font-weight:800}
+    .pill.good{color:#07140d;background:var(--success)}.pill.warn{color:#251500;background:var(--accent)}.pill.bad{color:#fff;background:rgba(255,142,142,.25)}
+    .empty{padding:38px 16px;color:var(--muted);text-align:center;border:1px dashed var(--border);border-radius:14px}
+    .loading{display:grid;min-height:100vh;place-items:center;text-align:center}.login{width:min(500px,calc(100% - 32px));margin:80px auto;padding:26px;border:1px solid var(--border);border-radius:18px;background:var(--panel);text-align:center}
+    .message{min-height:24px;margin-top:12px;color:var(--danger);font-weight:700}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:650px){.page{padding:80px 16px}.top{flex-direction:column}.top .button{width:100%}.summary-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="loading" id="loadingView"><div><h2>Opening Student Access...</h2><p class="note">Checking owner or co-owner permission.</p></div></div>
+
+  <section class="login hidden" id="loginView">
+    <h1>Student Access</h1>
+    <p class="note">Sign in as an owner or co-owner to inspect student account data.</p>
+    <a class="button accent" href="./owner.html" style="margin-top:18px">Owner Login</a>
+    <div class="message" id="loginMessage"></div>
+  </section>
+
+  <main class="page hidden" id="appView">
+    <div class="top">
+      <div>
+        <h1>Student Access</h1>
+        <p>Owner and co-owner view for opening a student's school data without using the student's password.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <a class="button secondary" href="./dashboard.html">Dashboard</a>
+        <button class="button secondary" id="refreshButton" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="panel">
+        <h2>Students</h2>
+        <p class="note">Search by name, username, email, or class.</p>
+        <div class="field">
+          <label for="studentSearch">Search</label>
+          <input id="studentSearch" type="search" placeholder="Find a student">
+        </div>
+        <div class="student-list" id="studentList"></div>
+      </aside>
+
+      <section class="panel">
+        <div id="emptySelection" class="empty">Select a student to open their account view.</div>
+        <div id="studentView" class="hidden">
+          <div class="profile-card">
+            <div class="avatar" id="studentAvatar">S</div>
+            <div>
+              <h2 id="studentName">Student</h2>
+              <p class="note" id="studentMeta">Class and username</p>
+            </div>
+          </div>
+
+          <div class="summary-grid" id="summaryGrid"></div>
+
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab="gradesTab">Grades</button>
+            <button class="tab" type="button" data-tab="announcementsTab">Announcements</button>
+            <button class="tab" type="button" data-tab="quizzesTab">Quizzes</button>
+            <button class="tab" type="button" data-tab="eventsTab">Events</button>
+            <button class="tab" type="button" data-tab="savesTab">SaveList</button>
+          </div>
+
+          <div class="tab-page active" id="gradesTab"><div class="list" id="gradesList"></div></div>
+          <div class="tab-page" id="announcementsTab"><div class="list" id="announcementsList"></div></div>
+          <div class="tab-page" id="quizzesTab"><div class="list" id="quizzesList"></div></div>
+          <div class="tab-page" id="eventsTab"><div class="list" id="eventsList"></div></div>
+          <div class="tab-page" id="savesTab"><div class="list" id="savesList"></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHc7HwBlR6N_GBkpbmMudhN_RZ9P7yqFk",
+      authDomain: "donut-grade-portal.firebaseapp.com",
+      projectId: "donut-grade-portal",
+      storageBucket: "donut-grade-portal.firebasestorage.app",
+      messagingSenderId: "154823535840",
+      appId: "1:154823535840:web:b25deb1c1f3cb9405cb485"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const $ = (id) => document.getElementById(id);
+
+    let profile = null;
+    let selectedStudentId = "";
+    let data = {
+      students: [], classes: [], subjects: [], categories: [], grades: [],
+      announcements: [], quizzes: [], attempts: [], events: [], saves: []
+    };
+
+    const isManagement = (role) => role === "owner" || role === "co-owner";
+    const esc = (value) => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    const ms = (value) => value?.toMillis ? value.toMillis() : value?.seconds ? value.seconds * 1000 : 0;
+    const fmt = (value) => { const time = ms(value); return time ? new Date(time).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "No date"; };
+    const strip = (html) => { const div = document.createElement("div"); div.innerHTML = String(html || ""); return (div.textContent || "").trim(); };
+    const ids = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+
+    function show(view) {
+      $("loadingView").classList.toggle("hidden", view !== "loading");
+      $("loginView").classList.toggle("hidden", view !== "login");
+      $("appView").classList.toggle("hidden", view !== "app");
+    }
+
+    function className(classId) {
+      return data.classes.find((item) => item.id === classId)?.name || "No class";
+    }
+
+    function studentName(student) {
+      return student?.name || student?.username || "Student";
+    }
+
+    function scoreToGrade(percent) {
+      if (percent >= 80) return "A";
+      if (percent >= 75) return "B+";
+      if (percent >= 70) return "B";
+      if (percent >= 65) return "C+";
+      if (percent >= 60) return "C";
+      if (percent >= 55) return "D+";
+      if (percent >= 50) return "D";
+      return "F";
+    }
+
+    function audienceMatches(item, student, defaultMode = "all") {
+      if (!item || !student) return false;
+      if (item.isEveryone === true || item.audience === "everyone") return true;
+      const mode = item.visibilityMode || item.targetMode || item.audienceMode || defaultMode;
+      if (mode !== "selected" && mode !== "class" && mode !== "classes" && mode !== "student" && mode !== "students") return true;
+      return ids(item.classIds).includes(student.classId) ||
+        ids(item.targetClassIds).includes(student.classId) ||
+        ids(item.studentIds).includes(student.id) ||
+        ids(item.targetStudentIds).includes(student.id) ||
+        ids(item.recipientIds).includes(student.id);
+    }
+
+    function visibleAnnouncement(item) {
+      const status = item?.status || "published";
+      if (status === "draft") return false;
+      const publishMs = ms(item.publishAt || item.createdAt);
+      return status === "published" || (status === "scheduled" && (!publishMs || publishMs <= Date.now()));
+    }
+
+    function visibleCategory(category, subject, student) {
+      return category && subject && audienceMatches(subject, student, "all") && audienceMatches(category, student, "inherit");
+    }
+
+    function item(title, body, meta = "", pill = "") {
+      return `
+        <article class="item">
+          <div class="item-top">
+            <h3>${esc(title)}</h3>
+            ${pill ? `<span class="pill">${esc(pill)}</span>` : ""}
+          </div>
+          ${body ? `<p>${esc(body)}</p>` : ""}
+          ${meta ? `<div class="meta">${esc(meta)}</div>` : ""}
+        </article>
+      `;
+    }
+
+    async function writeLog(action, targetId = "", targetName = "") {
+      try {
+        await addDoc(collection(db, "activityLogs"), {
+          action,
+          targetId,
+          targetName,
+          actorId: auth.currentUser.uid,
+          actorName: profile.name || profile.username || profile.email || "Staff",
+          actorRole: profile.role || "staff",
+          page: "student-access.html",
+          createdAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.warn("Activity log failed:", error);
+      }
+    }
+
+    async function loadData() {
+      const snapshots = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "classes")),
+        getDocs(collection(db, "subjects")),
+        getDocs(collection(db, "categories")),
+        getDocs(collection(db, "grades")),
+        getDocs(collection(db, "announcements")),
+        getDocs(collection(db, "quizzes")),
+        getDocs(collection(db, "quizAttempts")),
+        getDocs(collection(db, "events")),
+        getDocs(collection(db, "savelists"))
+      ]);
+
+      const snap = (snapshot) => snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+      data.students = snap(snapshots[0]).filter((user) => user.role === "student").sort((a, b) => studentName(a).localeCompare(studentName(b)));
+      data.classes = snap(snapshots[1]).sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+      data.subjects = snap(snapshots[2]);
+      data.categories = snap(snapshots[3]);
+      data.grades = snap(snapshots[4]);
+      data.announcements = snap(snapshots[5]);
+      data.quizzes = snap(snapshots[6]);
+      data.attempts = snap(snapshots[7]);
+      data.events = snap(snapshots[8]);
+      data.saves = snap(snapshots[9]);
+      renderStudents();
+      renderSelected();
+    }
+
+    function renderStudents() {
+      const query = $("studentSearch").value.trim().toLowerCase();
+      const filtered = data.students.filter((student) =>
+        [student.name, student.username, student.email, className(student.classId)].join(" ").toLowerCase().includes(query)
+      );
+
+      $("studentList").innerHTML = filtered.length
+        ? filtered.map((student) => `
+          <button class="student-button${student.id === selectedStudentId ? " active" : ""}" type="button" data-student="${esc(student.id)}">
+            <strong>${esc(studentName(student))}</strong>
+            <span>${esc(className(student.classId))} / @${esc(student.username || "no-username")}</span>
+          </button>
+        `).join("")
+        : '<div class="empty">No students found.</div>';
+    }
+
+    function renderSelected() {
+      const student = data.students.find((item) => item.id === selectedStudentId);
+      $("emptySelection").classList.toggle("hidden", !!student);
+      $("studentView").classList.toggle("hidden", !student);
+      if (!student) return;
+
+      const visibleSubjects = data.subjects.filter((subject) => audienceMatches(subject, student, "all"));
+      const visibleCategories = data.categories.filter((category) => {
+        const subject = data.subjects.find((item) => item.id === category.subjectId);
+        return visibleCategory(category, subject, student);
+      });
+      const gradeRows = visibleCategories.map((category) => {
+        const subject = data.subjects.find((item) => item.id === category.subjectId);
+        const record = data.grades.find((grade) => grade.studentId === student.id && grade.categoryId === category.id);
+        return { category, subject, record };
+      });
+      const doneRows = gradeRows.filter((row) => row.record?.status === "done");
+      const announcements = data.announcements.filter((ann) => visibleAnnouncement(ann) && audienceMatches(ann, student, "selected"));
+      const quizzes = data.quizzes.filter((quiz) => audienceMatches(quiz, student, "selected"));
+      const events = data.events.filter((event) => audienceMatches(event, student, "selected"));
+      const saves = data.saves.filter((save) => save.ownerId === student.id);
+      const points = doneRows.reduce((sum, row) => sum + Number(row.record?.score || 0), 0);
+      const max = doneRows.reduce((sum, row) => sum + Number(row.category?.maxScore || 0), 0);
+      const percent = max ? points / max * 100 : 0;
+
+      $("studentAvatar").textContent = studentName(student).trim().charAt(0).toUpperCase() || "S";
+      $("studentName").textContent = studentName(student);
+      $("studentMeta").textContent = `${className(student.classId)} / @${student.username || "no username"} / ${student.email || "no email"}`;
+
+      $("summaryGrid").innerHTML = [
+        ["Subjects", visibleSubjects.length],
+        ["Grade items", visibleCategories.length],
+        ["Done", doneRows.length],
+        ["Average", max ? `${percent.toFixed(1)}%` : "No grades"]
+      ].map(([label, value]) => `<div class="summary-card"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("");
+
+      $("gradesList").innerHTML = gradeRows.length
+        ? gradeRows.map(({ category, subject, record }) => {
+            const complete = record?.status === "done";
+            const categoryMax = Number(category.maxScore || 0);
+            const score = Number(record?.score || 0);
+            const gradePercent = complete && categoryMax ? Math.max(0, Math.min(100, score / categoryMax * 100)) : 0;
+            return item(
+              `${subject?.name || "Subject"} / ${category.name || "Grade item"}`,
+              complete ? `${score.toFixed(1)} / ${categoryMax.toFixed(1)} (${gradePercent.toFixed(1)}%)` : "Not done yet",
+              complete ? `Updated ${fmt(record.updatedAt)}` : "",
+              complete ? scoreToGrade(gradePercent) : "Not done"
+            );
+          }).join("")
+        : '<div class="empty">No visible grade items for this student.</div>';
+
+      $("announcementsList").innerHTML = announcements.length
+        ? announcements.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt)).map((ann) =>
+            item(ann.title || "Announcement", strip(ann.messageHtml || ann.bodyHtml || ann.message || ann.body || "").slice(0, 260), `Published ${fmt(ann.publishAt || ann.createdAt)}`, ann.pinned ? "Pinned" : "")
+          ).join("")
+        : '<div class="empty">No currently published announcements for this student.</div>';
+
+      $("quizzesList").innerHTML = quizzes.length
+        ? quizzes.sort((a,b)=>ms(b.createdAt)-ms(a.createdAt)).map((quiz) => {
+            const attempts = data.attempts.filter((attempt) => attempt.studentId === student.id && attempt.quizId === quiz.id);
+            const latest = attempts.sort((a,b)=>ms(b.submittedAt || b.startedAt)-ms(a.submittedAt || a.startedAt))[0];
+            const status = latest?.status || "available";
+            const score = latest?.status === "graded" ? `Score ${Number(latest.score || 0).toFixed(1)} / ${Number(latest.maxPoints || quiz.totalPoints || 0).toFixed(1)}` : "";
+            return item(quiz.title || "Quiz", quiz.instructions || "", score || `Status: ${status}`, status);
+          }).join("")
+        : '<div class="empty">No quizzes are assigned to this student.</div>';
+
+      $("eventsList").innerHTML = events.length
+        ? events.sort((a,b)=>ms(b.startAt)-ms(a.startAt)).map((event) =>
+            item(event.title || "Event", event.description || "", `${fmt(event.startAt)}${event.location ? ` / ${event.location}` : ""}`, event.endAt && ms(event.endAt) < Date.now() ? "Past" : "Active")
+          ).join("")
+        : '<div class="empty">No events are assigned to this student.</div>';
+
+      $("savesList").innerHTML = saves.length
+        ? saves.sort((a,b)=>ms(b.updatedAt || b.createdAt)-ms(a.updatedAt || a.createdAt)).map((save) =>
+            item(save.title || "Saved item", strip(save.bodyHtml || save.contentHtml || save.body || "").slice(0, 260), `Updated ${fmt(save.updatedAt || save.createdAt)}`, save.status || "")
+          ).join("")
+        : '<div class="empty">This student has no SaveList items.</div>';
+    }
+
+    $("studentSearch").addEventListener("input", renderStudents);
+    $("refreshButton").addEventListener("click", loadData);
+    $("studentList").addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-student]");
+      if (!button) return;
+      selectedStudentId = button.dataset.student;
+      renderStudents();
+      renderSelected();
+      const student = data.students.find((item) => item.id === selectedStudentId);
+      if (student) await writeLog("Opened student access view", student.id, studentName(student));
+    });
+    document.querySelector(".tabs").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-tab]");
+      if (!button) return;
+      document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+      document.querySelectorAll(".tab-page").forEach((page) => page.classList.toggle("active", page.id === button.dataset.tab));
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      show("loading");
+      if (!user) {
+        $("loginMessage").textContent = "";
+        show("login");
+        return;
+      }
+
+      const snapshot = await getDoc(doc(db, "users", user.uid));
+      if (!snapshot.exists() || !isManagement(snapshot.data().role)) {
+        await signOut(auth);
+        $("loginMessage").textContent = "This page is only for owners and co-owners.";
+        show("login");
+        return;
+      }
+
+      profile = { id: user.uid, ...snapshot.data() };
+      await loadData();
+      show("app");
+    });
+  </script>
+</body>
+</html>

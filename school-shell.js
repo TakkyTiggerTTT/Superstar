@@ -95,6 +95,7 @@ function navItems(role) {
     ["savelists.html", "💾", "SaveList", true],
     ["accounts.html", "🔑", "Student Accounts", staff],
     ["activity.html", "🧾", "Activity Log", management],
+    ["student-access.html", "ID", "Student Access", management],
     ["owner.html", "👑", "Owner", management]
   ];
 

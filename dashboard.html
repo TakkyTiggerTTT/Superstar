@@ -1003,6 +1003,11 @@
           <span>Activity Log</span>
         </a>
 
+        <a class="nav-item owner-only hidden" href="./student-access.html">
+          <span class="nav-icon">ID</span>
+          <span>Student Access</span>
+        </a>
+
         <a class="nav-item owner-only hidden" href="./owner.html">
           <span class="nav-icon">👑</span>
           <span>Owner</span>
@@ -1397,7 +1402,11 @@
         quickCard("./leaderboard.html", "🏆", "Leaderboard", "View student rankings by quiz points."),
         quickCard("./savelists.html", "💾", "SaveList moderation", "Review student saves, remove content, ban, and unban."),
         quickCard("./accounts.html", "🔑", "Student accounts", "View student usernames and account details."),
-        ...(["owner", "co-owner"].includes(currentProfile.role) ? [quickCard("./activity.html", "🧾", "Activity log", "Review important staff actions."), quickCard("./owner.html", "👑", "Owner controls", "Manage administrators, co-owners, theme, and website WIP mode.")] : [])
+        ...(["owner", "co-owner"].includes(currentProfile.role) ? [
+          quickCard("./activity.html", "🧾", "Activity log", "Review important staff actions."),
+          quickCard("./student-access.html", "ID", "Student access", "Open a protected owner view of a student's account data."),
+          quickCard("./owner.html", "👑", "Owner controls", "Manage administrators, co-owners, theme, and website WIP mode.")
+        ] : [])
       ].join("");
 
       elements.mainListTitle.textContent = "Newest students";
