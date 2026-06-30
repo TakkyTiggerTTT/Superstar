@@ -320,6 +320,13 @@
                 <p class="note">If enabled, students can submit this quiz again. Each retake is saved as a new attempt.</p>
               </div>
               <div class="field">
+                <label class="check-item">
+                  <input id="allowTts" type="checkbox" checked>
+                  <span>Allow students to use text-to-speech on this quiz</span>
+                </label>
+                <p class="note">Existing quizzes without this setting will continue to allow text-to-speech.</p>
+              </div>
+              <div class="field">
                 <label for="timeLimitMinutes">Quiz timer</label>
                 <input id="timeLimitMinutes" type="number" min="0" max="240" step="1" value="0" placeholder="0 = no timer">
                 <p class="note">Enter minutes. Use 0 for no timer. When time ends, the quiz submits automatically.</p>
@@ -437,7 +444,7 @@
           </div>
         </div>
         <div class="timer-box hidden" id="quizTimerBox">No timer</div>
-        <div class="tts-row">
+        <div class="tts-row" id="ttsControls">
           <span class="tts-help">Use 🔊 Read question to hear each question and choices aloud.</span>
           <label class="tts-setting" for="ttsRate">
             Speed
@@ -505,6 +512,7 @@
       categoryPointInfo: document.getElementById("categoryPointInfo"),
       quizInstructions: document.getElementById("quizInstructions"),
       allowRetakes: document.getElementById("allowRetakes"),
+      allowTts: document.getElementById("allowTts"),
       timeLimitMinutes: document.getElementById("timeLimitMinutes"),
       classTargets: document.getElementById("classTargets"),
       studentTargets: document.getElementById("studentTargets"),
@@ -535,6 +543,7 @@
       takeQuizTitle: document.getElementById("takeQuizTitle"),
       takeQuizMeta: document.getElementById("takeQuizMeta"),
       quizTimerBox: document.getElementById("quizTimerBox"),
+      ttsControls: document.getElementById("ttsControls"),
       takeQuestions: document.getElementById("takeQuestions"),
       stopTtsButton: document.getElementById("stopTtsButton"),
       ttsRate: document.getElementById("ttsRate"),
@@ -877,7 +886,7 @@
             <div class="item-head">
               <div>
                 <h3>${escapeHtml(quiz.title)}</h3>
-                <div class="meta">${escapeHtml(subject)} → ${escapeHtml(category)} · ${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${attempts.length} attempts · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
+                <div class="meta">${escapeHtml(subject)} → ${escapeHtml(category)} · ${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${attempts.length} attempts · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"} · TTS ${quizAllowsTts(quiz) ? "on" : "off"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
                 <div class="meta">Recipients: ${escapeHtml((quiz.recipientNames || []).join(", ") || "Selected students")}</div>
               </div>
               <button class="button danger" data-delete-quiz="${escapeHtml(quiz.id)}" type="button">Delete</button>
@@ -995,6 +1004,10 @@
       return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
     }
 
+    function quizAllowsTts(quiz) {
+      return quiz?.ttsEnabled !== false;
+    }
+
     function clampNumber(value, min, max, fallback) {
       const number = Number(value);
       if (!Number.isFinite(number)) return fallback;
@@ -1050,6 +1063,7 @@
     }
 
     function speakQuizText(text) {
+      if (activeQuiz && !quizAllowsTts(activeQuiz)) return;
       const cleanText = String(text || "").replace(/\s+/g, " ").trim();
       if (!cleanText) return;
       if (!supportsSpeech()) {
@@ -1113,7 +1127,7 @@
               <div>
                 <h3>${escapeHtml(quiz.title)}</h3>
                 <div class="meta">${escapeHtml(quiz.subjectName || getSubject(quiz.subjectId)?.name || "Subject")} → ${escapeHtml(quiz.categoryName || getCategory(quiz.categoryId)?.name || "Category")}</div>
-                <div class="meta">${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
+                <div class="meta">${quiz.questionCount || (quiz.questions || []).length} questions · Quiz total ${quiz.totalPoints || pointsTotal(quiz)} points · Subcategory total ${escapeHtml(getCategory(quiz.categoryId)?.maxScore || "not set")} · ${quiz.allowRetakes === false ? "Retakes off" : "Retakes on"} · TTS ${quizAllowsTts(quiz) ? "on" : "off"}${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} min` : ""}</div>
                 ${isRetake ? `<div class="meta">You already submitted ${attemptsForQuiz.length} attempt${attemptsForQuiz.length === 1 ? "" : "s"}. This will create a new retake.</div>` : ""}
               </div>
               <button class="button accent" data-start-quiz="${escapeHtml(quiz.id)}" type="button">${isRetake ? "Retake" : "Start"}</button>
@@ -1216,6 +1230,7 @@
           categoryName: category.name || "Category",
           instructions: els.quizInstructions.value.trim(),
           allowRetakes: els.allowRetakes ? els.allowRetakes.checked : true,
+          ttsEnabled: els.allowTts ? els.allowTts.checked : true,
           timeLimitMinutes: Math.max(0, Number(els.timeLimitMinutes?.value || 0)),
           questions: safeQuestions,
           questionCount: safeQuestions.length,
@@ -1233,6 +1248,7 @@
         els.createMessage.textContent = "Quiz published.";
         els.quizForm.reset();
         if (els.allowRetakes) els.allowRetakes.checked = true;
+        if (els.allowTts) els.allowTts.checked = true;
         if (els.timeLimitMinutes) els.timeLimitMinutes.value = "0";
         questions = [{ id: uid(), text: "", points: 1, type: "text", options: [] }];
         await loadAdminData();
@@ -1254,6 +1270,10 @@
         return;
       }
       activeQuiz = quiz;
+      const ttsAllowed = quizAllowsTts(quiz);
+      stopQuizSpeech();
+      els.ttsControls.classList.toggle("hidden", !ttsAllowed);
+      els.stopTtsButton.classList.toggle("hidden", !ttsAllowed);
       els.takeQuizTitle.textContent = previousAttempts.length > 0 ? `${quiz.title} — Retake ${previousAttempts.length + 1}` : quiz.title;
       els.takeQuizMeta.textContent = `${quiz.subjectName || "Subject"} → ${quiz.categoryName || "Category"} · ${quiz.totalPoints || pointsTotal(quiz)} points${quiz.timeLimitMinutes ? ` · Timer ${quiz.timeLimitMinutes} minutes` : ""}${previousAttempts.length > 0 ? ` · Retake ${previousAttempts.length + 1}` : ""}`;
       els.takeQuestions.innerHTML = (quiz.questions || []).map((question, index) => {
@@ -1285,7 +1305,7 @@
             <div class="question-head">
               <strong>Question ${index + 1}</strong>
               <div class="question-actions">
-                <button class="button secondary read-question-button" type="button" data-speak-question="${escapeHtml(speechText)}">🔊 Read question</button>
+                ${ttsAllowed ? `<button class="button secondary read-question-button" type="button" data-speak-question="${escapeHtml(speechText)}">🔊 Read question</button>` : ""}
                 <span class="pill open">${Number(question.points || 0).toFixed(1)} pts</span>
               </div>
             </div>
