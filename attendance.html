@@ -150,8 +150,8 @@ async function clearAllAttendanceData(){
   if(!staff(me.role)) return;
   const ok=confirm('Clear ALL attendance data for every class and student? This also removes attendance-generated grade points. Attendance subcategories and the Owner attendance percentage will stay.');
   if(!ok) return;
-  const typed=prompt('Type clear to confirm.');
-  if(typed!=='clear'){ $('adminMessage').className='message'; $('adminMessage').textContent='Clear attendance cancelled.'; return; }
+  const typed=prompt('Type Clear to confirm.');
+  if(typed!=='Clear'){ $('adminMessage').className='message'; $('adminMessage').textContent='Clear attendance cancelled.'; return; }
   try{
     $('adminMessage').className='message';
     $('adminMessage').textContent='Clearing attendance data…';
