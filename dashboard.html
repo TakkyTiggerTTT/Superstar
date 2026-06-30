@@ -1191,6 +1191,13 @@
       return 0;
     }
 
+    function isVisibleAnnouncement(announcement) {
+      const status = announcement?.status || "published";
+      if (status === "draft") return false;
+      const publishMs = timestampToMillis(announcement.publishAt || announcement.createdAt);
+      return status === "published" || (status === "scheduled" && (!publishMs || publishMs <= Date.now()));
+    }
+
     function formatDate(value) {
       const millis = timestampToMillis(value);
       if (!millis) return "Recently";
@@ -1341,7 +1348,7 @@
         subjects: snapshotToArray(subjectsSnap),
         categories: snapshotToArray(categoriesSnap),
         grades: snapshotToArray(gradesSnap),
-        announcements: [...announcementMap.values()],
+        announcements: [...announcementMap.values()].filter(isVisibleAnnouncement),
         saves: snapshotToArray(savesSnap),
         quizzes: snapshotToArray(quizzesSnap)
       };
@@ -1474,6 +1481,7 @@
       const className = dashboardData.classes.find((item) => item.id === student.classId)?.name || "No class";
       const { visibleSubjects, summaries } = studentSubjectSummaries(student);
       const doneCount = dashboardData.grades.filter((item) => item.status === "done").length;
+      const visibleAnnouncements = dashboardData.announcements.filter(isVisibleAnnouncement);
       const visibleCategories = dashboardData.categories.filter((category) => {
         const subject = dashboardData.subjects.find((item) => item.id === category.subjectId);
         return categoryVisible(category, subject, student);
@@ -1546,7 +1554,7 @@
         elements.banNotice.classList.add("hidden");
       }
 
-      renderAnnouncements(dashboardData.announcements);
+      renderAnnouncements(visibleAnnouncements);
     }
 
 
@@ -1571,7 +1579,10 @@
     }
 
     function renderAnnouncements(items) {
-      const sorted = [...items]
+      const visibleItems = ["admin", "co-owner", "owner"].includes(currentProfile?.role)
+        ? items
+        : items.filter(isVisibleAnnouncement);
+      const sorted = [...visibleItems]
         .sort((a, b) => timestampToMillis(b.createdAt) - timestampToMillis(a.createdAt))
         .slice(0, 5);
 
